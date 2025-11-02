@@ -2,10 +2,8 @@ package mvc
 
 import (
 	// Packages
-	"github.com/djthorpe/go-wasmbuild/pkg/dom"
-
-	// Namespace imports
-	. "github.com/djthorpe/go-wasmbuild"
+	dom "github.com/djthorpe/go-wasmbuild"
+	impl "github.com/djthorpe/go-wasmbuild/pkg/dom"
 )
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -27,42 +25,32 @@ func init() {
 	RegisterView(ViewApp, nil)
 }
 
+var (
+	doc = impl.NewWindow().Document()
+)
+
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
-// Create a new application with a title
-func New(title string) *app {
-	doc := dom.GetWindow().Document()
-
-	// TODO: Set document title
-
+// Create a new application
+func New() *app {
 	// Create the application
 	view := new(app)
 	view.self = view
 	view.name = ViewApp
 	view.root = doc.Body()
-
 	return view
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// PUBLIC METHODS
-
-// Event listener for the application attaches to the window, not the document
-func (app *app) AddEventListener(event string, handler func(Node)) View {
-	dom.GetWindow().AddEventListener(event, handler)
-	return app
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // PRIVATE METHODS
 
 // Create a new DOM element to be attached to a view
-func elementFactory(tagName string) Element {
-	return dom.GetWindow().Document().CreateElement(tagName)
+func elementFactory(tagName string) dom.Element {
+	return doc.CreateElement(tagName)
 }
 
 // Create a new DOM text node to be attached to a view
-func textFactory(text string) Node {
-	return dom.GetWindow().Document().CreateTextNode(text)
+func textFactory(text string) dom.Node {
+	return doc.CreateTextNode(text)
 }

@@ -1,5 +1,8 @@
 package main
 
+/////////////////////////////////////////////////////////////////////
+// TYPES
+
 // Station represents a BART station with its details
 type Station struct {
 	Name          string `json:"name"`

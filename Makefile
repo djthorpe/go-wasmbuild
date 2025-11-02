@@ -13,7 +13,7 @@ all: wasmbuild $(WASM)
 .PHONY: $(WASM)
 $(WASM): mkdir
 	@echo -n 'Building '
-	@$(BUILDDIR)/wasmbuild compile -o ${BUILDDIR}/$(shell basename $@).wasm ./$@
+	$(BUILDDIR)/wasmbuild build -o ${BUILDDIR}/$(shell basename $@).wasm ./$@
 
 .PHONY: wasmbuild
 wasmbuild: mkdir

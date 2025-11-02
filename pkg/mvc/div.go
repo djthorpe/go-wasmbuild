@@ -2,7 +2,7 @@ package mvc
 
 import (
 	// Namespace imports
-	. "github.com/djthorpe/go-wasmbuild"
+	dom "github.com/djthorpe/go-wasmbuild"
 )
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -31,7 +31,7 @@ func Div(opts ...Opt) View {
 	return NewView(new(div), ViewDiv, "DIV", opts...)
 }
 
-func newDivFromElement(element Element) View {
+func newDivFromElement(element dom.Element) View {
 	if element.TagName() != "DIV" {
 		return nil
 	}

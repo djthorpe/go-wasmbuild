@@ -5,9 +5,7 @@ import (
 	"os"
 
 	// Packages
-
-	// Namespace imports
-	. "github.com/djthorpe/go-wasmbuild"
+	dom "github.com/djthorpe/go-wasmbuild"
 )
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -25,7 +23,7 @@ type View interface {
 	ID() string
 
 	// Return the view's root element
-	Root() Element
+	Root() dom.Element
 
 	// Append a view or element to the view's body, and set the body
 	Body(any) View
@@ -38,7 +36,7 @@ type View interface {
 	Append(children ...any) View
 
 	// Add an event listener to the view's root element
-	AddEventListener(event string, handler func(Node)) View
+	AddEventListener(event string, handler func(dom.Event)) View
 
 	// Set options on the view
 	Opts(opts ...Opt) View
@@ -60,10 +58,10 @@ type ViewWithGroupState interface {
 	View
 
 	// Returns any elements which are active
-	Active() []Element
+	Active() []dom.Element
 
 	// Returns any elements which are disabled
-	Disabled() []Element
+	Disabled() []dom.Element
 }
 
 // ViewWithCaption represents a UI component with a header and footer
@@ -112,15 +110,15 @@ type ViewWithSelf interface {
 type view struct {
 	self View
 	name string
-	root Element
-	body Element
+	root dom.Element
+	body dom.Element
 }
 
 // Ensure that view implements View interface
 var _ View = (*view)(nil)
 
 // Constructor function for views
-type ViewConstructorFunc func(Element) View
+type ViewConstructorFunc func(dom.Element) View
 
 ///////////////////////////////////////////////////////////////////////////////
 // GLOBALS
@@ -182,7 +180,7 @@ func NewView(self View, name string, tagName string, opts ...Opt) View {
 }
 
 // Create view from an existing element, applying any options to it
-func NewViewWithElement(self View, element Element, opts ...Opt) View {
+func NewViewWithElement(self View, element dom.Element, opts ...Opt) View {
 	if element == nil {
 		panic("NewViewWithElement: missing element")
 	} else if self == nil {
@@ -236,13 +234,13 @@ func (v *view) ID() string {
 	return v.root.ID()
 }
 
-func (v *view) Root() Element {
+func (v *view) Root() dom.Element {
 	return v.root
 }
 
 func (v *view) Body(content any) View {
 	node := NodeFromAny(content)
-	if element, ok := node.(Element); ok {
+	if element, ok := node.(dom.Element); ok {
 		v.body = element
 	} else if view, ok := node.(View); ok {
 		v.body = view.Root()
@@ -288,7 +286,7 @@ func (v *view) Append(children ...any) View {
 	return v.self
 }
 
-func (v *view) AddEventListener(event string, handler func(Node)) View {
+func (v *view) AddEventListener(event string, handler func(dom.Event)) View {
 	v.root.AddEventListener(event, handler)
 	return v.self
 }
@@ -305,27 +303,25 @@ func (v *view) Opts(opts ...Opt) View {
 
 // NodeFromAny returns a Node from a string, Element, Tag or View
 // or returns nil if the type is unsupported
-func NodeFromAny(child any) Node {
+func NodeFromAny(child any) dom.Node {
 	switch c := child.(type) {
 	case string:
 		return textFactory(c)
-	case *tag:
-		return c.Root()
-	case Element:
+	case dom.Element:
 		return c
-	case Node:
-		if c.NodeType() == TEXT_NODE {
+	case dom.Node:
+		if c.NodeType() == dom.TEXT_NODE || c.NodeType() == dom.COMMENT_NODE {
 			return c
 		}
 	case View:
 		return c.Root()
 	}
-	panic(ErrInternalAppError.Withf("NodeFromAny: unsupported: %T", child))
+	panic(dom.ErrInternalAppError.Withf("NodeFromAny: unsupported: %T", child))
 }
 
 // ViewFromNode returns a View from a Node, or nil if the type is unsupported
-func ViewFromNode(node Node) View {
-	if element, ok := node.(Element); ok {
+func ViewFromNode(node dom.Node) View {
+	if element, ok := node.(dom.Element); ok {
 		// Work up the chain until a view is found
 		for {
 			if view, err := viewFromElement(element); err != nil {
@@ -344,17 +340,17 @@ func ViewFromNode(node Node) View {
 	return nil
 }
 
-func viewFromElement(element Element) (View, error) {
+func viewFromElement(element dom.Element) (View, error) {
 	if !element.HasAttribute(DataComponentAttrKey) {
 		return nil, nil
 	}
 	name := element.GetAttribute(DataComponentAttrKey)
 	if constructor, exists := views[name]; !exists {
-		return nil, ErrInternalAppError.Withf("viewFromElement: no constructor for view %q", name)
+		return nil, dom.ErrInternalAppError.Withf("viewFromElement: no constructor for view %q", name)
 	} else if constructor == nil {
-		return nil, ErrInternalAppError.Withf("viewFromElement: constructor for view %q is nil", name)
+		return nil, dom.ErrInternalAppError.Withf("viewFromElement: constructor for view %q is nil", name)
 	} else if view := constructor(element); view == nil {
-		return nil, ErrInternalAppError.Withf("viewFromElement: constructor for view %q returned nil", name)
+		return nil, dom.ErrInternalAppError.Withf("viewFromElement: constructor for view %q returned nil", name)
 	} else {
 		return view, nil
 	}

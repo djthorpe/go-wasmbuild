@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	// Namespace imports
-	. "github.com/djthorpe/go-wasmbuild"
+	dom "github.com/djthorpe/go-wasmbuild"
 )
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -37,12 +37,12 @@ var _ OptSet = (*opt)(nil)
 /////////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
-func applyOpts(element Element, opts ...Opt) error {
+func applyOpts(element dom.Element, opts ...Opt) error {
 	var o opt
 
 	// Existing name from element
 	if element == nil {
-		return ErrBadParameter.Withf("Missing Element")
+		return dom.ErrBadParameter.Withf("Missing Element")
 	} else if name := element.GetAttribute(DataComponentAttrKey); name == "" {
 		o.name = element.TagName()
 	} else {

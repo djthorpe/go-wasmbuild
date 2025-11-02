@@ -58,37 +58,40 @@ type Element interface {
 	SetID(string)
 	ClassName() string
 	SetClassName(string)
-	OuterHTML() string
-	InnerHTML() string
-	SetInnerHTML(string)
-	Attributes() []Attr
-	Style() Style
-	ClassList() TokenList
+	/*
 
-	// Attribute Methods
-	RemoveAttribute(string)
-	RemoveAttributeNode(Attr)
-	SetAttribute(string, string) Attr
-	SetAttributeNode(Attr) Attr
-	GetAttribute(string) string
-	GetAttributeNames() []string
-	GetAttributeNode(string) Attr
-	HasAttribute(string) bool
-	HasAttributes() bool
+		OuterHTML() string
+		InnerHTML() string
+		SetInnerHTML(string)
+		Attributes() []Attr
+		Style() Style
+		ClassList() TokenList
 
-	// Selection Methods
-	GetElementsByClassName(string) []Element
-	GetElementsByTagName(string) []Element
+		// Attribute Methods
+		RemoveAttribute(string)
+		RemoveAttributeNode(Attr)
+		SetAttribute(string, string) Attr
+		SetAttributeNode(Attr) Attr
+		GetAttribute(string) string
+		GetAttributeNames() []string
+		GetAttributeNode(string) Attr
+		HasAttribute(string) bool
+		HasAttributes() bool
 
-	// DOM Manipulation Methods
-	Children() []Element
-	ChildElementCount() int
-	FirstElementChild() Element
-	LastElementChild() Element
-	NextElementSibling() Element
-	PreviousElementSibling() Element
-	ReplaceWith(...Node)
-	Remove()
+		// Selection Methods
+		GetElementsByClassName(string) []Element
+		GetElementsByTagName(string) []Element
+
+		// DOM Manipulation Methods
+		Children() []Element
+		ChildElementCount() int
+		FirstElementChild() Element
+		LastElementChild() Element
+		NextElementSibling() Element
+		PreviousElementSibling() Element
+		ReplaceWith(...Node)
+		Remove()
+	*/
 }
 
 // Document implements https://developer.mozilla.org/en-US/docs/Web/API/Document
