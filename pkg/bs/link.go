@@ -32,9 +32,9 @@ func init() {
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
-func Link(href string, opt ...Opt) *link {
+func Link(href string, opt ...Opt) View {
 	opt = append([]Opt{WithAttr("href", href)}, opt...)
-	return &link{NewView(ViewLink, "A", opt...)}
+	return NewView(new(link), ViewLink, "A", opt...)
 }
 
 func newLinkFromElement(element Element) View {
@@ -42,5 +42,12 @@ func newLinkFromElement(element Element) View {
 	if tagName != "A" {
 		panic(fmt.Sprintf("newLinkFromElement: invalid tag name %q", tagName))
 	}
-	return &link{NewViewWithElement(element)}
+	return NewViewWithElement(new(link), element)
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS
+
+func (link *link) SetView(view View) {
+	link.View = view
 }

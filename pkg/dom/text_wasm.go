@@ -1,42 +1,41 @@
-//go:build js
+//go:build js && wasm
 
 package dom
 
 import (
-	"fmt"
-	"syscall/js"
+	// Package imports
+	js "github.com/djthorpe/go-wasmbuild/pkg/js"
+
+	// Namespace imports
+	. "github.com/djthorpe/go-wasmbuild"
 )
 
-/////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 // TYPES
 
 type text struct {
-	*node
+	node
+}
+
+var _ Text = (*text)(nil)
+
+///////////////////////////////////////////////////////////////////////////////
+// LIFECYCLE
+
+func newTextNode(value js.Value) Text {
+	if value.IsNull() || value.IsUndefined() {
+		return nil
+	}
+	return &text{node{value}}
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// STRINGIFY
-
-func (this *text) String() string {
-	str := "<DOMText"
-	str += fmt.Sprintf(" data=%q length=%v", this.Data(), this.Length())
-	return str + ">"
-}
-
-/////////////////////////////////////////////////////////////////////
 // PROPERTIES
 
-func (this *text) Data() string {
-	return this.Get("data").String()
+func (t *text) Data() string {
+	return t.node.Get("data").String()
 }
 
-func (this *text) Length() int {
-	return this.Get("length").Int()
-}
-
-/////////////////////////////////////////////////////////////////////
-// PRIVATE METHODS
-
-func (this *text) v() js.Value {
-	return this.node.v()
+func (t *text) Length() int {
+	return t.node.Get("length").Int()
 }

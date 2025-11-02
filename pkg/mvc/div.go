@@ -27,14 +27,13 @@ func init() {
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
-func Div(opts ...Opt) *div {
-	view := &div{NewView(ViewDiv, "DIV", opts...)}
-	return view
+func Div(opts ...Opt) View {
+	return NewView(new(div), ViewDiv, "DIV", opts...)
 }
 
 func newDivFromElement(element Element) View {
 	if element.TagName() != "DIV" {
 		return nil
 	}
-	return &div{NewViewWithElement(element)}
+	return NewViewWithElement(new(div), element)
 }

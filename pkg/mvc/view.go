@@ -18,6 +18,9 @@ type View interface {
 	// Return the view name
 	Name() string
 
+	// Return the self container for the view
+	Self() View
+
 	// Return the view ID, if set
 	ID() string
 
@@ -96,11 +99,18 @@ type ViewWithVisibility interface {
 	Hide() ViewWithVisibility
 }
 
+// View represents a UI component in the interface
+type ViewWithSelf interface {
+	View
+	SetView(view View)
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // PRIVATE TYPES
 
 // Implementation of View interface
 type view struct {
+	self View
 	name string
 	root Element
 	body Element
@@ -138,15 +148,23 @@ func RegisterView(name string, constructor ViewConstructorFunc) {
 // LIFECYCLE
 
 // Create a new empty view, applying any options to it
-func NewView(name string, tagName string, opts ...Opt) View {
+func NewView(self View, name string, tagName string, opts ...Opt) View {
 	if _, exists := views[name]; !exists {
 		panic(fmt.Sprintf("NewView: View not registered %q", name))
 	}
 
 	// Create the view
 	v := &view{
+		self: self,
 		name: name,
 		root: elementFactory(tagName),
+	}
+
+	// Set the view in self
+	if self_, ok := self.(ViewWithSelf); !ok {
+		panic(fmt.Sprintf("NewView: %v does not implement ViewWithSelf", name))
+	} else {
+		self_.SetView(v)
 	}
 
 	// Set the data-wasmbuild-component attribute
@@ -160,19 +178,29 @@ func NewView(name string, tagName string, opts ...Opt) View {
 	}
 
 	// Return the view
-	return v
+	return v.self
 }
 
 // Create view from an existing element, applying any options to it
-func NewViewWithElement(element Element, opts ...Opt) View {
+func NewViewWithElement(self View, element Element, opts ...Opt) View {
 	if element == nil {
 		panic("NewViewWithElement: missing element")
+	} else if self == nil {
+		panic("NewViewWithElement: missing self")
 	}
 
 	// Create the view
 	v := &view{
+		self: self,
 		name: element.GetAttribute(DataComponentAttrKey),
 		root: element,
+	}
+
+	// Set the view in self
+	if self_, ok := self.(ViewWithSelf); !ok {
+		panic(fmt.Sprintf("NewView: %v does not implement ViewWithSelf", v.name))
+	} else {
+		self_.SetView(v)
 	}
 
 	// Apply options to the view
@@ -182,8 +210,8 @@ func NewViewWithElement(element Element, opts ...Opt) View {
 		}
 	}
 
-	// Return the view
-	return v
+	// Return self
+	return v.self
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -195,6 +223,10 @@ func (v *view) String() string {
 
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
+
+func (v *view) Self() View {
+	return v.self
+}
 
 func (v *view) Name() string {
 	return v.name
@@ -224,8 +256,7 @@ func (v *view) Body(content any) View {
 		v.root.AppendChild(v.body)
 	}
 
-	// Return the view
-	return v
+	return v.self
 }
 
 func (v *view) Content(children ...any) View {
@@ -241,18 +272,8 @@ func (v *view) Content(children ...any) View {
 		return v
 	}
 
-	// Append the children
-	firstChild := target.FirstChild()
-	for _, child := range children {
-		if firstChild == nil {
-			target.AppendChild(NodeFromAny(child))
-		} else {
-			target.InsertBefore(NodeFromAny(child), firstChild)
-		}
-	}
-
-	// Return the view
-	return v
+	// Append each child
+	return v.Append(children...)
 }
 
 func (v *view) Append(children ...any) View {
@@ -263,19 +284,20 @@ func (v *view) Append(children ...any) View {
 	for _, child := range children {
 		target.AppendChild(NodeFromAny(child))
 	}
-	return v
+
+	return v.self
 }
 
 func (v *view) AddEventListener(event string, handler func(Node)) View {
 	v.root.AddEventListener(event, handler)
-	return v
+	return v.self
 }
 
 func (v *view) Opts(opts ...Opt) View {
 	if err := applyOpts(v.root, opts...); err != nil {
 		panic(err)
 	}
-	return v
+	return v.self
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -288,7 +310,7 @@ func NodeFromAny(child any) Node {
 	case string:
 		return textFactory(c)
 	case *tag:
-		return c.Element
+		return c.Root()
 	case Element:
 		return c
 	case Node:

@@ -39,46 +39,46 @@ func init() {
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
-func Button(opt ...Opt) *button {
+func Button(opt ...Opt) View {
 	opts := append([]Opt{WithAttr("type", "button"), WithClass("btn"), WithClass("btn-primary")}, opt...)
-	view := &button{NewView(ViewButton, "BUTTON", opts...)}
-	return view
+	return NewView(new(button), ViewButton, "BUTTON", opts...)
 }
 
-func OutlineButton(opt ...Opt) *button {
+func OutlineButton(opt ...Opt) View {
 	opts := append([]Opt{WithAttr("type", "button"), WithClass("btn"), WithClass("btn-outline-primary"), WithClass(viewOutlineButtonClassPrefix)}, opt...)
-	view := &button{NewView(ViewButton, "BUTTON", opts...)}
-	return view
+	return NewView(new(button), ViewButton, "BUTTON", opts...)
 }
 
-func CloseButton(opt ...Opt) *button {
+func CloseButton(opt ...Opt) View {
 	opts := append([]Opt{WithAttr("type", "button"), WithClass("btn-close"), WithAriaLabel("close")}, opt...)
-	view := &button{NewView(ViewButton, "BUTTON", opts...)}
-	return view
+	return NewView(new(button), ViewButton, "BUTTON", opts...)
 }
 
-func ButtonGroup(opt ...Opt) *button {
+func ButtonGroup(opt ...Opt) View {
 	opts := append([]Opt{WithAttr("role", "group"), WithClass("btn-group")}, opt...)
-	view := &button{NewView(ViewButtonGroup, "DIV", opts...)}
-	return view
+	return NewView(new(buttongroup), ViewButtonGroup, "DIV", opts...)
 }
 
 func newButtonFromElement(element Element) View {
 	if element.TagName() != "BUTTON" {
 		return nil
 	}
-	return &button{NewViewWithElement(element)}
+	return NewViewWithElement(new(button), element)
 }
 
 func newButtonGroupFromElement(element Element) View {
 	if element.TagName() != "DIV" {
 		return nil
 	}
-	return &buttongroup{NewViewWithElement(element)}
+	return NewViewWithElement(new(buttongroup), element)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
+
+func (b *button) SetView(view View) {
+	b.View = view
+}
 
 // Return true if button is disabled
 func (b *button) Disabled() bool {

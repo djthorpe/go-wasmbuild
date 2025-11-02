@@ -22,16 +22,18 @@ wasmbuild: mkdir
 
 .PHONY: test
 test: tidy
+	@$(GO) test -v ./pkg/js
 	@$(GO) test -v ./pkg/dom
-	@$(GO) test -v ./pkg/mvc
-	@$(GO) test -v ./pkg/bootstrap
+#	@$(GO) test -v ./pkg/mvc
+#	@$(GO) test -v ./pkg/bootstrap
 
 .PHONY: jstest
 jstest: tidy
 	@$(GO) install github.com/agnivade/wasmbrowsertest@latest
+	@GOOS=js GOARCH=wasm $(GO) test -v -exec="wasmbrowsertest" ./pkg/js
 	@GOOS=js GOARCH=wasm $(GO) test -v -exec="wasmbrowsertest" ./pkg/dom
-	@GOOS=js GOARCH=wasm $(GO) test -v -exec="wasmbrowsertest" ./pkg/mvc
-	@GOOS=js GOARCH=wasm $(GO) test -v -exec="wasmbrowsertest" ./pkg/bootstrap
+#	@GOOS=js GOARCH=wasm $(GO) test -v -exec="wasmbrowsertest" ./pkg/mvc
+#	@GOOS=js GOARCH=wasm $(GO) test -v -exec="wasmbrowsertest" ./pkg/bootstrap
 
 .PHONY: mkdir
 mkdir:

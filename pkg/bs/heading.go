@@ -45,11 +45,11 @@ func init() {
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
-func Heading(level int, opt ...Opt) *heading {
+func Heading(level int, opt ...Opt) View {
 	if tagName, exists := headingLevels[level]; !exists {
 		panic(fmt.Sprintf("Heading: invalid level %d", level))
 	} else {
-		return &heading{NewView(ViewHeading, tagName, opt...)}
+		return NewView(new(heading), ViewHeading, tagName, opt...)
 	}
 }
 
@@ -58,5 +58,12 @@ func newHeadingFromElement(element Element) View {
 	if !slices.Contains(slices.Collect(maps.Values(headingLevels)), tagName) {
 		panic(fmt.Sprintf("newHeadingFromElement: invalid tag name %q", tagName))
 	}
-	return &heading{NewViewWithElement(element)}
+	return NewViewWithElement(new(heading), element)
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS
+
+func (h *heading) SetView(view View) {
+	h.View = view
 }

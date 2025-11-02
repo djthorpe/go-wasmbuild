@@ -1,192 +1,162 @@
-//go:build js && wasm
+//go:build !(js && wasm)
 
 package js
 
 import (
-	"syscall/js"
+	"errors"
 )
 
 ///////////////////////////////////////////////////////////////////////////////
 // TYPES
 
-// Promise wraps a JavaScript Promise object
+// Promise wraps a JavaScript Promise object (mock for non-WASM builds).
 type Promise struct {
-	value Value
-}
-
-// PromiseCallback is a function that handles Promise resolution or rejection
-type PromiseCallback func(value Value) interface{}
-
-///////////////////////////////////////////////////////////////////////////////
-// CONSTRUCTORS
-
-// NewPromiseFromValue creates a Promise wrapper from a Value
-func NewPromiseFromValue(value Value) *Promise {
-	return &Promise{value: value}
-}
-
-// PromiseResolve creates a Promise that is resolved with the given value
-func PromiseResolve(value interface{}) *Promise {
-	jsValue := Global().Get("Promise").Call("resolve", Unwrap(value))
-	return &Promise{value: jsValue}
-}
-
-// PromiseReject creates a Promise that is rejected with the given reason
-func PromiseReject(reason interface{}) *Promise {
-	jsValue := Global().Get("Promise").Call("reject", Unwrap(reason))
-	return &Promise{value: jsValue}
-}
-
-// PromiseAll returns a Promise that resolves when all promises in the array resolve,
-// or rejects with the reason of the first promise that rejects
-func PromiseAll(promises ...*Promise) *Promise {
-	array := NewArray(len(promises))
-	for i, p := range promises {
-		array.SetIndex(i, p.value)
-	}
-	jsValue := Global().Get("Promise").Call("all", array)
-	return &Promise{value: jsValue}
-}
-
-// PromiseAllSettled returns a Promise that resolves after all promises have settled
-// (each may resolve or reject)
-func PromiseAllSettled(promises ...*Promise) *Promise {
-	array := NewArray(len(promises))
-	for i, p := range promises {
-		array.SetIndex(i, p.value)
-	}
-	jsValue := Global().Get("Promise").Call("allSettled", array)
-	return &Promise{value: jsValue}
-}
-
-// PromiseAny returns a Promise that resolves as soon as any promise resolves,
-// or rejects if all promises reject
-func PromiseAny(promises ...*Promise) *Promise {
-	array := NewArray(len(promises))
-	for i, p := range promises {
-		array.SetIndex(i, p.value)
-	}
-	jsValue := Global().Get("Promise").Call("any", array)
-	return &Promise{value: jsValue}
-}
-
-// PromiseRace returns a Promise that resolves or rejects as soon as one of the promises
-// resolves or rejects, with the value or reason from that promise
-func PromiseRace(promises ...*Promise) *Promise {
-	array := NewArray(len(promises))
-	for i, p := range promises {
-		array.SetIndex(i, p.value)
-	}
-	jsValue := Global().Get("Promise").Call("race", array)
-	return &Promise{value: jsValue}
+	value        Value
+	fulfilled    bool
+	rejected     bool
+	result       any
+	thenHandler  func(value Value) any
+	catchHandler func(reason Value) any
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// METHODS
+// LIFECYCLE
 
-// Then attaches fulfillment and rejection handlers to the promise and returns a new promise
-// resolving to the return value of the called handler
-func (p *Promise) Then(onFulfilled PromiseCallback, onRejected ...PromiseCallback) *Promise {
-	fulfilledFunc := js.FuncOf(func(this Value, args []Value) interface{} {
-		if len(args) > 0 {
-			return onFulfilled(args[0])
+// NewPromise creates a new Promise from a Value.
+func NewPromise(value Value) *Promise {
+	return &Promise{
+		value: value,
+	}
+}
+
+// NewPromiseFromTask creates a new Promise that executes a task in the background.
+// The task function receives resolve and reject callbacks to fulfill or reject the promise.
+// The task runs immediately but returns a Promise that can be chained with Then/Catch.
+func NewPromiseFromTask(task func(resolve func(any), reject func(error))) *Promise {
+	p := &Promise{
+		value: Undefined(),
+	}
+
+	// Create resolve and reject callbacks
+	resolve := func(value any) {
+		p.fulfilled = true
+		p.result = value
+		if p.thenHandler != nil {
+			resultValue := Value{t: ObjectProto, v: value}
+			p.thenHandler(resultValue)
 		}
-		return nil
-	})
+	}
 
-	var result Value
-	if len(onRejected) > 0 && onRejected[0] != nil {
-		rejectedFunc := js.FuncOf(func(this Value, args []Value) interface{} {
-			if len(args) > 0 {
-				return onRejected[0](args[0])
+	reject := func(err error) {
+		p.rejected = true
+		p.result = err
+		if p.catchHandler != nil {
+			reasonValue := Value{t: ObjectProto, v: err}
+			p.catchHandler(reasonValue)
+		}
+	}
+
+	// Execute the task in background
+	go task(resolve, reject)
+
+	return p
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS
+
+// Then registers a callback to be called when the promise is fulfilled.
+// The callback receives the resolved value and can return an error.
+// If the callback returns an error, it will reject the promise chain.
+// If the callback returns a PromiseError, the chain will flatten and wait for that promise.
+// Returns a new promise for chaining.
+func (p *Promise) Then(onFulfilled func(value Value) error) *Promise {
+	newPromise := &Promise{
+		value: Undefined(),
+	}
+
+	p.thenHandler = func(value Value) any {
+		if err := onFulfilled(value); err != nil {
+			// Check if it's a PromiseError (flattening)
+			if promiseErr, ok := err.(*PromiseError); ok {
+				// Chain the wrapped promise to the new promise
+				wrappedPromise := promiseErr.Promise()
+				wrappedPromise.thenHandler = func(v Value) any {
+					newPromise.fulfilled = true
+					newPromise.result = v.v
+					if newPromise.thenHandler != nil {
+						newPromise.thenHandler(v)
+					}
+					return nil
+				}
+				wrappedPromise.catchHandler = func(reason Value) any {
+					newPromise.rejected = true
+					newPromise.result = reason.v
+					if newPromise.catchHandler != nil {
+						newPromise.catchHandler(reason)
+					}
+					return nil
+				}
+				// If wrapped promise is already settled, handle it
+				if wrappedPromise.fulfilled && wrappedPromise.thenHandler != nil {
+					wrappedPromise.thenHandler(Value{t: ObjectProto, v: wrappedPromise.result})
+				} else if wrappedPromise.rejected && wrappedPromise.catchHandler != nil {
+					wrappedPromise.catchHandler(Value{t: ObjectProto, v: wrappedPromise.result})
+				}
+				return nil
 			}
-			return nil
-		})
-		result = p.value.Call("then", fulfilledFunc, rejectedFunc)
-		// Note: Don't release these functions as they may be called multiple times
-		// The JavaScript runtime will handle garbage collection
-	} else {
-		result = p.value.Call("then", fulfilledFunc)
-	}
-
-	return &Promise{value: result}
-}
-
-// Catch attaches a rejection handler callback to the promise and returns a new promise
-// resolving to the return value of the callback if it is called, or to its original
-// fulfillment value if the promise is instead fulfilled
-func (p *Promise) Catch(onRejected PromiseCallback) *Promise {
-	rejectedFunc := js.FuncOf(func(this Value, args []Value) interface{} {
-		if len(args) > 0 {
-			return onRejected(args[0])
+			// Reject the new promise for regular errors
+			newPromise.rejected = true
+			newPromise.result = err
+			if newPromise.catchHandler != nil {
+				reasonValue := Value{t: ObjectProto, v: err}
+				newPromise.catchHandler(reasonValue)
+			}
+		} else {
+			// Fulfill the new promise
+			newPromise.fulfilled = true
+			newPromise.result = value.v
+			if newPromise.thenHandler != nil {
+				newPromise.thenHandler(value)
+			}
 		}
 		return nil
-	})
+	}
 
-	result := p.value.Call("catch", rejectedFunc)
-	return &Promise{value: result}
+	// If already fulfilled, call the handler immediately
+	if p.fulfilled && p.thenHandler != nil {
+		resultValue := Value{t: ObjectProto, v: p.result}
+		p.thenHandler(resultValue)
+	}
+
+	return newPromise
 }
 
-// Finally attaches a handler that is called when the promise is settled (fulfilled or rejected)
-// The handler is called without any arguments
-func (p *Promise) Finally(onFinally func()) *Promise {
-	finallyFunc := js.FuncOf(func(this Value, args []Value) interface{} {
-		onFinally()
+// Catch registers a callback to be called when the promise is rejected.
+// The callback receives the rejection reason as a Go error.
+// Returns the promise for chaining.
+func (p *Promise) Catch(onRejected func(err error)) *Promise {
+	p.catchHandler = func(reason Value) any {
+		// Convert Value to error for the callback
+		if errVal, ok := reason.v.(error); ok {
+			onRejected(errVal)
+		} else {
+			// Fallback: create a simple error
+			onRejected(errors.New("unknown error"))
+		}
 		return nil
-	})
+	}
 
-	result := p.value.Call("finally", finallyFunc)
-	return &Promise{value: result}
+	// If already rejected, call the handler immediately
+	if p.rejected && p.catchHandler != nil {
+		reasonValue := Value{t: ObjectProto, v: p.result}
+		p.catchHandler(reasonValue)
+	}
+
+	return p
 }
 
-// JSValue returns the underlying Value
-func (p *Promise) JSValue() Value {
+// Value returns the underlying Value.
+func (p *Promise) Value() Value {
 	return p.value
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// AWAIT HELPERS
-
-// Await is a helper function that waits for a promise to resolve and returns the result
-// This creates a Go channel and blocks until the promise settles
-// Returns (value, error) where error is set if the promise was rejected
-func (p *Promise) Await() (Value, error) {
-	resultChan := make(chan Value, 1)
-	errorChan := make(chan error, 1)
-
-	// Set up the then/catch handlers
-	p.Then(func(value Value) interface{} {
-		resultChan <- value
-		return nil
-	}).Catch(func(reason Value) interface{} {
-		// Convert JS error to Go error
-		errorChan <- js.Error{Value: reason}
-		return nil
-	})
-
-	// Wait for either result or error
-	select {
-	case result := <-resultChan:
-		return result, nil
-	case err := <-errorChan:
-		return Undefined(), err
-	}
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// HELPER FUNCTIONS
-
-// WrapPromise wraps a Value that represents a Promise into a Promise struct
-// This is useful when you get a promise from calling JavaScript APIs
-func WrapPromise(value Value) *Promise {
-	return &Promise{value: value}
-}
-
-// IsPromise checks if a Value is a Promise
-func IsPromise(value Value) bool {
-	if value.Type() != js.TypeObject {
-		return false
-	}
-	promiseConstructor := Global().Get("Promise")
-	return value.InstanceOf(promiseConstructor)
 }

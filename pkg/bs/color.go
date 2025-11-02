@@ -85,7 +85,9 @@ func (color Color) allClassNames(prefix string) []string {
 
 func colorPrefixForView(name string) string {
 	switch name {
-	case ViewHeading, ViewText, ViewContainer:
+	case ViewHeading, ViewContainer:
+		return "text"
+	case ViewText:
 		return "text"
 	case ViewBadge:
 		return "text-bg"
@@ -95,8 +97,8 @@ func colorPrefixForView(name string) string {
 		return "link"
 	case ViewAlert:
 		return "alert"
-	case ViewNavbar:
-		return "bg"
+		//	case ViewNavbar:
+		//		return "bg"
 	default:
 		return ""
 	}
@@ -104,16 +106,16 @@ func colorPrefixForView(name string) string {
 
 func backgroundColorPrefixForView(name string) string {
 	switch name {
-	case ViewContainer:
-		return "bg"
+	//	case ViewContainer:
+	//		return "bg"
 	case ViewBadge:
 		return "text-bg"
 	case ViewButton:
 		return "btn"
 	case ViewAlert:
 		return "alert"
-	case ViewNavbar:
-		return "bg"
+		//	case ViewNavbar:
+		//		return "bg"
 	default:
 		return ""
 	}
@@ -171,5 +173,14 @@ func WithBackground(color Color) mvc.Opt {
 		}
 
 		return nil
+	}
+}
+
+func WithTheme(color Color) mvc.Opt {
+	return func(o mvc.OptSet) error {
+		//		if o.Name() != ViewNavbar && o.Name() != ViewNavDropdown {
+		//			return ErrInternalAppError.Withf("WithTheme: unsupported view %q", o.Name())
+		//		}
+		return mvc.WithAttr("data-bs-theme", string(color))(o)
 	}
 }

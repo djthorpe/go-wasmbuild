@@ -27,13 +27,12 @@ func init() {
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
-func Badge(opt ...Opt) *badge {
+func Badge(opt ...Opt) View {
 	opt = append([]Opt{WithClass("badge"), WithColor(PRIMARY)}, opt...)
-	view := &badge{NewView(ViewBadge, "SPAN", opt...)}
-	return view
+	return NewView(new(badge), ViewBadge, "SPAN", opt...)
 }
 
-func PillBadge(opt ...Opt) *badge {
+func PillBadge(opt ...Opt) View {
 	return Badge(append(opt, WithClass("rounded-pill"))...)
 }
 
@@ -41,5 +40,12 @@ func newBadgeFromElement(element Element) View {
 	if element.TagName() != "SPAN" {
 		return nil
 	}
-	return &badge{NewViewWithElement(element)}
+	return NewViewWithElement(new(badge), element)
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS
+
+func (badge *badge) SetView(view View) {
+	badge.View = view
 }

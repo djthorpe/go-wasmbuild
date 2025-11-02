@@ -3,22 +3,21 @@
 package dom
 
 import (
-	"syscall/js"
-
 	// Packages
 	dom "github.com/djthorpe/go-wasmbuild"
+	jsutil "github.com/djthorpe/go-wasmbuild/pkg/js"
 )
 
 /////////////////////////////////////////////////////////////////////
 // TYPES
 
 type element struct {
+	dom.EventTarget
 	*node
-	eventListeners map[string][]js.Func // Store event listeners to prevent GC
 }
 
 type style struct {
-	js.Value
+	jsutil.Value
 }
 
 var _ dom.Element = (*element)(nil)
@@ -256,78 +255,6 @@ func (e *element) PreviousElementSibling() dom.Element {
 		return nil
 	}
 	return NewNode(sibling).(dom.Element)
-}
-
-func (e *element) AddEventListener(eventType string, callback func(dom.Node)) dom.Element {
-	// Initialize event listeners map if needed
-	if e.eventListeners == nil {
-		e.eventListeners = make(map[string][]js.Func)
-	}
-
-	// Create a JS function wrapper
-	jsCallback := js.FuncOf(func(this js.Value, args []js.Value) interface{} {
-		if len(args) > 0 {
-			// Create a Node from the event target
-			target := args[0].Get("target")
-			if !target.IsUndefined() && !target.IsNull() {
-				// Wrap as Element first if possible, then fall back to Node
-				// This ensures Component() can find components on the clicked element
-				if targetNode := NewNode(target); targetNode != nil {
-					callback(targetNode)
-				}
-			}
-		}
-		return nil
-	})
-
-	// Store the callback to prevent garbage collection
-	e.eventListeners[eventType] = append(e.eventListeners[eventType], jsCallback)
-
-	// Add event listener
-	e.Call("addEventListener", eventType, jsCallback)
-
-	return e
-}
-
-// RemoveEventListener removes all event listeners of the specified type and releases their resources
-func (e *element) RemoveEventListener(eventType string) {
-	if e.eventListeners == nil {
-		return
-	}
-
-	// Get all listeners for this event type
-	listeners := e.eventListeners[eventType]
-	if listeners == nil {
-		return
-	}
-
-	// Remove each listener from the DOM and release the js.Func
-	for _, jsCallback := range listeners {
-		e.Call("removeEventListener", eventType, jsCallback)
-		jsCallback.Release()
-	}
-
-	// Remove from the map
-	delete(e.eventListeners, eventType)
-}
-
-// ReleaseEventListeners removes all event listeners and releases their resources
-// Call this when discarding the element to prevent memory leaks
-func (e *element) ReleaseEventListeners() {
-	if e.eventListeners == nil {
-		return
-	}
-
-	// Remove and release all listeners
-	for eventType, listeners := range e.eventListeners {
-		for _, jsCallback := range listeners {
-			e.Call("removeEventListener", eventType, jsCallback)
-			jsCallback.Release()
-		}
-	}
-
-	// Clear the map
-	e.eventListeners = nil
 }
 
 func (e *element) Blur() {

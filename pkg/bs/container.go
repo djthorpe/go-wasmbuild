@@ -28,14 +28,21 @@ func init() {
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
-func Container(opt ...Opt) *container {
-	view := &container{NewView(ViewContainer, "DIV", append([]Opt{WithClass("container")}, opt...)...)}
-	return view
+func Container(opt ...Opt) View {
+	opts := append([]Opt{WithClass("container")}, opt...)
+	return NewView(new(container), ViewContainer, "DIV", opts...)
 }
 
 func newContainerFromElement(element Element) View {
 	if element.TagName() != "DIV" {
 		return nil
 	}
-	return &container{NewViewWithElement(element)}
+	return NewViewWithElement(new(container), element)
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS
+
+func (container *container) SetView(view View) {
+	container.View = view
 }

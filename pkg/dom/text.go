@@ -1,74 +1,62 @@
-//go:build !js
+//go:build !(js && wasm)
 
 package dom
 
 import (
-	"fmt"
-	"html"
-	"io"
-	"strings"
-
-	dom "github.com/djthorpe/go-wasmbuild"
+	// Namespace imports
+	. "github.com/djthorpe/go-wasmbuild"
 )
 
-/////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 // TYPES
 
 type text struct {
-	*node
+	node
+}
+
+var _ Text = (*text)(nil)
+
+///////////////////////////////////////////////////////////////////////////////
+// LIFECYCLE
+
+func newTextNode(document Document, cdata string) Text {
+	node := newNode(document, nil, "#text", TEXT_NODE, cdata)
+	return &text{
+		node: node,
+	}
+}
+
+// getNode implements nodeImpl interface
+func (t *text) getNode() *node {
+	return &t.node
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// STRINGIFY
-
-func (this *text) String() string {
-	var b strings.Builder
-	b.WriteString("<DOMText")
-	fmt.Fprintf(&b, " data=%q length=%v", this.Data(), this.Length())
-	b.WriteString(">")
-	return b.String()
-}
-
-/////////////////////////////////////////////////////////////////////
 // PROPERTIES
 
-func (this *text) Data() string {
-	return this.cdata
+func (t *text) Data() string {
+	return t.cdata
 }
 
-func (this *text) Length() int {
-	return len(this.cdata)
-}
-
-/////////////////////////////////////////////////////////////////////
-// PUBLIC METHODS
-
-func (this *text) CloneNode(bool) dom.Node {
-	return NewNode(this.document, this.name, this.nodetype, this.cdata)
-}
-
-// Child manipulation methods are no-ops for text nodes (leaf nodes)
-func (this *text) AppendChild(child dom.Node) dom.Node {
-	return nil
-}
-
-func (this *text) InsertBefore(new dom.Node, ref dom.Node) dom.Node {
-	return nil
-}
-
-func (this *text) RemoveChild(child dom.Node) {
-}
-
-func (this *text) ReplaceChild(dom.Node, dom.Node) {
+func (t *text) Length() int {
+	return len(t.cdata)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// PRIVATE METHODS
+// METHODS
 
-func (this *text) v() *node {
-	return this.node
+func (text *text) AppendChild(Node) Node {
+	panic("AppendChild not supported on Text nodes")
 }
 
-func (this *text) write(w io.Writer) (int, error) {
-	return w.Write([]byte(html.EscapeString(this.cdata)))
+func (text *text) CloneNode(deep bool) Node {
+	return newTextNode(nil, text.cdata)
+}
+
+func (text *text) InsertBefore(newNode Node, refNode Node) Node {
+	panic("InsertBefore not supported on Text nodes")
+}
+
+func (text *text) RemoveChild(Node) {
+	panic("RemoveChild not supported on Text nodes")
 }

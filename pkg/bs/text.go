@@ -45,57 +45,48 @@ func init() {
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
-func Para(children ...any) *text {
-	view := &text{NewView(ViewText, "P")}
-	view.Append(children...)
-	return view
+func Para(children ...any) View {
+	return NewView(new(text), ViewText, "P").Append(children...)
 }
 
-func Deleted(children ...any) *text {
-	view := &text{NewView(ViewText, "DEL")}
-	view.Append(children...)
-	return view
+func Deleted(children ...any) View {
+	return NewView(new(text), ViewText, "DEL").Append(children...)
 }
 
-func Highlighted(children ...any) *text {
-	view := &text{NewView(ViewText, "MARK")}
-	view.Append(children...)
-	return view
+func Highlighted(children ...any) View {
+	return NewView(new(text), ViewText, "MARK").Append(children...)
 }
 
-func Small(children ...any) *text {
-	view := &text{NewView(ViewText, "SMALL")}
-	view.Append(children...)
-	return view
+func Small(children ...any) View {
+	return NewView(new(text), ViewText, "SMALL").Append(children...)
 }
 
-func Strong(children ...any) *text {
-	view := &text{NewView(ViewText, "STRONG")}
-	view.Append(children...)
-	return view
+func Strong(children ...any) View {
+	return NewView(new(text), ViewText, "STRONG").Append(children...)
 }
 
-func Em(children ...any) *text {
-	view := &text{NewView(ViewText, "EM")}
-	view.Append(children...)
-	return view
+func Em(children ...any) View {
+	return NewView(new(text), ViewText, "EM").Append(children...)
 }
 
-func Blockquote(children ...any) *text {
-	view := &text{NewView(ViewText, "BLOCKQUOTE", WithClass("blockquote"))}
-	view.Append(children...)
-	return view
+func Blockquote(children ...any) View {
+	return NewView(new(text), ViewText, "BLOCKQUOTE", WithClass("blockquote")).Append(children...)
 }
 
-func Code(children ...any) *text {
-	view := &text{NewView(ViewText, "CODE")}
-	view.Append(children...)
-	return view
+func Code(children ...any) View {
+	return NewView(new(text), ViewText, "CODE").Append(children...)
 }
 
 func newTextFromElement(element Element) View {
 	if !slices.Contains(textTagNames, element.TagName()) {
 		return nil
 	}
-	return &text{NewViewWithElement(element)}
+	return NewViewWithElement(new(text), element)
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS
+
+func (text *text) SetView(view View) {
+	text.View = view
 }

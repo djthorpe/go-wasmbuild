@@ -23,6 +23,7 @@ type element struct {
 }
 
 var _ dom.Element = (*element)(nil)
+var _ dom.EventTarget = (*element)(nil)
 
 ///////////////////////////////////////////////////////////////////////////////
 // STRINGIFY
@@ -371,17 +372,23 @@ func (this *element) PreviousElementSibling() dom.Element {
 	return nil
 }
 
-func (this *element) AddEventListener(eventType string, callback func(dom.Node)) dom.Element {
+func (e *element) AddEventListener(eventType string, callback func(dom.Node)) dom.Element {
 	// Event listeners are not supported in non-WASM builds
 	// This is a no-op since there's no event loop outside the browser
-	return this
+	return e
 }
 
-func (this *element) Blur() {
+// RemoveEventListener removes all event listeners of the specified type and releases their resources
+func (e *element) RemoveEventListener(eventType string) dom.Element {
+	// Event listeners are not supported in non-WASM builds
+	return e
+}
+
+func (e *element) Blur() {
 	// Not supported in non-WASM builds
 }
 
-func (this *element) Focus() {
+func (e *element) Focus() {
 	// Not supported in non-WASM builds
 }
 

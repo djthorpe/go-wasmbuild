@@ -32,8 +32,8 @@ func init() {
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
-func Icon(name string) *icon {
-	return &icon{NewView(ViewIcon, "I", WithClass("bi-"+name))}
+func Icon(name string) View {
+	return NewView(new(icon), ViewIcon, "I", WithClass("bi-"+name))
 }
 
 func newIconFromElement(element Element) View {
@@ -41,7 +41,7 @@ func newIconFromElement(element Element) View {
 	if tagName != "I" {
 		panic(fmt.Sprintf("newIconFromElement: invalid tag name %q", tagName))
 	}
-	return &icon{NewViewWithElement(element)}
+	return NewViewWithElement(new(icon), element)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -51,6 +51,6 @@ func (icon *icon) Append(children ...any) View {
 	panic("Append: not supported for icon")
 }
 
-func (icon *icon) Content(children ...any) View {
-	panic("Content: not supported for icon")
+func (icon *icon) SetView(view View) {
+	icon.View = view
 }

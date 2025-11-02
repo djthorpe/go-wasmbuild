@@ -38,9 +38,20 @@ func New(title string) *app {
 
 	// Create the application
 	view := new(app)
+	view.self = view
 	view.name = ViewApp
 	view.root = doc.Body()
+
 	return view
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS
+
+// Event listener for the application attaches to the window, not the document
+func (app *app) AddEventListener(event string, handler func(Node)) View {
+	dom.GetWindow().AddEventListener(event, handler)
+	return app
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -21,10 +21,24 @@ type navbar struct {
 // navbar are elements to create a navigation bar
 type navitem struct {
 	View
+	body Element // Body of nav item
+}
+
+// navdropdown are elements to create a navigation dropdown
+type navdropdown struct {
+	View
+	body Element // Body for nav items
+}
+
+// navdivider are divider elements in navdropdowns
+type navdivider struct {
+	View
 }
 
 var _ ViewWithCaption = (*navbar)(nil)
-var _ View = (*navitem)(nil)
+var _ ViewWithState = (*navitem)(nil)
+var _ View = (*navdropdown)(nil)
+var _ View = (*navdivider)(nil)
 
 ///////////////////////////////////////////////////////////////////////////////
 // GLOBALS
@@ -33,12 +47,16 @@ const (
 	ViewNavbar      = "mvc-bs-navbar"
 	ViewNavbarBrand = "mvc-bs-navbrand"
 	ViewNavItem     = "mvc-bs-navitem"
+	ViewNavDropdown = "mvc-bs-navdropdown"
+	ViewNavDivider  = "mvc-bs-navdivider"
 )
 
 func init() {
 	RegisterView(ViewNavbar, newNavbarFromElement)
 	RegisterView(ViewNavbarBrand, newNavBrandFromElement)
 	RegisterView(ViewNavItem, newNavItemFromElement)
+	RegisterView(ViewNavDropdown, newNavDropdownFromElement)
+	RegisterView(ViewNavDivider, nil)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -50,8 +68,8 @@ func NavBar(opts ...Opt) *navbar {
 		View: NewView(ViewNavbar, "NAV", opts...).Body(
 			Tag("DIV", WithClass("container-fluid")),
 		),
-		brand:  Tag("SPAN"), // TODO: We should not use SPAN here
-		toggle: Tag("SPAN"), // TODO: We should not use SPAN here
+		brand:  Tag("SPAN"),
+		toggle: Tag("SPAN"),
 	}
 
 	// The ID for this navbar
@@ -81,11 +99,39 @@ func NavBar(opts ...Opt) *navbar {
 
 func NavItem(content ...any) *navitem {
 	opts := []Opt{WithClass("nav-item")}
+
+	// Create the body
+	body := Tag("A", WithClass("nav-link"), WithAttr("href", "#")).Append(content...)
+
+	// Return the view
 	return &navitem{
-		NewView(
+		View: NewView(
 			ViewNavItem, "LI", opts...,
-		).Body(
-			Tag("A", WithClass("nav-link"), WithAttr("href", "#")).Append(content...),
+		).Body(body),
+		body: body,
+	}
+}
+
+func NavDropdown(content ...any) *navdropdown {
+	opts := []Opt{WithClass("nav-item", "dropdown")}
+
+	// Create the body
+	link := Tag("A", WithClass("nav-link", "dropdown-toggle"), WithAttr("href", "#"), WithAttr("role", "button"), WithAttr("data-bs-toggle", "dropdown"), WithAttr("aria-expanded", "false")).Append(content...)
+	body := Tag("UL", WithClass("dropdown-menu"))
+
+	return &navdropdown{
+		View: NewView(
+			ViewNavDropdown, "LI", opts...,
+		).Append(link, body).Body(body),
+		body: body,
+	}
+}
+
+func NavDivider() *navdivider {
+	opts := []Opt{WithClass("nav-divider")}
+	return &navdivider{
+		View: NewView(
+			ViewNavDropdown, "LI", opts...,
 		),
 	}
 }
@@ -114,7 +160,17 @@ func newNavItemFromElement(element Element) View {
 	if tagName != "LI" {
 		panic(fmt.Sprintf("newNavItemFromElement: invalid tag name %q", tagName))
 	}
-	return &navitem{NewViewWithElement(element)}
+	// TODO: Set body
+	return &navitem{NewViewWithElement(element), nil}
+}
+
+func newNavDropdownFromElement(element Element) View {
+	tagName := element.TagName()
+	if tagName != "LI" {
+		panic(fmt.Sprintf("newNavDropdownFromElement: invalid tag name %q", tagName))
+	}
+	// TODO: Set body
+	return &navdropdown{NewViewWithElement(element), nil}
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -128,6 +184,14 @@ func (n *navbar) Content(children ...any) View {
 func (n *navbar) Append(children ...any) View {
 	n.View.Append(children...)
 	return n
+}
+
+func (n *navdivider) Content(children ...any) View {
+	panic("Unable to add content to a navdivider")
+}
+
+func (n *navdivider) Append(children ...any) View {
+	panic("Unable to add content to a navdivider")
 }
 
 func (n *navbar) Caption(content ...any) ViewWithCaption {
@@ -152,6 +216,34 @@ func (n *navbar) Toggle(id string, content ...any) ViewWithCaption {
 	n.toggle.ReplaceWith(toggle.Element)
 	n.toggle = toggle
 	return n
+}
+
+func (n *navitem) Content(children ...any) View {
+	n.View.Content(children...)
+	return n
+}
+
+func (n *navitem) Append(children ...any) View {
+	n.View.Append(children...)
+	return n
+}
+
+func (n *navitem) SetActive() *navitem {
+	n.body.SetAttribute("active", "active")
+	return n
+}
+
+func (n *navitem) SetDisabled() *navitem {
+	n.body.SetAttribute("disabled", "disabled")
+	return n
+}
+
+func (n *navitem) Active() bool {
+	return n.body.HasAttribute("active")
+}
+
+func (n *navitem) Disabled() bool {
+	return n.body.HasAttribute("disabled")
 }
 
 ///////////////////////////////////////////////////////////////////////////////

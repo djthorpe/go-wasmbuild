@@ -13,7 +13,7 @@ import (
 // WithDisabled adds a disabled attribute to a view
 func WithDisabled(disabled bool) mvc.Opt {
 	return func(o mvc.OptSet) error {
-		if o.Name() != ViewButton {
+		if o.Name() != ViewButton && o.Name() != ViewNavItem {
 			return fmt.Errorf("WithDisabled: invalid view type %q", o.Name())
 		}
 		if disabled {
@@ -27,7 +27,7 @@ func WithDisabled(disabled bool) mvc.Opt {
 // WithActive adds an active attribute to a view
 func WithActive(active bool) mvc.Opt {
 	return func(o mvc.OptSet) error {
-		if o.Name() != ViewButton {
+		if o.Name() != ViewButton && o.Name() != ViewNavItem {
 			return fmt.Errorf("WithActive: invalid view type %q", o.Name())
 		}
 		if active {

@@ -13,18 +13,28 @@ import (
 
 func NavBar() mvc.View {
 	navbar := bs.NavBar(
-		bs.WithColor(bs.LIGHT),
+		bs.WithTheme(bs.DARK),
 		bs.WithSize(bs.SizeMedium),
 		bs.WithBorder(bs.Bottom, bs.PRIMARY),
 		bs.WithMargin(bs.Bottom, 3),
 	).Content(
 		bs.NavItem(
-			bs.Icon("info-circle-fill"),
-			" About",
+			"About",
 		),
 		bs.NavItem(
-			bs.Icon("phone-fill"),
-			" Contact",
+			"Contact",
+		),
+		bs.NavDropdown(
+			"Colors",
+		).Content(
+			bs.NavItem("Primary").SetActive(),
+			bs.NavItem("Secondary"),
+			bs.NavItem("Success"),
+			bs.NavItem("Danger"),
+			bs.NavItem("Warning"),
+			bs.NavItem("Info"),
+			bs.NavItem("Light"),
+			bs.NavItem("Dark"),
 		),
 	).(mvc.ViewWithCaption).Caption("My Application")
 

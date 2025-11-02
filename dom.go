@@ -1,7 +1,5 @@
 package dom
 
-import "io"
-
 ///////////////////////////////////////////////////////////////////////////////
 // TYPES
 
@@ -34,11 +32,24 @@ type Node interface {
 	CloneNode(bool) Node
 	InsertBefore(Node, Node) Node
 	RemoveChild(Node)
-	ReplaceChild(Node, Node)
+}
+
+// Event implements https://developer.mozilla.org/en-US/docs/Web/API/Event
+type Event interface {
+	// Properties
+	Type() string
+	Target() Node
+}
+
+// EventTarget implements https://developer.mozilla.org/en-US/docs/Web/API/EventTarget
+type EventTarget interface {
+	AddEventListener(string, func(Event))
+	RemoveEventListener(string)
 }
 
 // Element implements https://developer.mozilla.org/en-US/docs/Web/API/Element
 type Element interface {
+	EventTarget
 	Node
 
 	// Properties
@@ -76,31 +87,20 @@ type Element interface {
 	LastElementChild() Element
 	NextElementSibling() Element
 	PreviousElementSibling() Element
-	Remove()
 	ReplaceWith(...Node)
-	InsertAdjacentElement(string, Element) Element
-
-	// Event Methods
-	AddEventListener(string, func(Node)) Element
-
-	// Focus Methods
-	Blur()
-	Focus()
+	Remove()
 }
 
 // Document implements https://developer.mozilla.org/en-US/docs/Web/API/Document
 type Document interface {
+	EventTarget
 	Node
 
 	// Properties
+	Head() Element
 	Body() Element
-	//CharacterSet() string
-	//ContentType() string
-	Doctype() DocumentType
-	//DocumentElement() Element
-	//DocumentURI() string
-	//Head() Element
 	Title() string
+	Doctype() DocumentType
 
 	// Methods
 	CreateElement(string) Element
@@ -154,13 +154,10 @@ type DocumentType interface {
 
 // Window implements https://developer.mozilla.org/en-US/docs/Web/API/Window
 type Window interface {
+	EventTarget
+
 	// Properties
 	Document() Document
-
-	// Methods
-	Write(io.Writer, Node) (int, error)
-	NewMutationObserver(callback func()) MutationObserver
-	//Read(io.Reader, string) (Document, error)
 }
 
 // TokenList implements https://developer.mozilla.org/en-US/docs/Web/API/DOMTokenList

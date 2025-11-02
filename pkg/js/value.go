@@ -1,102 +1,105 @@
-//go:build js
+//go:build !(js && wasm)
 
 package js
 
-import (
-	"syscall/js"
+///////////////////////////////////////////////////////////////////////////////
+// TYPES
+
+// Value is a wrapper around any value
+type Value struct {
+	t Proto
+	v any
+}
+
+// Proto is the type representing the type
+type Proto uint
+
+const (
+	UndefinedProto Proto = iota
+	NullProto
+	ArrayProto
+	ObjectProto
+	MapProto
+	TextProto
+	CommentProto
+	DocumentProto
+	DocumentTypeProto
+	ElementProto
+	AttrProto
+	NodeProto
 )
 
-// Value is an alias for js.Value for convenience.
-type Value = js.Value
+///////////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS - Proto
 
-// Global returns the JavaScript global object (window in browsers, global in Node.js).
-func Global() js.Value {
-	return js.Global()
+// Equal returns true if two Proto values are equal.
+func (p Proto) Equal(other Proto) bool {
+	return p == other
 }
 
-// Undefined returns the JavaScript undefined value.
-func Undefined() js.Value {
-	return js.Undefined()
-}
+///////////////////////////////////////////////////////////////////////////////
+// LIFECYCLE
 
-// Null returns the JavaScript null value.
-func Null() js.Value {
-	return js.Null()
-}
-
-// ValueOf returns a JavaScript value for the given Go value.
-// Supported types: string, int, float64, bool, and nil.
-func ValueOf(x interface{}) js.Value {
-	return js.ValueOf(x)
-}
-
-// NewObject creates a new empty JavaScript object.
-func NewObject() js.Value {
-	return js.Global().Get("Object").New()
-}
-
-// NewArray creates a new JavaScript array with the given length.
-// If no length is specified, creates an empty array.
-func NewArray(length ...int) js.Value {
-	if len(length) > 0 {
-		return js.Global().Get("Array").New(length[0])
+// NewObject creates a new empty object.
+func NewObject() Value {
+	return Value{
+		t: ObjectProto,
+		v: map[string]any{},
 	}
-	return js.Global().Get("Array").New()
+}
+
+// NewArray creates a new  array with the given length.
+func NewArray() Value {
+	return Value{
+		t: ArrayProto,
+		v: make([]any, 0),
+	}
 }
 
 // NewMap creates a new JavaScript Map.
-func NewMap() js.Value {
-	return js.Global().Get("Map").New()
-}
-
-// NewSet creates a new JavaScript Set.
-func NewSet() js.Value {
-	return js.Global().Get("Set").New()
-}
-
-// NewPromise creates a new JavaScript Promise with the given executor function.
-// The executor function receives resolve and reject functions as js.Value arguments.
-func NewPromise(executor func(resolve, reject js.Value)) js.Value {
-	executorFunc := js.FuncOf(func(this js.Value, args []js.Value) interface{} {
-		if len(args) >= 2 {
-			executor(args[0], args[1])
-		}
-		return nil
-	})
-	defer executorFunc.Release()
-	promise := js.Global().Get("Promise").New(executorFunc)
-	executorFunc.Release()
-	return promise
-}
-
-// NewError creates a new JavaScript Error with the given message.
-func NewError(message string) js.Value {
-	return js.Global().Get("Error").New(message)
-}
-
-// NewDate creates a new JavaScript Date object.
-// If no arguments are provided, creates a Date for the current time.
-func NewDate(args ...interface{}) js.Value {
-	if len(args) > 0 {
-		return js.Global().Get("Date").New(args...)
+func NewMap() Value {
+	return Value{
+		t: MapProto,
+		v: make(map[any]any),
 	}
-	return js.Global().Get("Date").New()
 }
 
-// NewRegExp creates a new JavaScript RegExp with the given pattern and flags.
-func NewRegExp(pattern string, flags ...string) js.Value {
-	if len(flags) > 0 {
-		return js.Global().Get("RegExp").New(pattern, flags[0])
-	}
-	return js.Global().Get("RegExp").New(pattern)
+///////////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS
+
+// Returns the type of the given Value as a Proto.
+func TypeOf(v Value) Proto {
+	return v.t
 }
 
-// Unwrap extracts the underlying js.Value from objects that have a JSValue() method.
-// This is useful for working with DOM nodes and other wrapped JavaScript objects.
-func Unwrap(v interface{}) js.Value {
-	if unwrapper, ok := v.(interface{ JSValue() js.Value }); ok {
-		return unwrapper.JSValue()
+// Global returns an undefined global object in the non-wasm build.
+func Global() Value {
+	return Undefined()
+}
+
+// Undefined returns the JavaScript undefined value.
+func Undefined() Value {
+	return Value{
+		t: UndefinedProto,
+		v: nil,
 	}
-	// If the value doesn't have JSValue(), try to convert it directly
-	return ValueOf(v)
+}
+
+// Null returns the JavaScript null value.
+func Null() Value {
+	return Value{
+		t: NullProto,
+		v: nil,
+	}
+}
+
+// ToString converts a Value to a Go string.
+func ToString(v Value) string {
+	if v.v == nil {
+		return ""
+	}
+	if s, ok := v.v.(string); ok {
+		return s
+	}
+	return ""
 }

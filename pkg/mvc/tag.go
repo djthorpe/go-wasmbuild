@@ -9,7 +9,7 @@ import (
 
 // tag wraps a generic HTML tag element
 type tag struct {
-	Element
+	e Element
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -22,15 +22,19 @@ func Tag(tagName string, opts ...Opt) *tag {
 			panic(err)
 		}
 	}
-	return &tag{Element: e}
+	return &tag{e}
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
 
+func (t *tag) Root() Element {
+	return t.e
+}
+
 func (t *tag) Append(children ...any) *tag {
 	for _, child := range children {
-		t.AppendChild(NodeFromAny(child))
+		t.e.AppendChild(NodeFromAny(child))
 	}
 	return t
 }

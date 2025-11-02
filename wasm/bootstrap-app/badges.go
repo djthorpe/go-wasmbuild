@@ -142,9 +142,7 @@ func createButtonWithBadge(text, count, screenReaderText string) mvc.View {
 		"translate-middle",
 	))
 
-	srText := mvc.Span().Content(screenReaderText)
-	srText.Opts(mvc.WithClass("visually-hidden"))
-
+	srText := mvc.Tag("SPAN", mvc.WithClass("visually-hidden")).Append(screenReaderText)
 	badge.Append(count, srText)
 
 	btn.Append(text, badge)
@@ -156,8 +154,7 @@ func createButtonWithIndicator(text string) mvc.View {
 	btn := bs.Button(bs.WithColor(bs.PRIMARY))
 	btn.Opts(mvc.WithClass("position-relative"))
 
-	indicator := mvc.Span()
-	indicator.Opts(mvc.WithClass(
+	indicator := mvc.Tag("SPAN", mvc.WithClass(
 		"position-absolute",
 		"top-0",
 		"start-100",
@@ -169,8 +166,7 @@ func createButtonWithIndicator(text string) mvc.View {
 		"rounded-circle",
 	))
 
-	srText := mvc.Span().Content("New alerts")
-	srText.Opts(mvc.WithClass("visually-hidden"))
+	srText := mvc.Tag("SPAN", mvc.WithClass("visually-hidden")).Append("New Alerts")
 	indicator.Append(srText)
 
 	btn.Append(text, indicator)
