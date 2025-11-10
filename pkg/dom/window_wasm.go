@@ -14,8 +14,8 @@ import (
 // TYPES
 
 type window struct {
+	js.Value
 	EventTarget
-	document Document
 }
 
 var _ Window = (*window)(nil)
@@ -24,15 +24,16 @@ var _ Window = (*window)(nil)
 // LIFECYCLE
 
 // GetWindow returns a global window object
-func NewWindow() Window {
-	target := js.NewEventTarget(js.Global())
-	document := newNode(target.Get("document")).(Document)
-	return &window{target, document}
+func GetWindow() Window {
+	return &window{
+		Value:       js.Global(),
+		EventTarget: js.NewEventTarget(js.Global()),
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // PROPERTIES
 
-func (this *window) Document() Document {
-	return this.document
+func (window *window) Document() Document {
+	return newDocument(window.Value.Get("document"))
 }

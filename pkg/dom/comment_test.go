@@ -1,7 +1,12 @@
-package dom
+package dom_test
 
 import (
+	"bytes"
 	"testing"
+
+	// Package imports
+	dom "github.com/djthorpe/go-wasmbuild/pkg/dom"
+	assert "github.com/stretchr/testify/assert"
 
 	// Namespace imports
 	. "github.com/djthorpe/go-wasmbuild"
@@ -11,7 +16,7 @@ import (
 // TESTS
 
 func TestCreateComment(t *testing.T) {
-	doc := getDocument()
+	doc := dom.GetWindow().Document()
 	if doc == nil {
 		t.Fatal("Expected document, got nil")
 	}
@@ -23,7 +28,7 @@ func TestCreateComment(t *testing.T) {
 }
 
 func TestComment_Data(t *testing.T) {
-	doc := getDocument()
+	doc := dom.GetWindow().Document()
 	expected := "Test comment data"
 
 	comment := doc.CreateComment(expected)
@@ -37,7 +42,7 @@ func TestComment_Data(t *testing.T) {
 }
 
 func TestComment_Length(t *testing.T) {
-	doc := getDocument()
+	doc := dom.GetWindow().Document()
 	data := "Hello comment"
 	expected := len(data)
 
@@ -52,7 +57,7 @@ func TestComment_Length(t *testing.T) {
 }
 
 func TestComment_NodeName(t *testing.T) {
-	doc := getDocument()
+	doc := dom.GetWindow().Document()
 	comment := doc.CreateComment("test")
 	if comment == nil {
 		t.Fatal("Expected comment node, got nil")
@@ -64,7 +69,7 @@ func TestComment_NodeName(t *testing.T) {
 }
 
 func TestComment_NodeType(t *testing.T) {
-	doc := getDocument()
+	doc := dom.GetWindow().Document()
 	comment := doc.CreateComment("test")
 	if comment == nil {
 		t.Fatal("Expected comment node, got nil")
@@ -76,7 +81,7 @@ func TestComment_NodeType(t *testing.T) {
 }
 
 func TestComment_TextContent(t *testing.T) {
-	doc := getDocument()
+	doc := dom.GetWindow().Document()
 	expected := "Comment content"
 
 	comment := doc.CreateComment(expected)
@@ -90,7 +95,7 @@ func TestComment_TextContent(t *testing.T) {
 }
 
 func TestComment_HasChildNodes(t *testing.T) {
-	doc := getDocument()
+	doc := dom.GetWindow().Document()
 	comment := doc.CreateComment("test")
 	if comment == nil {
 		t.Fatal("Expected comment node, got nil")
@@ -102,7 +107,7 @@ func TestComment_HasChildNodes(t *testing.T) {
 }
 
 func TestComment_ChildNodes(t *testing.T) {
-	doc := getDocument()
+	doc := dom.GetWindow().Document()
 	comment := doc.CreateComment("test")
 	if comment == nil {
 		t.Fatal("Expected comment node, got nil")
@@ -115,7 +120,7 @@ func TestComment_ChildNodes(t *testing.T) {
 }
 
 func TestComment_FirstChild(t *testing.T) {
-	doc := getDocument()
+	doc := dom.GetWindow().Document()
 	comment := doc.CreateComment("test")
 	if comment == nil {
 		t.Fatal("Expected comment node, got nil")
@@ -127,7 +132,7 @@ func TestComment_FirstChild(t *testing.T) {
 }
 
 func TestComment_LastChild(t *testing.T) {
-	doc := getDocument()
+	doc := dom.GetWindow().Document()
 	comment := doc.CreateComment("test")
 	if comment == nil {
 		t.Fatal("Expected comment node, got nil")
@@ -139,7 +144,7 @@ func TestComment_LastChild(t *testing.T) {
 }
 
 func TestComment_Contains(t *testing.T) {
-	doc := getDocument()
+	doc := dom.GetWindow().Document()
 	comment := doc.CreateComment("test")
 	if comment == nil {
 		t.Fatal("Expected comment node, got nil")
@@ -151,30 +156,8 @@ func TestComment_Contains(t *testing.T) {
 	}
 }
 
-func TestComment_CloneNode(t *testing.T) {
-	doc := getDocument()
-	original := doc.CreateComment("original comment")
-	if original == nil {
-		t.Fatal("Expected comment node, got nil")
-	}
-
-	cloned := original.CloneNode(false)
-	if cloned == nil {
-		t.Fatal("Expected cloned node, got nil")
-	}
-
-	if cloned.TextContent() != original.TextContent() {
-		t.Errorf("Expected cloned text = %q, got %q", original.TextContent(), cloned.TextContent())
-	}
-
-	// Ensure they are different nodes
-	if cloned.Equals(original) {
-		t.Error("Cloned node should not equal original node")
-	}
-}
-
 func TestComment_OwnerDocument(t *testing.T) {
-	doc := getDocument()
+	doc := dom.GetWindow().Document()
 	comment := doc.CreateComment("test")
 	if comment == nil {
 		t.Fatal("Expected comment node, got nil")
@@ -187,7 +170,7 @@ func TestComment_OwnerDocument(t *testing.T) {
 }
 
 func TestComment_AppendChild_Panics(t *testing.T) {
-	doc := getDocument()
+	doc := dom.GetWindow().Document()
 	comment := doc.CreateComment("test")
 	if comment == nil {
 		t.Fatal("Expected comment node, got nil")
@@ -205,7 +188,7 @@ func TestComment_AppendChild_Panics(t *testing.T) {
 }
 
 func TestComment_InsertBefore_Panics(t *testing.T) {
-	doc := getDocument()
+	doc := dom.GetWindow().Document()
 	comment := doc.CreateComment("test")
 	if comment == nil {
 		t.Fatal("Expected comment node, got nil")
@@ -223,7 +206,7 @@ func TestComment_InsertBefore_Panics(t *testing.T) {
 }
 
 func TestComment_RemoveChild_Panics(t *testing.T) {
-	doc := getDocument()
+	doc := dom.GetWindow().Document()
 	comment := doc.CreateComment("test")
 	if comment == nil {
 		t.Fatal("Expected comment node, got nil")
@@ -241,7 +224,7 @@ func TestComment_RemoveChild_Panics(t *testing.T) {
 }
 
 func TestComment_Equals(t *testing.T) {
-	doc := getDocument()
+	doc := dom.GetWindow().Document()
 	comment1 := doc.CreateComment("test")
 	comment2 := doc.CreateComment("test")
 
@@ -258,4 +241,17 @@ func TestComment_Equals(t *testing.T) {
 	if !comment1.Equals(comment1) {
 		t.Error("Comment node should equal itself")
 	}
+}
+
+func TestComment_Write(t *testing.T) {
+	assert := assert.New(t)
+	doc := dom.GetWindow().Document()
+
+	var buf bytes.Buffer
+	comment := doc.CreateComment("test")
+	n, err := comment.Write(&buf)
+	assert.NoError(err)
+	assert.NotZero(n)
+	assert.Equal("<!--test-->", buf.String())
+
 }

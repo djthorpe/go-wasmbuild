@@ -26,7 +26,7 @@ func init() {
 }
 
 var (
-	doc = impl.NewWindow().Document()
+	doc = impl.GetWindow().Document()
 )
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -39,6 +39,9 @@ func New() *app {
 	view.self = view
 	view.name = ViewApp
 	view.root = doc.Body()
+	if view.root == nil {
+		panic("document has no body element")
+	}
 	return view
 }
 

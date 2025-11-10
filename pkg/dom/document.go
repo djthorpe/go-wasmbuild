@@ -3,6 +3,9 @@
 package dom
 
 import (
+	"bytes"
+	"io"
+
 	// Packages
 	js "github.com/djthorpe/go-wasmbuild/pkg/js"
 
@@ -31,22 +34,95 @@ func newDocument(parent Node) Document {
 	}
 }
 
+func newHTMLDocument(parent Node) Document {
+	document := newDocument(parent)
+
+	// Create document structure
+	// TODO: Add DOCTYPE
+	html := newElement(document, "html")
+	head := newElement(document, "head")
+	body := newElement(document, "body")
+
+	// Append children
+	document.AppendChild(html)
+	html.AppendChild(head)
+	html.AppendChild(body)
+
+	// Return the document
+	return document
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// STRINGIFY
+
+func (document *document) String() string {
+	var b bytes.Buffer
+	if _, err := document.Write(&b); err != nil {
+		return err.Error()
+	} else {
+		return b.String()
+	}
+}
+
+func (document *document) Write(w io.Writer) (int, error) {
+	var s int
+	for _, child := range document.ChildNodes() {
+		if n, err := child.Write(w); err != nil {
+			return n, err
+		} else {
+			s += n
+		}
+	}
+	return s, nil
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // PROPERTIES
 
 func (document *document) Head() Element {
-	// TODO
-	return nil
+	html := document.getChildNodesOfType(ELEMENT_NODE, func(n Node) bool {
+		return n.(Element).TagName() == "HTML"
+	})
+	if len(html) != 1 {
+		return nil
+	}
+	head := html[0].(*element).getChildNodesOfType(ELEMENT_NODE, func(n Node) bool {
+		return n.(Element).TagName() == "HEAD"
+	})
+	if len(head) != 1 {
+		return nil
+	}
+	return head[0].(Element)
 }
 
 func (document *document) Body() Element {
-	// TODO
-	return nil
+	html := document.getChildNodesOfType(ELEMENT_NODE, func(n Node) bool {
+		return n.(Element).TagName() == "HTML"
+	})
+	if len(html) != 1 {
+		return nil
+	}
+	head := html[0].(*element).getChildNodesOfType(ELEMENT_NODE, func(n Node) bool {
+		return n.(Element).TagName() == "BODY"
+	})
+	if len(head) != 1 {
+		return nil
+	}
+	return head[0].(Element)
 }
 
 func (document *document) Title() string {
-	// TODO
-	return ""
+	head := document.Head()
+	if head == nil {
+		return ""
+	}
+	title := document.getChildNodesOfType(ELEMENT_NODE, func(n Node) bool {
+		return n.(Element).TagName() == "TITLE"
+	})
+	if len(title) != 1 {
+		return ""
+	}
+	return title[0].(Element).TextContent()
 }
 
 func (document *document) Doctype() DocumentType {
@@ -62,8 +138,7 @@ func (document *document) CreateElement(name string) Element {
 }
 
 func (document *document) CreateAttribute(name string) Attr {
-	return nil
-	// return newAttr(document, nil, name, ATTRIBUTE_NODE, "")
+	return newAttr(document, nil, name, "")
 }
 
 func (document *document) CreateComment(cdata string) Comment {

@@ -1,5 +1,7 @@
 package dom
 
+import "io"
+
 ///////////////////////////////////////////////////////////////////////////////
 // TYPES
 
@@ -10,6 +12,8 @@ type NodeType int
 
 // Node implements https://developer.mozilla.org/en-US/docs/Web/API/Node
 type Node interface {
+	Writer
+
 	// Properties
 	ChildNodes() []Node
 	Contains(Node) bool
@@ -29,7 +33,6 @@ type Node interface {
 
 	// Methods
 	AppendChild(Node) Node
-	CloneNode(bool) Node
 	InsertBefore(Node, Node) Node
 	RemoveChild(Node)
 }
@@ -52,43 +55,43 @@ type Element interface {
 	EventTarget
 	Node
 
-	// Properties
+	// Element properties
 	TagName() string
 	ID() string
 	SetID(string)
+	OuterHTML() string
+	InnerHTML() string
+	SetInnerHTML(string)
+
+	// Classes
 	ClassName() string
 	SetClassName(string)
+	ClassList() TokenList
+
+	// Attributes
+	Attributes() []Attr
+	RemoveAttribute(string)
+	RemoveAttributeNode(Attr)
+	SetAttribute(string, string) Attr
+	SetAttributeNode(Attr) Attr
+	GetAttributeNames() []string
+	GetAttribute(string) string
+	GetAttributeNode(string) Attr
+	HasAttribute(string) bool
+	HasAttributes() bool
+
+	// Selection Methods
+	GetElementsByClassName(string) []Element
+	GetElementsByTagName(string) []Element
+
+	// DOM Manipulation Methods
+	Children() []Element
+	ChildElementCount() int
+	FirstElementChild() Element
+	LastElementChild() Element
+	NextElementSibling() Element
+	PreviousElementSibling() Element
 	/*
-
-		OuterHTML() string
-		InnerHTML() string
-		SetInnerHTML(string)
-		Attributes() []Attr
-		Style() Style
-		ClassList() TokenList
-
-		// Attribute Methods
-		RemoveAttribute(string)
-		RemoveAttributeNode(Attr)
-		SetAttribute(string, string) Attr
-		SetAttributeNode(Attr) Attr
-		GetAttribute(string) string
-		GetAttributeNames() []string
-		GetAttributeNode(string) Attr
-		HasAttribute(string) bool
-		HasAttributes() bool
-
-		// Selection Methods
-		GetElementsByClassName(string) []Element
-		GetElementsByTagName(string) []Element
-
-		// DOM Manipulation Methods
-		Children() []Element
-		ChildElementCount() int
-		FirstElementChild() Element
-		LastElementChild() Element
-		NextElementSibling() Element
-		PreviousElementSibling() Element
 		ReplaceWith(...Node)
 		Remove()
 	*/
@@ -112,6 +115,7 @@ type Document interface {
 	CreateTextNode(string) Text
 }
 
+// Text implements https://developer.mozilla.org/en-US/docs/Web/API/Text
 type Text interface {
 	Node
 
@@ -120,6 +124,7 @@ type Text interface {
 	Length() int
 }
 
+// Comment implements https://developer.mozilla.org/en-US/docs/Web/API/Comment
 type Comment interface {
 	Node
 
@@ -128,6 +133,7 @@ type Comment interface {
 	Length() int
 }
 
+// Attr implements https://developer.mozilla.org/en-US/docs/Web/API/Attr
 type Attr interface {
 	Node
 
@@ -177,11 +183,9 @@ type TokenList interface {
 	Toggle(value string, force ...bool) bool
 }
 
-// MutationObserver implements https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver
-type MutationObserver interface {
-	// Methods
-	Observe(target Node, options map[string]interface{})
-	Disconnect()
+// Writer writes the node to an io.Writer
+type Writer interface {
+	Write(io.Writer) (int, error)
 }
 
 ///////////////////////////////////////////////////////////////////////////////

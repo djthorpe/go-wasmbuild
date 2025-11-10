@@ -3,6 +3,9 @@
 package dom
 
 import (
+	"fmt"
+	"io"
+
 	// Package imports
 	js "github.com/djthorpe/go-wasmbuild/pkg/js"
 
@@ -17,125 +20,158 @@ type node struct {
 	js.Value
 }
 
-/*
-
-type document struct {
-	node
-}
-
-type doctype struct {
-	node
-}
-
-type element struct {
-	node
-}
-
-type text struct {
-	node
-}
-
-type comment struct {
-	node
-}
-
-type attr struct {
-	node
-}
-*/
-
 var _ Node = (*node)(nil)
-
-//var _ Document = (*document)(nil)
-
-/*
-var _ DocumentType = (*doctype)(nil)
-var _ Element = (*element)(nil)
-var _ Text = (*text)(nil)
-var _ Comment = (*comment)(nil)
-var _ Attr = (*attr)(nil)
-*/
 
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
-func newNode(value js.Value) Node {
-	if value.IsNull() || value.IsUndefined() {
-		return nil
-	}
+func newNode(value js.Value) node {
+	return node{value}
+}
 
-	// Create different kinds of nodes based on the Proto type
-	node := &node{value}
-	switch {
-	//	case js.TypeOf(value).Equal(js.DocumentProto):
-	//		return &document{node}
-	default:
-		return node
-	}
+///////////////////////////////////////////////////////////////////////////////
+// WRITER
+
+func (node *node) Write(w io.Writer) (int, error) {
+	panic("Write: not implemented for node")
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // PROPERTIES
 
-// Properties
 func (node *node) ChildNodes() []Node {
-	return nil
+	nodes := node.Value.Get("childNodes")
+	length := nodes.Get("length").Int()
+	result := make([]Node, 0, length)
+	for i := 0; i < length; i++ {
+		node := newNode(nodes.Index(i))
+		result = append(result, &node)
+	}
+	return result
 }
-func (node *node) Contains(n Node) bool {
-	return false
+
+func (n *node) Contains(other Node) bool {
+	return n.Value.Call("contains", toValue(other)).Bool()
 }
-func (node *node) Equals(n Node) bool {
-	return false
+
+func (n *node) Equals(other Node) bool {
+	fmt.Println("Equals called", n, other)
+	return n.Value.Call("equals", toValue(other)).Bool()
 }
-func (node *node) FirstChild() Node {
-	return nil
+
+func (n *node) FirstChild() Node {
+	child := n.Value.Get("firstChild")
+	if child.IsNull() || child.IsUndefined() {
+		return nil
+	}
+	return &node{child}
 }
-func (node *node) HasChildNodes() bool {
-	return false
+
+func (n *node) HasChildNodes() bool {
+	return n.Value.Call("hasChildNodes").Bool()
 }
-func (node *node) IsConnected() bool {
-	return false
+
+func (n *node) IsConnected() bool {
+	return n.Value.Get("isConnected").Bool()
 }
-func (node *node) LastChild() Node {
-	return nil
+
+func (n *node) LastChild() Node {
+	child := n.Value.Get("lastChild")
+	if child.IsNull() || child.IsUndefined() {
+		return nil
+	}
+	return &node{child}
 }
-func (node *node) NextSibling() Node {
-	return nil
+
+func (n *node) NextSibling() Node {
+	child := n.Value.Get("nextSibling")
+	if child.IsNull() || child.IsUndefined() {
+		return nil
+	}
+	return &node{child}
 }
-func (node *node) NodeName() string {
-	return ""
+
+func (n *node) PreviousSibling() Node {
+	child := n.Value.Get("previousSibling")
+	if child.IsNull() || child.IsUndefined() {
+		return nil
+	}
+	return &node{child}
 }
-func (node *node) NodeType() NodeType {
-	return 0
+
+func (n *node) NodeName() string {
+	return n.Value.Get("nodeName").String()
 }
-func (node *node) OwnerDocument() Document {
-	return nil
+
+func (n *node) NodeType() NodeType {
+	return NodeType(n.Value.Get("nodeType").Int())
 }
-func (node *node) ParentElement() Element {
-	return nil
+
+func (n *node) OwnerDocument() Document {
+	return newDocument(n.Value.Get("ownerDocument"))
 }
-func (node *node) ParentNode() Node {
-	return nil
+
+func (n *node) ParentElement() Element {
+	node := n.Value.Get("parentElement")
+	if node.IsNull() {
+		return nil
+	}
+	return newElement(node)
 }
-func (node *node) PreviousSibling() Node {
-	return nil
+
+func (n *node) ParentNode() Node {
+	child := n.Value.Get("parentNode")
+	if child.IsNull() || child.IsUndefined() {
+		return nil
+	}
+	return &node{child}
 }
-func (node *node) TextContent() string {
-	return ""
+
+func (n *node) TextContent() string {
+	return n.Value.Get("textContent").String()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// METHODS
+// PUBLIC METHODS
 
-// Methods
-func (node *node) AppendChild(Node) Node {
-	return nil
+func (n *node) AppendChild(child Node) Node {
+	n.Value.Call("appendChild", child.(*node).Value)
+	return child
 }
-func (node *node) CloneNode(bool) Node {
-	return nil
+
+func (n *node) CloneNode(deep bool) Node {
+	node := newNode(n.Value.Call("cloneNode", deep))
+	return &node
 }
-func (node *node) InsertBefore(Node, Node) Node {
-	return nil
+
+func (n *node) InsertBefore(child Node, before Node) Node {
+	if before == nil {
+		return n.AppendChild(child)
+	}
+	n.Value.Call("insertBefore", toValue(child), toValue(before))
+	return child
 }
-func (node *node) RemoveChild(Node) {
+
+func (n *node) RemoveChild(child Node) {
+	n.Value.Call("removeChild", toValue(child))
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// PRIVATE METHODS
+
+func toValue(n Node) js.Value {
+	switch n := n.(type) {
+	case *node:
+		return n.Value
+	case *text:
+		return n.Value
+	case *comment:
+		return n.Value
+	case *element:
+		return n.Value
+	case *document:
+		return n.Value
+	default:
+		panic(fmt.Sprintf("toValue: invalid node type %T", n))
+	}
 }

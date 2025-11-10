@@ -3,6 +3,10 @@
 package dom
 
 import (
+	"bytes"
+	"html"
+	"io"
+
 	// Namespace imports
 	. "github.com/djthorpe/go-wasmbuild"
 )
@@ -26,9 +30,20 @@ func newTextNode(document Document, cdata string) Text {
 	}
 }
 
-// getNode implements nodeImpl interface
-func (t *text) getNode() *node {
-	return &t.node
+///////////////////////////////////////////////////////////////////////////////
+// STRINGIFY
+
+func (t *text) String() string {
+	var b bytes.Buffer
+	if _, err := t.Write(&b); err != nil {
+		return err.Error()
+	} else {
+		return b.String()
+	}
+}
+
+func (t *text) Write(w io.Writer) (int, error) {
+	return w.Write([]byte(html.EscapeString(t.cdata)))
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -45,18 +60,14 @@ func (t *text) Length() int {
 ///////////////////////////////////////////////////////////////////////////////
 // METHODS
 
-func (text *text) AppendChild(Node) Node {
-	panic("AppendChild not supported on Text nodes")
+func (t *text) AppendChild(Node) Node {
+	panic("AppendChild[TEXT_NODE] not supported")
 }
 
-func (text *text) CloneNode(deep bool) Node {
-	return newTextNode(nil, text.cdata)
+func (t *text) InsertBefore(newNode Node, refNode Node) Node {
+	panic("InsertBefore[TEXT_NODE] not supported")
 }
 
-func (text *text) InsertBefore(newNode Node, refNode Node) Node {
-	panic("InsertBefore not supported on Text nodes")
-}
-
-func (text *text) RemoveChild(Node) {
-	panic("RemoveChild not supported on Text nodes")
+func (t *text) RemoveChild(Node) {
+	panic("RemoveChild[TEXT_NODE]  not supported")
 }

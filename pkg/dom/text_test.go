@@ -8,17 +8,10 @@ import (
 )
 
 ///////////////////////////////////////////////////////////////////////////////
-// HELPER FUNCTIONS
-
-func getDocument() Document {
-	return NewWindow().Document()
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // TESTS
 
 func TestCreateTextNode(t *testing.T) {
-	doc := getDocument()
+	doc := GetWindow().Document()
 	if doc == nil {
 		t.Fatal("Expected document, got nil")
 	}
@@ -30,7 +23,7 @@ func TestCreateTextNode(t *testing.T) {
 }
 
 func TestText_Data(t *testing.T) {
-	doc := getDocument()
+	doc := GetWindow().Document()
 	expected := "Test data"
 
 	text := doc.CreateTextNode(expected)
@@ -44,7 +37,7 @@ func TestText_Data(t *testing.T) {
 }
 
 func TestText_Length(t *testing.T) {
-	doc := getDocument()
+	doc := GetWindow().Document()
 	data := "Hello"
 	expected := len(data)
 
@@ -59,7 +52,7 @@ func TestText_Length(t *testing.T) {
 }
 
 func TestText_NodeName(t *testing.T) {
-	doc := getDocument()
+	doc := GetWindow().Document()
 	text := doc.CreateTextNode("test")
 	if text == nil {
 		t.Fatal("Expected text node, got nil")
@@ -71,7 +64,7 @@ func TestText_NodeName(t *testing.T) {
 }
 
 func TestText_NodeType(t *testing.T) {
-	doc := getDocument()
+	doc := GetWindow().Document()
 	text := doc.CreateTextNode("test")
 	if text == nil {
 		t.Fatal("Expected text node, got nil")
@@ -83,7 +76,7 @@ func TestText_NodeType(t *testing.T) {
 }
 
 func TestText_TextContent(t *testing.T) {
-	doc := getDocument()
+	doc := GetWindow().Document()
 	expected := "Text content"
 
 	text := doc.CreateTextNode(expected)
@@ -97,7 +90,7 @@ func TestText_TextContent(t *testing.T) {
 }
 
 func TestText_HasChildNodes(t *testing.T) {
-	doc := getDocument()
+	doc := GetWindow().Document()
 	text := doc.CreateTextNode("test")
 	if text == nil {
 		t.Fatal("Expected text node, got nil")
@@ -109,7 +102,7 @@ func TestText_HasChildNodes(t *testing.T) {
 }
 
 func TestText_ChildNodes(t *testing.T) {
-	doc := getDocument()
+	doc := GetWindow().Document()
 	text := doc.CreateTextNode("test")
 	if text == nil {
 		t.Fatal("Expected text node, got nil")
@@ -122,7 +115,7 @@ func TestText_ChildNodes(t *testing.T) {
 }
 
 func TestText_FirstChild(t *testing.T) {
-	doc := getDocument()
+	doc := GetWindow().Document()
 	text := doc.CreateTextNode("test")
 	if text == nil {
 		t.Fatal("Expected text node, got nil")
@@ -134,7 +127,7 @@ func TestText_FirstChild(t *testing.T) {
 }
 
 func TestText_LastChild(t *testing.T) {
-	doc := getDocument()
+	doc := GetWindow().Document()
 	text := doc.CreateTextNode("test")
 	if text == nil {
 		t.Fatal("Expected text node, got nil")
@@ -146,7 +139,7 @@ func TestText_LastChild(t *testing.T) {
 }
 
 func TestText_Contains(t *testing.T) {
-	doc := getDocument()
+	doc := GetWindow().Document()
 	text := doc.CreateTextNode("test")
 	if text == nil {
 		t.Fatal("Expected text node, got nil")
@@ -158,30 +151,8 @@ func TestText_Contains(t *testing.T) {
 	}
 }
 
-func TestText_CloneNode(t *testing.T) {
-	doc := getDocument()
-	original := doc.CreateTextNode("original text")
-	if original == nil {
-		t.Fatal("Expected text node, got nil")
-	}
-
-	cloned := original.CloneNode(false)
-	if cloned == nil {
-		t.Fatal("Expected cloned node, got nil")
-	}
-
-	if cloned.TextContent() != original.TextContent() {
-		t.Errorf("Expected cloned text = %q, got %q", original.TextContent(), cloned.TextContent())
-	}
-
-	// Ensure they are different nodes
-	if cloned.Equals(original) {
-		t.Error("Cloned node should not equal original node")
-	}
-}
-
 func TestText_OwnerDocument(t *testing.T) {
-	doc := getDocument()
+	doc := GetWindow().Document()
 	text := doc.CreateTextNode("test")
 	if text == nil {
 		t.Fatal("Expected text node, got nil")
@@ -194,7 +165,7 @@ func TestText_OwnerDocument(t *testing.T) {
 }
 
 func TestText_AppendChild_Panics(t *testing.T) {
-	doc := getDocument()
+	doc := GetWindow().Document()
 	text := doc.CreateTextNode("test")
 	if text == nil {
 		t.Fatal("Expected text node, got nil")
@@ -212,7 +183,7 @@ func TestText_AppendChild_Panics(t *testing.T) {
 }
 
 func TestText_InsertBefore_Panics(t *testing.T) {
-	doc := getDocument()
+	doc := GetWindow().Document()
 	text := doc.CreateTextNode("test")
 	if text == nil {
 		t.Fatal("Expected text node, got nil")
@@ -230,7 +201,7 @@ func TestText_InsertBefore_Panics(t *testing.T) {
 }
 
 func TestText_RemoveChild_Panics(t *testing.T) {
-	doc := getDocument()
+	doc := GetWindow().Document()
 	text := doc.CreateTextNode("test")
 	if text == nil {
 		t.Fatal("Expected text node, got nil")
@@ -248,7 +219,7 @@ func TestText_RemoveChild_Panics(t *testing.T) {
 }
 
 func TestText_Equals(t *testing.T) {
-	doc := getDocument()
+	doc := GetWindow().Document()
 	text1 := doc.CreateTextNode("test")
 	text2 := doc.CreateTextNode("test")
 
@@ -265,4 +236,10 @@ func TestText_Equals(t *testing.T) {
 	if !text1.Equals(text1) {
 		t.Error("Text node should equal itself")
 	}
+
+	// Same node should equal itself
+	if !text2.Equals(text2) {
+		t.Error("Text node should equal itself")
+	}
+
 }

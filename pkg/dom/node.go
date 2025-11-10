@@ -3,6 +3,7 @@
 package dom
 
 import (
+	"io"
 	"slices"
 
 	// Namespace imports
@@ -13,11 +14,6 @@ import (
 ///////////////////////////////////////////////////////////////////////////////
 // TYPES
 
-// nodeImpl is a private interface for types that wrap a node
-type nodeImpl interface {
-	getNode() *node
-}
-
 type node struct {
 	document Document
 	parent   Node
@@ -27,33 +23,7 @@ type node struct {
 	children []Node
 }
 
-/*
-
-type doctype struct {
-	node
-}
-
-type element struct {
-	node
-}
-
-type comment struct {
-	node
-}
-
-type attr struct {
-	node
-}
-*/
-
 var _ Node = (*node)(nil)
-
-/*
-var _ DocumentType = (*doctype)(nil)
-var _ Element = (*element)(nil)
-var _ Comment = (*comment)(nil)
-var _ Attr = (*attr)(nil)
-*/
 
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
@@ -62,33 +32,27 @@ func newNode(document Document, parent Node, name string, nodetype NodeType, cda
 	return node{document, parent, name, nodetype, cdata, nil}
 }
 
-// getNode implements nodeImpl interface
-func (n *node) getNode() *node {
-	return n
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // PROPERTIES
 
 // Properties
 func (node *node) ChildNodes() []Node {
-	return node.children
+	if len(node.children) == 0 {
+		return []Node{}
+	} else {
+		return node.children
+	}
 }
 
 func (node *node) Contains(n Node) bool {
+	if len(node.children) == 0 {
+		return false
+	}
 	return slices.Contains(node.children, n)
 }
 
 func (n *node) Equals(other Node) bool {
-	// Try to get the underlying node implementation
-	if otherImpl, ok := other.(nodeImpl); ok {
-		return n == otherImpl.getNode()
-	}
-	// Fallback to direct pointer comparison
-	if other, ok := other.(*node); ok {
-		return n == other
-	}
-	return false
+	return getnode(other) == n
 }
 
 func (node *node) FirstChild() Node {
@@ -126,7 +90,11 @@ func (node *node) OwnerDocument() Document {
 }
 
 func (node *node) ParentElement() Element {
-	return nil
+	if node.parent != nil && node.parent.NodeType() == ELEMENT_NODE {
+		return node.parent.(Element)
+	} else {
+		return nil
+	}
 }
 
 func (node *node) ParentNode() Node {
@@ -138,6 +106,7 @@ func (node *node) NextSibling() Node {
 	if node.parent == nil {
 		return nil
 	}
+
 	// Find next sibling
 	nodes := node.parent.ChildNodes()
 	for i, child := range nodes {
@@ -157,9 +126,9 @@ func (node *node) PreviousSibling() Node {
 	if node.parent == nil {
 		return nil
 	}
+
 	// Find previous sibling
 	nodes := node.parent.ChildNodes()
-
 	for i, child := range nodes {
 		if child.Equals(node) {
 			if i-1 >= 0 {
@@ -173,7 +142,7 @@ func (node *node) PreviousSibling() Node {
 }
 
 func (node *node) TextContent() string {
-	if node.nodetype == TEXT_NODE || node.nodetype == COMMENT_NODE {
+	if node.nodetype == TEXT_NODE || node.nodetype == COMMENT_NODE || node.nodetype == UNKNOWN_NODE {
 		return node.cdata
 	}
 	// For elements and documents, concatenate text from text nodes only (skip comments)
@@ -187,24 +156,140 @@ func (node *node) TextContent() string {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// METHODS
+// PUBLIC METHODS
 
-// Methods
-func (node *node) AppendChild(Node) Node {
-	// TODO
+// Append a child node and return it
+func (node *node) AppendChild(child Node) Node {
+	if child == nil {
+		return nil
+	}
+
+	// Remove child from parent
+	child_ := getnode(child)
+	if child_ == nil {
+		panic("AppendChild: does not implement *node")
+	} else if child_.parent != nil {
+		child_.parent.RemoveChild(child)
+	}
+
+	// Set new parent and append
+	child_.parent = node
+	node.children = append(node.children, child)
+
+	// Return the child node
+	return child
+}
+
+func (node *node) RemoveChild(child Node) {
+	if child == nil || len(node.children) == 0 {
+		return
+	}
+
+	// Iterate through children
+	for i, c := range node.children {
+		// Skip until child is found
+		if c != child {
+			continue
+		}
+
+		// Deattach child from parent
+		child_ := getnode(child)
+		if child_ == nil {
+			panic("RemoveChild: does not implement *node")
+		} else {
+			child_.parent = nil
+		}
+
+		// Remove child from parent and return
+		node.children = append(node.children[:i], node.children[i+1:]...)
+		return
+	}
+}
+
+func (node *node) RemoveAllChildren() {
+	// Detach children from parent
+	for _, c := range node.children {
+		getnode(c).parent = nil
+	}
+	node.children = nil
+}
+
+func (node *node) InsertBefore(child Node, ref Node) Node {
+	// Check parameters
+	if child == nil {
+		return nil
+	}
+
+	// 'child' is inserted at the end of parentNode's child nodes when 'ref' is nil
+	if ref == nil {
+		return node.AppendChild(child)
+	}
+
+	// insert node before ref
+	child_ := getnode(child)
+	if child_ == nil {
+		panic("RemoveChild: does not implement *node")
+	}
+	for i := range node.children {
+		if node.children[i] != ref {
+			continue
+		}
+		// Detach from current parent
+		if child_.parent != nil {
+			child_.parent.RemoveChild(child)
+		}
+		// Attach in correct position
+		child_.parent = node
+		node.children = append(node.children[:i], append([]Node{child}, node.children[i:]...)...)
+		return child
+	}
+
+	// ref not in children, return nil
 	return nil
 }
 
-func (node *node) CloneNode(bool) Node {
-	// TODO
-	return nil
+///////////////////////////////////////////////////////////////////////////////
+// WRITER
+
+func (node *node) Write(w io.Writer) (int, error) {
+	panic("Write: not implemented for node")
 }
 
-func (node *node) InsertBefore(Node, Node) Node {
-	// TODO
-	return nil
+///////////////////////////////////////////////////////////////////////////////
+// PRIVATE METHODS
+
+// Return the underlying node from any DOM node object
+func getnode(self Node) *node {
+	if self == nil {
+		return nil
+	}
+	switch n := self.(type) {
+	case *document:
+		return &n.node
+	case *element:
+		return &n.node
+	case *attr:
+		return &n.node
+	case *text:
+		return &n.node
+	case *comment:
+		return &n.node
+	case *node:
+		return n
+	default:
+		panic("getnode called with invalid implmentation")
+	}
 }
 
-func (node *node) RemoveChild(Node) {
-	// TODO
+// Return nodes of a specific type
+func (node *node) getChildNodesOfType(nodetype NodeType, filter func(Node) bool) []Node {
+	result := make([]Node, 0, len(node.children))
+	for _, child := range node.children {
+		if child.NodeType() == nodetype {
+			if filter == nil || filter(child) {
+				result = append(result, child)
+			}
+		}
+	}
+	return result
 }

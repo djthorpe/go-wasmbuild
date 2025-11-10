@@ -245,7 +245,7 @@ func (v *view) Body(content any) View {
 	} else if view, ok := node.(View); ok {
 		v.body = view.Root()
 	} else {
-		panic(fmt.Sprint("view.Body: invalid content type", node.NodeType()))
+		panic(fmt.Sprint("view.Body: invalid content type ", node.NodeType()))
 	}
 
 	// If the body is not already a child of the root, clear the root and set it
@@ -274,6 +274,8 @@ func (v *view) Content(children ...any) View {
 	return v.Append(children...)
 }
 
+// Append appends text, Element or View children at the bottom of the view body
+// and returns the view for chaining
 func (v *view) Append(children ...any) View {
 	target := v.body
 	if target == nil {
@@ -282,7 +284,6 @@ func (v *view) Append(children ...any) View {
 	for _, child := range children {
 		target.AppendChild(NodeFromAny(child))
 	}
-
 	return v.self
 }
 

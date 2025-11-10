@@ -26,7 +26,7 @@ var _ Window = (*window)(nil)
 var (
 	_window = &window{
 		EventTarget: js.NewEventTarget(),
-		document:    newDocument(nil),
+		document:    newHTMLDocument(nil),
 	}
 )
 
@@ -34,13 +34,13 @@ var (
 // LIFECYCLE
 
 // GetWindow returns a global window object
-func NewWindow() Window {
+func GetWindow() Window {
 	return _window
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // PROPERTIES
 
-func (this *window) Document() Document {
-	return this.document
+func (window *window) Document() Document {
+	return window.document
 }

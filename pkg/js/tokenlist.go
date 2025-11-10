@@ -1,13 +1,13 @@
-//go:build !js
+//go:build !(js && wasm)
 
-package dom
+package js
 
 import (
-	"fmt"
 	"slices"
 	"strings"
 
-	dom "github.com/djthorpe/go-wasmbuild"
+	// Namespace imports
+	. "github.com/djthorpe/go-wasmbuild"
 )
 
 /////////////////////////////////////////////////////////////////////
@@ -17,7 +17,7 @@ type tokenlist struct {
 	values []string
 }
 
-var _ dom.TokenList = (*tokenlist)(nil)
+var _ TokenList = (*tokenlist)(nil)
 
 /////////////////////////////////////////////////////////////////////
 // LIFECYCLE
@@ -89,8 +89,13 @@ func (tokenlist *tokenlist) Remove(values ...string) {
 }
 
 func (tokenlist *tokenlist) Toggle(value string, force ...bool) bool {
+	// Panic if more than one force value
+	if len(force) > 1 {
+		panic("Toggle expects zero or one force parameters")
+	}
+
+	// Skip empty strings
 	value = strings.TrimSpace(value)
-	// Skip empty strings to match DOMTokenList behavior
 	if value == "" {
 		return false
 	}
@@ -118,12 +123,5 @@ func (tokenlist *tokenlist) Toggle(value string, force ...bool) bool {
 // STRINGIFY
 
 func (tokenlist *tokenlist) String() string {
-	var b strings.Builder
-	b.WriteString("<DOMTokenList")
-	values := tokenlist.Values()
-	if len(values) > 0 {
-		fmt.Fprint(&b, " ", strings.Join(values, ","))
-	}
-	b.WriteString(">")
-	return b.String()
+	return strings.Join(tokenlist.Values(), " ")
 }

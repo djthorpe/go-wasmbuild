@@ -11,7 +11,7 @@ import (
 // TESTS - Window Creation
 
 func TestNewWindow(t *testing.T) {
-	window := NewWindow()
+	window := GetWindow()
 	if window == nil {
 		t.Fatal("Expected non-nil window")
 	}
@@ -21,7 +21,7 @@ func TestNewWindow(t *testing.T) {
 // TESTS - Window Properties
 
 func TestWindow_Document(t *testing.T) {
-	window := NewWindow()
+	window := GetWindow()
 	if window == nil {
 		t.Fatal("Expected non-nil window")
 	}
@@ -36,7 +36,7 @@ func TestWindow_Document(t *testing.T) {
 // TESTS - Window EventTarget Interface
 
 func TestWindow_AddEventListener(t *testing.T) {
-	window := NewWindow()
+	window := GetWindow()
 	if window == nil {
 		t.Fatal("Expected non-nil window")
 	}
@@ -54,7 +54,7 @@ func TestWindow_AddEventListener(t *testing.T) {
 }
 
 func TestWindow_RemoveEventListener(t *testing.T) {
-	window := NewWindow()
+	window := GetWindow()
 	if window == nil {
 		t.Fatal("Expected non-nil window")
 	}

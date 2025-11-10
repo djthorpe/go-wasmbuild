@@ -4,6 +4,9 @@ package dom
 
 import (
 	// Package imports
+	"bytes"
+	"io"
+
 	js "github.com/djthorpe/go-wasmbuild/pkg/js"
 
 	// Namespace imports
@@ -14,8 +17,8 @@ import (
 // TYPES
 
 type document struct {
-	EventTarget
 	js.Value
+	EventTarget
 }
 
 var _ Document = (*document)(nil)
@@ -28,27 +31,52 @@ func newDocument(value js.Value) Document {
 		return nil
 	}
 	return &document{
-		EventTarget: js.NewEventTarget(value),
 		Value:       value,
+		EventTarget: js.NewEventTarget(value),
 	}
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// STRINGIFY
+
+func (document *document) String() string {
+	var b bytes.Buffer
+	if _, err := document.Write(&b); err != nil {
+		return err.Error()
+	} else {
+		return b.String()
+	}
+}
+
+func (document *document) Write(w io.Writer) (int, error) {
+	var s int
+	for _, child := range document.ChildNodes() {
+		if n, err := child.Write(w); err != nil {
+			return n, err
+		} else {
+			s += n
+		}
+	}
+	return s, nil
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // PROPERTIES
 
 func (d *document) Head() Element {
-	return nil
+	return newElement(d.Value.Get("head"))
 }
 
 func (d *document) Body() Element {
-	return nil
+	return newElement(d.Value.Get("body"))
 }
 
 func (d *document) Title() string {
-	return ""
+	return d.Value.Get("title").String()
 }
 
 func (d *document) Doctype() DocumentType {
+	// TODO
 	return nil
 }
 
@@ -60,10 +88,8 @@ func (d *document) ChildNodes() []Node {
 	length := childNodes.Get("length").Int()
 	nodes := make([]Node, 0, length)
 	for i := 0; i < length; i++ {
-		node := childNodes.Index(i)
-		if n := newNode(node); n != nil {
-			nodes = append(nodes, n)
-		}
+		node := newNode(childNodes.Index(i))
+		nodes = append(nodes, &node)
 	}
 	return nodes
 }
@@ -90,8 +116,8 @@ func (d *document) Equals(n Node) bool {
 }
 
 func (d *document) FirstChild() Node {
-	firstChild := d.Value.Get("firstChild")
-	return newNode(firstChild)
+	node := newNode(d.Value.Get("firstChild"))
+	return &node
 }
 
 func (d *document) HasChildNodes() bool {
@@ -103,13 +129,13 @@ func (d *document) IsConnected() bool {
 }
 
 func (d *document) LastChild() Node {
-	lastChild := d.Value.Get("lastChild")
-	return newNode(lastChild)
+	node := newNode(d.Value.Get("lastChild"))
+	return &node
 }
 
 func (d *document) NextSibling() Node {
-	nextSibling := d.Value.Get("nextSibling")
-	return newNode(nextSibling)
+	node := newNode(d.Value.Get("nextSibling"))
+	return &node
 }
 
 func (d *document) NodeName() string {
@@ -134,13 +160,13 @@ func (d *document) ParentElement() Element {
 }
 
 func (d *document) ParentNode() Node {
-	parentNode := d.Value.Get("parentNode")
-	return newNode(parentNode)
+	node := newNode(d.Value.Get("parentNode"))
+	return &node
 }
 
 func (d *document) PreviousSibling() Node {
-	previousSibling := d.Value.Get("previousSibling")
-	return newNode(previousSibling)
+	node := newNode(d.Value.Get("previousSibling"))
+	return &node
 }
 
 func (d *document) TextContent() string {
@@ -156,15 +182,15 @@ func (d *document) AppendChild(child Node) Node {
 		return nil
 	}
 	if nodeValue, ok := child.(interface{ Value() js.Value }); ok {
-		result := d.Value.Call("appendChild", nodeValue.Value())
-		return newNode(result)
+		node := newNode(d.Value.Call("appendChild", nodeValue.Value()))
+		return &node
 	}
 	return nil
 }
 
 func (d *document) CloneNode(deep bool) Node {
-	result := d.Value.Call("cloneNode", deep)
-	return newNode(result)
+	node := newNode(d.Value.Call("cloneNode", deep))
+	return &node
 }
 
 func (d *document) InsertBefore(newChild, refChild Node) Node {
@@ -178,8 +204,8 @@ func (d *document) InsertBefore(newChild, refChild Node) Node {
 		}
 	}
 	if newValue, ok := newChild.(interface{ Value() js.Value }); ok {
-		result := d.Value.Call("insertBefore", newValue.Value(), refValue)
-		return newNode(result)
+		node := newNode(d.Value.Call("insertBefore", newValue.Value(), refValue))
+		return &node
 	}
 	return nil
 }
@@ -197,21 +223,17 @@ func (d *document) RemoveChild(child Node) {
 // PUBLIC METHODS
 
 func (d *document) CreateElement(name string) Element {
-	elem := d.Value.Call("createElement", name)
-	return newElement(elem)
+	return newElement(d.Value.Call("createElement", name))
 }
 
 func (d *document) CreateAttribute(name string) Attr {
-	attr := d.Value.Call("createAttribute", name)
-	return newAttr(attr)
+	return newAttr(d.Value.Call("createAttribute", name))
 }
 
 func (d *document) CreateComment(cdata string) Comment {
-	comment := d.Value.Call("createComment", cdata)
-	return newComment(comment)
+	return newComment(d.Value.Call("createComment", cdata))
 }
 
 func (d *document) CreateTextNode(cdata string) Text {
-	text := d.Value.Call("createTextNode", cdata)
-	return newTextNode(text)
+	return newTextNode(d.Value.Call("createTextNode", cdata))
 }
