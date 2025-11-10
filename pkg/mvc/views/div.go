@@ -1,8 +1,9 @@
-package mvc
+package views
 
 import (
-	// Namespace imports
+	// Packages
 	dom "github.com/djthorpe/go-wasmbuild"
+	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
 )
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -10,7 +11,7 @@ import (
 
 // div is a simple div view
 type div struct {
-	View
+	mvc.View
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -21,19 +22,19 @@ const (
 )
 
 func init() {
-	RegisterView(ViewDiv, newDivFromElement)
+	mvc.RegisterView(ViewDiv, newDivFromElement)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
-func Div(opts ...Opt) View {
-	return NewView(new(div), ViewDiv, "DIV", opts...)
+func Div(opts ...mvc.Opt) mvc.View {
+	return mvc.NewView(new(div), ViewDiv, "DIV", opts...)
 }
 
-func newDivFromElement(element dom.Element) View {
+func newDivFromElement(element dom.Element) mvc.View {
 	if element.TagName() != "DIV" {
 		return nil
 	}
-	return NewViewWithElement(new(div), element)
+	return mvc.NewViewWithElement(new(div), element)
 }

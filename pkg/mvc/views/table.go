@@ -1,9 +1,9 @@
 package views
 
 import (
-	// Packages
 	"fmt"
 
+	// Packages
 	"github.com/djthorpe/go-wasmbuild/pkg/mvc"
 
 	// Namespace imports

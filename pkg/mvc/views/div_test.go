@@ -1,13 +1,14 @@
-package mvc_test
+package views_test
 
 import (
 	"testing"
 
 	// Packages
+	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
 	assert "github.com/stretchr/testify/assert"
 
 	// Namespace imports
-	. "github.com/djthorpe/go-wasmbuild/pkg/mvc"
+	. "github.com/djthorpe/go-wasmbuild/pkg/mvc/views"
 )
 
 func TestDivType(t *testing.T) {
@@ -23,7 +24,7 @@ func TestDivType(t *testing.T) {
 	})
 
 	t.Run("NewViewWithElement", func(t *testing.T) {
-		div2 := NewViewWithElement(div.Root())
+		div2 := mvc.NewViewWithElement(div.Root())
 		assert.NotNil(div2)
 		assert.Equal(ViewDiv, div2.Name())
 		assert.NotNil(div2.Root())

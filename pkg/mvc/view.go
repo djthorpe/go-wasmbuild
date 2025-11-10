@@ -83,7 +83,7 @@ type ViewWithHeaderFooter interface {
 	Footer(...any) ViewWithHeaderFooter
 }
 
-// ViewWithHeaderFooter represents a UI component with a header and footer
+// ViewWithVisibility represents a UI component with the ability to show or hide itself
 type ViewWithVisibility interface {
 	View
 
@@ -97,7 +97,7 @@ type ViewWithVisibility interface {
 	Hide() ViewWithVisibility
 }
 
-// View represents a UI component in the interface
+// ViewWithSelf represents a UI component that can set its own view
 type ViewWithSelf interface {
 	View
 	SetView(view View)
@@ -148,7 +148,7 @@ func RegisterView(name string, constructor ViewConstructorFunc) {
 // Create a new empty view, applying any options to it
 func NewView(self View, name string, tagName string, opts ...Opt) View {
 	if _, exists := views[name]; !exists {
-		panic(fmt.Sprintf("NewView: View not registered %q", name))
+		panic(fmt.Sprintf("NewView: view not registered %q", name))
 	}
 
 	// Create the view
