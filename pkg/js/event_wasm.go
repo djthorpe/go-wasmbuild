@@ -33,10 +33,28 @@ func NewEventTarget(value Value) *eventtarget {
 	}
 }
 
-func NewEvent(value Value) *event {
-	return &event{
-		Value: value,
+func NewEvent(eventType string) *event {
+	if EventProto.IsUndefined() || EventProto.IsNull() {
+		panic("Event constructor is unavailable")
 	}
+	return &event{
+		Value: EventProto.New(eventType),
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// PROPERTIES
+
+func (e *event) Type() string {
+	return e.Get("type").String()
+}
+
+func (e *event) Target() Value {
+	target := e.Get("target")
+	if target.IsUndefined() || target.IsNull() {
+		return Undefined()
+	}
+	return target
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -88,16 +106,4 @@ func (e *eventtarget) RemoveEventListener(eventType string) {
 		// Remove from the map
 		delete(e.listeners, eventType)
 	}
-}
-
-func (e *event) Type() string {
-	return e.Get("type").String()
-}
-
-func (e *event) Target() Value {
-	target := e.Get("target")
-	if target.IsUndefined() || target.IsNull() {
-		return Undefined()
-	}
-	return target
 }

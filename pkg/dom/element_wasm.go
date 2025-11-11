@@ -144,7 +144,7 @@ func (element *element) SetAttributeNode(node Attr) Attr {
 	if node == nil {
 		return nil
 	}
-	result := element.Value.Call("setAttributeNode", node.Value)
+	result := element.Value.Call("setAttributeNode", toValue(node))
 	if result.IsNull() {
 		return nil
 	}
@@ -170,7 +170,7 @@ func (element *element) RemoveAttributeNode(node Attr) {
 		}
 	}()
 
-	element.Value.Call("removeAttributeNode", node.Value)
+	element.Value.Call("removeAttributeNode", toValue(node))
 }
 
 // Return an unsorted list of attribute names

@@ -51,12 +51,17 @@ func (node *node) ChildNodes() []Node {
 }
 
 func (n *node) Contains(other Node) bool {
+	if other == nil {
+		return false
+	}
 	return n.Value.Call("contains", toValue(other)).Bool()
 }
 
 func (n *node) Equals(other Node) bool {
-	fmt.Println("Equals called", n, other)
-	return n.Value.Call("equals", toValue(other)).Bool()
+	if other == nil {
+		return false
+	}
+	return n.Value.Equal(toValue(other))
 }
 
 func (n *node) FirstChild() Node {
@@ -113,7 +118,7 @@ func (n *node) OwnerDocument() Document {
 
 func (n *node) ParentElement() Element {
 	node := n.Value.Get("parentElement")
-	if node.IsNull() {
+	if node.IsNull() || node.IsUndefined() {
 		return nil
 	}
 	return newElement(node)
@@ -135,7 +140,10 @@ func (n *node) TextContent() string {
 // PUBLIC METHODS
 
 func (n *node) AppendChild(child Node) Node {
-	n.Value.Call("appendChild", child.(*node).Value)
+	if child == nil {
+		return nil
+	}
+	n.Value.Call("appendChild", toValue(child))
 	return child
 }
 
@@ -161,12 +169,16 @@ func (n *node) RemoveChild(child Node) {
 
 func toValue(n Node) js.Value {
 	switch n := n.(type) {
+	case nil:
+		return js.Undefined()
 	case *node:
 		return n.Value
 	case *text:
 		return n.Value
 	case *comment:
 		return n.Value
+	case *attr:
+		return n.node.Value
 	case *element:
 		return n.Value
 	case *document:

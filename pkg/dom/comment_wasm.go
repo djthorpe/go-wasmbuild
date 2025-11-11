@@ -5,6 +5,7 @@ package dom
 import (
 	// Package imports
 	"bytes"
+	"html"
 	"io"
 
 	js "github.com/djthorpe/go-wasmbuild/pkg/js"
@@ -45,7 +46,24 @@ func (c *comment) String() string {
 }
 
 func (c *comment) Write(w io.Writer) (int, error) {
-	return w.Write([]byte(c.Value.Get("data").String()))
+	data := html.EscapeString(c.Value.Get("data").String())
+	var written int
+	if n, err := w.Write([]byte("<!--")); err != nil {
+		return written, err
+	} else {
+		written += n
+	}
+	if n, err := w.Write([]byte(data)); err != nil {
+		return written, err
+	} else {
+		written += n
+	}
+	if n, err := w.Write([]byte("-->")); err != nil {
+		return written, err
+	} else {
+		written += n
+	}
+	return written, nil
 }
 
 ///////////////////////////////////////////////////////////////////////////////

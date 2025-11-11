@@ -299,7 +299,9 @@ func (element *element) GetAttributeNode(name string) Attr {
 
 // Set the attribute
 func (element *element) SetAttribute(name, value string) Attr {
-	return element.SetAttributeNode(newAttr(element.document, element, name, value))
+	node := newAttr(element.document, element, name, value)
+	element.SetAttributeNode(node)
+	return node
 }
 
 // Set the attribute
@@ -308,10 +310,15 @@ func (element *element) SetAttributeNode(node Attr) Attr {
 		return nil
 	}
 
+	var previous Attr
+
 	// Detatch the previous node
 	name := node.Name()
 	if old := element.GetAttributeNode(name); old != nil {
-		old.ParentNode().RemoveChild(old)
+		if existing, ok := old.(*attr); ok {
+			existing.parent = nil
+		}
+		previous = old
 	}
 
 	// Set the parent of the node to the element
@@ -325,8 +332,8 @@ func (element *element) SetAttributeNode(node Attr) Attr {
 	// Set the attribute
 	element.attr[name] = node.(*attr)
 
-	// Return the attribute
-	return element.attr[name]
+	// Return the previous attribute, if any
+	return previous
 }
 
 // Remove an attribute
@@ -490,9 +497,10 @@ func (e *element) getElementsByTagName(tagName string, result *[]Element) {
 	// Recursively check child elements
 	for _, child := range e.Children() {
 		if child.TagName() == tagName {
-			if e, ok := child.(*element); ok {
-				e.getElementsByTagName(tagName, result)
-			}
+			*result = append(*result, child)
+		}
+		if e, ok := child.(*element); ok {
+			e.getElementsByTagName(tagName, result)
 		}
 	}
 }

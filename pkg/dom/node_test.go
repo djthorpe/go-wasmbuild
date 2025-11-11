@@ -47,7 +47,7 @@ func TestNode_002(t *testing.T) {
 	assert.True(child.Equals(children[0]))
 	assert.True(child.Equals(node.FirstChild()))
 	assert.True(child.Equals(node.LastChild()))
-	assert.True(child.IsConnected())
+	assert.False(child.IsConnected())
 	assert.True(node.Equals(child.ParentNode()))
 	assert.Nil(child.NextSibling())
 	assert.Nil(child.PreviousSibling())
@@ -190,4 +190,29 @@ func TestNode_005(t *testing.T) {
 	assert.True(child1.NextSibling().Equals(&child2))
 	assert.Nil(child1.PreviousSibling())
 	assert.True(child1.NextSibling().Equals(&child2))
+}
+
+func TestNode_IsConnectedWithDocument(t *testing.T) {
+	assert := assert.New(t)
+
+	doc := newHTMLDocument(nil)
+	body := doc.Body()
+	assert.NotNil(body)
+
+	para := doc.CreateElement("p")
+	text := doc.CreateTextNode("hello dom")
+
+	assert.False(para.IsConnected())
+	assert.False(text.IsConnected())
+
+	para.AppendChild(text)
+	assert.False(text.IsConnected())
+
+	body.AppendChild(para)
+	assert.True(para.IsConnected())
+	assert.True(text.IsConnected())
+
+	body.RemoveChild(para)
+	assert.False(para.IsConnected())
+	assert.False(text.IsConnected())
 }

@@ -108,10 +108,13 @@ type ViewWithSelf interface {
 
 // Implementation of View interface
 type view struct {
-	self View
-	name string
-	root dom.Element
-	body dom.Element
+	self    View
+	name    string
+	root    dom.Element
+	body    dom.Element
+	header  dom.Element
+	footer  dom.Element
+	caption dom.Element
 }
 
 // Ensure that view implements View interface
@@ -147,15 +150,24 @@ func RegisterView(name string, constructor ViewConstructorFunc) {
 
 // Create a new empty view, applying any options to it
 func NewView(self View, name string, tagName string, opts ...Opt) View {
+	return NewViewEx(self, name, tagName, nil, nil, nil, nil, opts...)
+}
+
+// Create a new empty view with a header, footer and caption
+func NewViewEx(self View, name string, tagName string, header, body, footer, caption dom.Element, opts ...Opt) View {
 	if _, exists := views[name]; !exists {
 		panic(fmt.Sprintf("NewView: view not registered %q", name))
 	}
 
 	// Create the view
 	v := &view{
-		self: self,
-		name: name,
-		root: elementFactory(tagName),
+		self:    self,
+		name:    name,
+		root:    elementFactory(tagName),
+		header:  header,
+		body:    body,
+		footer:  footer,
+		caption: caption,
 	}
 
 	// Set the view in self
@@ -165,7 +177,47 @@ func NewView(self View, name string, tagName string, opts ...Opt) View {
 		self_.SetView(v)
 	}
 
-	// Set the data-wasmbuild-component attribute
+	// Check header, footer, caption
+	if v.header != nil || v.footer != nil {
+		if _, ok := self.(ViewWithHeaderFooter); !ok {
+			panic(fmt.Sprintf("NewView: %v does not implement ViewWithHeaderFooter", name))
+		}
+	}
+	if v.caption != nil {
+		if _, ok := self.(ViewWithCaption); !ok {
+			panic(fmt.Sprintf("NewView: %v does not implement ViewWithCaption", name))
+		}
+	}
+
+	// Set the header, body, footer and caption
+	if v.header != nil {
+		if v.header.IsConnected() {
+			panic("NewView: header element is already connected to the DOM")
+		}
+		v.root.AppendChild(v.header)
+	}
+	if v.body != nil {
+		if v.body.IsConnected() {
+			panic("NewView: body element is already connected to the DOM")
+		}
+		v.root.AppendChild(v.body)
+	} else {
+		v.body = v.root
+	}
+	if v.footer != nil {
+		if v.footer.IsConnected() {
+			panic("NewView: footer element is already connected to the DOM")
+		}
+		v.root.AppendChild(v.footer)
+	}
+	if v.caption != nil {
+		if v.caption.IsConnected() {
+			panic("NewView: caption element is already connected to the DOM")
+		}
+		v.root.AppendChild(v.caption)
+	}
+
+	// Set the data-wasmbuild attributes
 	v.root.SetAttribute(DataComponentAttrKey, name)
 
 	// Apply options to the view

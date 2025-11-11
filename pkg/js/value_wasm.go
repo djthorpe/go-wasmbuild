@@ -31,6 +31,7 @@ var (
 	ElementProto      Proto = js.Global().Get("HTMLElement")
 	AttrProto         Proto = js.Global().Get("Attr")
 	NodeProto         Proto = js.Global().Get("Node")
+	EventProto        Proto = js.Global().Get("Event")
 )
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -69,6 +70,8 @@ func TypeOf(v Value) Proto {
 
 		// Check if this prototype matches any known types
 		switch {
+		case proto.Equal(EventProto.Get("prototype")):
+			return EventProto
 		case proto.Equal(DocumentProto.Get("prototype")):
 			return DocumentProto
 		case proto.Equal(ElementProto.Get("prototype")):

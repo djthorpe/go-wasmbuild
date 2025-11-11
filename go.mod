@@ -4,7 +4,6 @@ go 1.24.0
 
 require (
 	github.com/alecthomas/kong v1.12.1
-	github.com/djthorpe/go-dom v0.0.0-20251020100028-5d50e4d40a72
 	github.com/fatih/color v1.18.0
 	github.com/fsnotify/fsnotify v1.9.0
 	github.com/stretchr/testify v1.11.1

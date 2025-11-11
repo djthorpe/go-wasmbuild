@@ -4,7 +4,6 @@ package dom
 
 import (
 	"io"
-	"slices"
 
 	// Namespace imports
 
@@ -45,10 +44,21 @@ func (node *node) ChildNodes() []Node {
 }
 
 func (node *node) Contains(n Node) bool {
-	if len(node.children) == 0 {
+	if n == nil {
 		return false
 	}
-	return slices.Contains(node.children, n)
+	if node.Equals(n) {
+		return true
+	}
+	for _, child := range node.children {
+		if child.Equals(n) {
+			return true
+		}
+		if getnode(child).Contains(n) {
+			return true
+		}
+	}
+	return false
 }
 
 func (n *node) Equals(other Node) bool {
@@ -67,7 +77,13 @@ func (node *node) HasChildNodes() bool {
 }
 
 func (node *node) IsConnected() bool {
-	return node.parent != nil
+	if node.nodetype == DOCUMENT_NODE {
+		return true
+	}
+	if node.parent == nil {
+		return false
+	}
+	return getnode(node.parent).IsConnected()
 }
 
 func (node *node) LastChild() Node {

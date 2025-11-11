@@ -1,7 +1,13 @@
-package dom
+package dom_test
 
 import (
+	"bytes"
+	"fmt"
+	"html"
+	"runtime"
 	"testing"
+
+	assert "github.com/stretchr/testify/assert"
 
 	// Namespace imports
 	. "github.com/djthorpe/go-wasmbuild"
@@ -10,236 +16,202 @@ import (
 ///////////////////////////////////////////////////////////////////////////////
 // TESTS
 
-func TestCreateTextNode(t *testing.T) {
-	doc := GetWindow().Document()
-	if doc == nil {
-		t.Fatal("Expected document, got nil")
-	}
+func TestText_BasicProperties(t *testing.T) {
+	doc := mustDocument(t)
+	data := "go-wasmbuild-text"
+	text := mustText(t, doc, data)
 
-	text := doc.CreateTextNode("Hello, World!")
-	if text == nil {
-		t.Fatal("Expected text node, got nil")
+	if text.NodeName() != "#text" {
+		t.Fatalf("expected node name #text, got %q", text.NodeName())
+	}
+	if text.NodeType() != TEXT_NODE {
+		t.Fatalf("expected text node type, got %v", text.NodeType())
+	}
+	if text.Data() != data {
+		t.Fatalf("expected data %q, got %q", data, text.Data())
+	}
+	if text.Length() != len(data) {
+		t.Fatalf("expected length %d, got %d", len(data), text.Length())
+	}
+	if text.TextContent() != data {
+		t.Fatalf("expected text content %q, got %q", data, text.TextContent())
+	}
+	if owner := text.OwnerDocument(); owner == nil || owner.NodeType() != DOCUMENT_NODE {
+		t.Fatal("expected owner document with document node type")
+	}
+	if text.ParentNode() != nil {
+		t.Fatal("expected detached text node to have no parent")
+	}
+	if text.HasChildNodes() {
+		t.Fatal("expected text node to have no children")
+	}
+	if len(text.ChildNodes()) != 0 {
+		t.Fatalf("expected zero child nodes, got %d", len(text.ChildNodes()))
+	}
+	if text.FirstChild() != nil {
+		t.Fatal("expected no first child for text node")
+	}
+	if text.LastChild() != nil {
+		t.Fatal("expected no last child for text node")
+	}
+	other := mustText(t, doc, data+"-other")
+	if text.Contains(other) {
+		t.Fatal("expected text node not to contain unrelated nodes")
 	}
 }
 
-func TestText_Data(t *testing.T) {
-	doc := GetWindow().Document()
-	expected := "Test data"
-
-	text := doc.CreateTextNode(expected)
-	if text == nil {
-		t.Fatal("Expected text node, got nil")
+func TestText_StringAndWriteEscaping(t *testing.T) {
+	if runtime.GOARCH == "wasm" {
+		t.Skip("Write is not implemented for wasm text nodes")
 	}
 
-	if got := text.Data(); got != expected {
-		t.Errorf("Expected Data() = %q, got %q", expected, got)
+	doc := mustDocument(t)
+	raw := `text <with> risky & "characters"`
+	text := mustText(t, doc, raw)
+
+	var buf bytes.Buffer
+	written, err := text.Write(&buf)
+	if err != nil {
+		t.Fatalf("unexpected write error: %v", err)
+	}
+
+	escaped := html.EscapeString(raw)
+	assert.Equal(t, len(escaped), written, "expected escape-aware byte count")
+	assert.Equal(t, escaped, buf.String(), "expected escaped write output")
+	assert.Equal(t, escaped, fmt.Sprint(text), "expected fmt.Sprint to mirror escaped write output")
+}
+
+func TestText_AttachDetachLifecycle(t *testing.T) {
+	doc := mustDocument(t)
+	parent := mustElement(t, doc, "section")
+	text := mustText(t, doc, "attached")
+
+	parent.AppendChild(text)
+
+	if parent.FirstChild() == nil || !parent.FirstChild().Equals(text) {
+		t.Fatal("expected text to be first child after append")
+	}
+	if !parent.Contains(text) {
+		t.Fatal("expected parent to contain text after append")
+	}
+	if text.ParentNode() == nil || !text.ParentNode().Equals(parent) {
+		t.Fatal("expected text parent to be element after append")
+	}
+	if parent.TextContent() != text.Data() {
+		t.Fatalf("expected parent text content to match child data, got %q", parent.TextContent())
+	}
+
+	parent.RemoveChild(text)
+
+	if parent.FirstChild() != nil {
+		t.Fatal("expected parent to have no children after removal")
+	}
+	if parent.Contains(text) {
+		t.Fatal("expected parent to no longer contain text after removal")
+	}
+	if text.ParentNode() != nil {
+		t.Fatal("expected text parent to be nil after removal")
 	}
 }
 
-func TestText_Length(t *testing.T) {
-	doc := GetWindow().Document()
-	data := "Hello"
-	expected := len(data)
+func TestText_SiblingNavigation(t *testing.T) {
+	doc := mustDocument(t)
+	parent := mustElement(t, doc, "div")
+	first := mustText(t, doc, "alpha")
+	second := mustText(t, doc, "beta")
+	third := mustText(t, doc, "gamma")
 
+	parent.AppendChild(first)
+	parent.AppendChild(second)
+	parent.AppendChild(third)
+
+	if next := first.NextSibling(); next == nil || !next.Equals(second) {
+		t.Fatal("expected first.NextSibling to be second")
+	}
+	if prev := second.PreviousSibling(); prev == nil || !prev.Equals(first) {
+		t.Fatal("expected second.PreviousSibling to be first")
+	}
+	if next := second.NextSibling(); next == nil || !next.Equals(third) {
+		t.Fatal("expected second.NextSibling to be third")
+	}
+	if first.PreviousSibling() != nil {
+		t.Fatal("expected first.PreviousSibling to be nil")
+	}
+	if third.NextSibling() != nil {
+		t.Fatal("expected third.NextSibling to be nil")
+	}
+}
+
+func TestText_TextContentAggregatesInParent(t *testing.T) {
+	doc := mustDocument(t)
+	parent := mustElement(t, doc, "p")
+	first := mustText(t, doc, "alpha")
+	second := mustText(t, doc, "beta")
+
+	parent.AppendChild(first)
+	parent.AppendChild(second)
+
+	expected := first.Data() + second.Data()
+	if parent.TextContent() != expected {
+		t.Fatalf("expected combined text content %q, got %q", expected, parent.TextContent())
+	}
+
+	parent.RemoveChild(second)
+	if parent.TextContent() != first.Data() {
+		t.Fatalf("expected text content to revert to %q, got %q", first.Data(), parent.TextContent())
+	}
+}
+
+func TestText_DisallowedChildOperations(t *testing.T) {
+	doc := mustDocument(t)
+	text := mustText(t, doc, "parent")
+	other := mustText(t, doc, "other")
+
+	tests := []struct {
+		name string
+		fn   func()
+	}{
+		{"AppendChild", func() { text.AppendChild(other) }},
+		{"InsertBefore", func() { text.InsertBefore(other, nil) }},
+		{"RemoveChild", func() { text.RemoveChild(other) }},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			defer func() {
+				if r := recover(); r == nil {
+					t.Fatalf("expected %s to panic on text node", tc.name)
+				}
+			}()
+			tc.fn()
+		})
+	}
+}
+
+func TestText_EqualsVariants(t *testing.T) {
+	doc := mustDocument(t)
+	text := mustText(t, doc, t.Name())
+	other := mustText(t, doc, t.Name())
+
+	if !text.Equals(text) {
+		t.Fatal("expected text to equal itself")
+	}
+	if text.Equals(other) {
+		t.Fatal("expected distinct text nodes not to be equal")
+	}
+	if text.Equals(nil) {
+		t.Fatal("expected text.Equals(nil) to be false")
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// HELPERS
+
+func mustText(tb testing.TB, doc Document, data string) Text {
+	tb.Helper()
 	text := doc.CreateTextNode(data)
 	if text == nil {
-		t.Fatal("Expected text node, got nil")
+		tb.Fatalf("expected text node for %q", data)
 	}
-
-	if got := text.Length(); got != expected {
-		t.Errorf("Expected Length() = %d, got %d", expected, got)
-	}
-}
-
-func TestText_NodeName(t *testing.T) {
-	doc := GetWindow().Document()
-	text := doc.CreateTextNode("test")
-	if text == nil {
-		t.Fatal("Expected text node, got nil")
-	}
-
-	if got := text.NodeName(); got != "#text" {
-		t.Errorf("Expected NodeName() = %q, got %q", "#text", got)
-	}
-}
-
-func TestText_NodeType(t *testing.T) {
-	doc := GetWindow().Document()
-	text := doc.CreateTextNode("test")
-	if text == nil {
-		t.Fatal("Expected text node, got nil")
-	}
-
-	if got := text.NodeType(); got != TEXT_NODE {
-		t.Errorf("Expected NodeType() = %d, got %d", TEXT_NODE, got)
-	}
-}
-
-func TestText_TextContent(t *testing.T) {
-	doc := GetWindow().Document()
-	expected := "Text content"
-
-	text := doc.CreateTextNode(expected)
-	if text == nil {
-		t.Fatal("Expected text node, got nil")
-	}
-
-	if got := text.TextContent(); got != expected {
-		t.Errorf("Expected TextContent() = %q, got %q", expected, got)
-	}
-}
-
-func TestText_HasChildNodes(t *testing.T) {
-	doc := GetWindow().Document()
-	text := doc.CreateTextNode("test")
-	if text == nil {
-		t.Fatal("Expected text node, got nil")
-	}
-
-	if text.HasChildNodes() {
-		t.Error("Text node should not have child nodes")
-	}
-}
-
-func TestText_ChildNodes(t *testing.T) {
-	doc := GetWindow().Document()
-	text := doc.CreateTextNode("test")
-	if text == nil {
-		t.Fatal("Expected text node, got nil")
-	}
-
-	children := text.ChildNodes()
-	if len(children) > 0 {
-		t.Errorf("Expected no child nodes, got %d", len(children))
-	}
-}
-
-func TestText_FirstChild(t *testing.T) {
-	doc := GetWindow().Document()
-	text := doc.CreateTextNode("test")
-	if text == nil {
-		t.Fatal("Expected text node, got nil")
-	}
-
-	if child := text.FirstChild(); child != nil {
-		t.Error("Text node should not have first child")
-	}
-}
-
-func TestText_LastChild(t *testing.T) {
-	doc := GetWindow().Document()
-	text := doc.CreateTextNode("test")
-	if text == nil {
-		t.Fatal("Expected text node, got nil")
-	}
-
-	if child := text.LastChild(); child != nil {
-		t.Error("Text node should not have last child")
-	}
-}
-
-func TestText_Contains(t *testing.T) {
-	doc := GetWindow().Document()
-	text := doc.CreateTextNode("test")
-	if text == nil {
-		t.Fatal("Expected text node, got nil")
-	}
-
-	otherText := doc.CreateTextNode("other")
-	if text.Contains(otherText) {
-		t.Error("Text node should not contain other nodes")
-	}
-}
-
-func TestText_OwnerDocument(t *testing.T) {
-	doc := GetWindow().Document()
-	text := doc.CreateTextNode("test")
-	if text == nil {
-		t.Fatal("Expected text node, got nil")
-	}
-
-	owner := text.OwnerDocument()
-	if owner == nil {
-		t.Error("Expected owner document, got nil")
-	}
-}
-
-func TestText_AppendChild_Panics(t *testing.T) {
-	doc := GetWindow().Document()
-	text := doc.CreateTextNode("test")
-	if text == nil {
-		t.Fatal("Expected text node, got nil")
-	}
-
-	otherText := doc.CreateTextNode("other")
-
-	defer func() {
-		if r := recover(); r == nil {
-			t.Error("Expected panic when calling AppendChild on text node")
-		}
-	}()
-
-	text.AppendChild(otherText)
-}
-
-func TestText_InsertBefore_Panics(t *testing.T) {
-	doc := GetWindow().Document()
-	text := doc.CreateTextNode("test")
-	if text == nil {
-		t.Fatal("Expected text node, got nil")
-	}
-
-	otherText := doc.CreateTextNode("other")
-
-	defer func() {
-		if r := recover(); r == nil {
-			t.Error("Expected panic when calling InsertBefore on text node")
-		}
-	}()
-
-	text.InsertBefore(otherText, nil)
-}
-
-func TestText_RemoveChild_Panics(t *testing.T) {
-	doc := GetWindow().Document()
-	text := doc.CreateTextNode("test")
-	if text == nil {
-		t.Fatal("Expected text node, got nil")
-	}
-
-	otherText := doc.CreateTextNode("other")
-
-	defer func() {
-		if r := recover(); r == nil {
-			t.Error("Expected panic when calling RemoveChild on text node")
-		}
-	}()
-
-	text.RemoveChild(otherText)
-}
-
-func TestText_Equals(t *testing.T) {
-	doc := GetWindow().Document()
-	text1 := doc.CreateTextNode("test")
-	text2 := doc.CreateTextNode("test")
-
-	if text1 == nil || text2 == nil {
-		t.Fatal("Expected text nodes, got nil")
-	}
-
-	// Same content but different nodes
-	if text1.Equals(text2) {
-		t.Error("Different text nodes should not be equal")
-	}
-
-	// Same node should equal itself
-	if !text1.Equals(text1) {
-		t.Error("Text node should equal itself")
-	}
-
-	// Same node should equal itself
-	if !text2.Equals(text2) {
-		t.Error("Text node should equal itself")
-	}
-
+	return text
 }

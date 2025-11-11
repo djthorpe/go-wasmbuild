@@ -2,10 +2,12 @@ package dom_test
 
 import (
 	"bytes"
+	"fmt"
+	"html"
+	"strings"
 	"testing"
 
 	// Package imports
-	dom "github.com/djthorpe/go-wasmbuild/pkg/dom"
 	assert "github.com/stretchr/testify/assert"
 
 	// Namespace imports
@@ -16,11 +18,7 @@ import (
 // TESTS
 
 func TestCreateComment(t *testing.T) {
-	doc := dom.GetWindow().Document()
-	if doc == nil {
-		t.Fatal("Expected document, got nil")
-	}
-
+	doc := mustDocument(t)
 	comment := doc.CreateComment("This is a comment")
 	if comment == nil {
 		t.Fatal("Expected comment node, got nil")
@@ -28,7 +26,7 @@ func TestCreateComment(t *testing.T) {
 }
 
 func TestComment_Data(t *testing.T) {
-	doc := dom.GetWindow().Document()
+	doc := mustDocument(t)
 	expected := "Test comment data"
 
 	comment := doc.CreateComment(expected)
@@ -42,7 +40,7 @@ func TestComment_Data(t *testing.T) {
 }
 
 func TestComment_Length(t *testing.T) {
-	doc := dom.GetWindow().Document()
+	doc := mustDocument(t)
 	data := "Hello comment"
 	expected := len(data)
 
@@ -57,7 +55,7 @@ func TestComment_Length(t *testing.T) {
 }
 
 func TestComment_NodeName(t *testing.T) {
-	doc := dom.GetWindow().Document()
+	doc := mustDocument(t)
 	comment := doc.CreateComment("test")
 	if comment == nil {
 		t.Fatal("Expected comment node, got nil")
@@ -69,7 +67,7 @@ func TestComment_NodeName(t *testing.T) {
 }
 
 func TestComment_NodeType(t *testing.T) {
-	doc := dom.GetWindow().Document()
+	doc := mustDocument(t)
 	comment := doc.CreateComment("test")
 	if comment == nil {
 		t.Fatal("Expected comment node, got nil")
@@ -81,7 +79,7 @@ func TestComment_NodeType(t *testing.T) {
 }
 
 func TestComment_TextContent(t *testing.T) {
-	doc := dom.GetWindow().Document()
+	doc := mustDocument(t)
 	expected := "Comment content"
 
 	comment := doc.CreateComment(expected)
@@ -95,7 +93,7 @@ func TestComment_TextContent(t *testing.T) {
 }
 
 func TestComment_HasChildNodes(t *testing.T) {
-	doc := dom.GetWindow().Document()
+	doc := mustDocument(t)
 	comment := doc.CreateComment("test")
 	if comment == nil {
 		t.Fatal("Expected comment node, got nil")
@@ -107,7 +105,7 @@ func TestComment_HasChildNodes(t *testing.T) {
 }
 
 func TestComment_ChildNodes(t *testing.T) {
-	doc := dom.GetWindow().Document()
+	doc := mustDocument(t)
 	comment := doc.CreateComment("test")
 	if comment == nil {
 		t.Fatal("Expected comment node, got nil")
@@ -120,7 +118,7 @@ func TestComment_ChildNodes(t *testing.T) {
 }
 
 func TestComment_FirstChild(t *testing.T) {
-	doc := dom.GetWindow().Document()
+	doc := mustDocument(t)
 	comment := doc.CreateComment("test")
 	if comment == nil {
 		t.Fatal("Expected comment node, got nil")
@@ -132,7 +130,7 @@ func TestComment_FirstChild(t *testing.T) {
 }
 
 func TestComment_LastChild(t *testing.T) {
-	doc := dom.GetWindow().Document()
+	doc := mustDocument(t)
 	comment := doc.CreateComment("test")
 	if comment == nil {
 		t.Fatal("Expected comment node, got nil")
@@ -144,7 +142,7 @@ func TestComment_LastChild(t *testing.T) {
 }
 
 func TestComment_Contains(t *testing.T) {
-	doc := dom.GetWindow().Document()
+	doc := mustDocument(t)
 	comment := doc.CreateComment("test")
 	if comment == nil {
 		t.Fatal("Expected comment node, got nil")
@@ -157,7 +155,7 @@ func TestComment_Contains(t *testing.T) {
 }
 
 func TestComment_OwnerDocument(t *testing.T) {
-	doc := dom.GetWindow().Document()
+	doc := mustDocument(t)
 	comment := doc.CreateComment("test")
 	if comment == nil {
 		t.Fatal("Expected comment node, got nil")
@@ -170,7 +168,7 @@ func TestComment_OwnerDocument(t *testing.T) {
 }
 
 func TestComment_AppendChild_Panics(t *testing.T) {
-	doc := dom.GetWindow().Document()
+	doc := mustDocument(t)
 	comment := doc.CreateComment("test")
 	if comment == nil {
 		t.Fatal("Expected comment node, got nil")
@@ -188,7 +186,7 @@ func TestComment_AppendChild_Panics(t *testing.T) {
 }
 
 func TestComment_InsertBefore_Panics(t *testing.T) {
-	doc := dom.GetWindow().Document()
+	doc := mustDocument(t)
 	comment := doc.CreateComment("test")
 	if comment == nil {
 		t.Fatal("Expected comment node, got nil")
@@ -206,7 +204,7 @@ func TestComment_InsertBefore_Panics(t *testing.T) {
 }
 
 func TestComment_RemoveChild_Panics(t *testing.T) {
-	doc := dom.GetWindow().Document()
+	doc := mustDocument(t)
 	comment := doc.CreateComment("test")
 	if comment == nil {
 		t.Fatal("Expected comment node, got nil")
@@ -224,7 +222,7 @@ func TestComment_RemoveChild_Panics(t *testing.T) {
 }
 
 func TestComment_Equals(t *testing.T) {
-	doc := dom.GetWindow().Document()
+	doc := mustDocument(t)
 	comment1 := doc.CreateComment("test")
 	comment2 := doc.CreateComment("test")
 
@@ -245,7 +243,7 @@ func TestComment_Equals(t *testing.T) {
 
 func TestComment_Write(t *testing.T) {
 	assert := assert.New(t)
-	doc := dom.GetWindow().Document()
+	doc := mustDocument(t)
 
 	var buf bytes.Buffer
 	comment := doc.CreateComment("test")
@@ -253,5 +251,67 @@ func TestComment_Write(t *testing.T) {
 	assert.NoError(err)
 	assert.NotZero(n)
 	assert.Equal("<!--test-->", buf.String())
+}
 
+func TestComment_WriteEscapesContent(t *testing.T) {
+	doc := mustDocument(t)
+	comment := doc.CreateComment(`<dangerous "comment"> & more`)
+
+	var buf bytes.Buffer
+	if _, err := comment.Write(&buf); err != nil {
+		t.Fatalf("expected write to succeed: %v", err)
+	}
+
+	output := buf.String()
+	if !strings.HasPrefix(output, "<!--") || !strings.HasSuffix(output, "-->") {
+		t.Fatalf("expected comment delimiters, got %q", output)
+	}
+
+	escaped := html.EscapeString(`<dangerous "comment"> & more`)
+	if got := strings.TrimSuffix(strings.TrimPrefix(output, "<!--"), "-->"); got != escaped {
+		t.Fatalf("expected escaped payload %q, got %q", escaped, got)
+	}
+}
+
+func TestComment_EqualsNil(t *testing.T) {
+	doc := mustDocument(t)
+	comment := doc.CreateComment("test")
+	if comment == nil {
+		t.Fatal("Expected comment node, got nil")
+	}
+	if comment.Equals(nil) {
+		t.Fatal("expected Equals(nil) to return false")
+	}
+}
+
+func TestComment_StringMatchesWrite(t *testing.T) {
+	doc := mustDocument(t)
+	comment := doc.CreateComment("content & more")
+	if comment == nil {
+		t.Fatal("Expected comment node, got nil")
+	}
+
+	fromString := fmt.Sprint(comment)
+	var buf bytes.Buffer
+	if _, err := comment.Write(&buf); err != nil {
+		t.Fatalf("unexpected write error: %v", err)
+	}
+
+	if buf.String() != fromString {
+		t.Fatalf("String() and Write() output mismatch: %q vs %q", fromString, buf.String())
+	}
+}
+
+func TestComment_DetachKeepsParentNil(t *testing.T) {
+	doc := mustDocument(t)
+	elem := doc.CreateElement("div")
+	elemComment := doc.CreateComment("child")
+
+	// Append and remove via element API
+	elem.AppendChild(elemComment)
+	elem.RemoveChild(elemComment)
+
+	if elemComment.ParentNode() != nil {
+		t.Fatalf("expected comment parent to be nil after removal")
+	}
 }
