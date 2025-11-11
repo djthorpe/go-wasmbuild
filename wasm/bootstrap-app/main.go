@@ -2,8 +2,12 @@ package main
 
 import (
 	// Packages
+
 	bs "github.com/djthorpe/go-wasmbuild/pkg/bootstrap"
 	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
+
+	// Namespace imports
+	. "github.com/djthorpe/go-wasmbuild"
 )
 
 // Application displays examples of Bootstrap components
@@ -14,12 +18,21 @@ func main() {
 		bs.Link("#link", mvc.WithClass("m-2")).Content("Links"),
 		bs.VRule(),
 		bs.Link("#button", mvc.WithClass("m-2")).Content("Buttons"),
+		bs.VRule(),
+		bs.Link("#button-group", mvc.WithClass("m-2")).Content("Button Groups"),
+		bs.VRule(),
+		bs.Link("#offcanvas", mvc.WithClass("m-2")).Content("Offcanvas"),
+
 		mvc.Router(mvc.WithClass("container-fluid", "my-2")).Page(
 			"#badge", BadgeExamples(),
 		).Page(
 			"#link", LinkExamples(),
 		).Page(
 			"#button", ButtonExamples(),
+		).Page(
+			"#button-group", ButtonGroupExamples(),
+		).Page(
+			"#offcanvas", OffcanvasExamples(),
 		),
 	)
 
@@ -94,6 +107,90 @@ func ButtonExamples() mvc.View {
 		bs.Heading(3).Content("Small Buttons"),
 		bs.Button(mvc.WithClass("mx-1"), bs.WithSize(bs.Small)).Content("Default Button"),
 		bs.HRule(),
-		bs.Heading(3).Content("Disabled Buttons TODO"),
+		bs.Heading(3).Content("Disabled Buttons"),
+		bs.Button(mvc.WithClass("mx-1"), bs.WithDisabled(true)).Content("Default Button"),
+		bs.Button(bs.WithColor(bs.Secondary), mvc.WithClass("mx-1"), bs.WithDisabled(true)).Content("Secondary Button"),
+		bs.Button(bs.WithColor(bs.Danger), mvc.WithClass("mx-1"), bs.WithDisabled(true)).Content("Danger Button"),
+		bs.HRule(),
+	)
+}
+
+func ButtonGroupExamples() mvc.View {
+	return bs.Container().Content(
+		bs.Heading(1).Content("Button Groups"),
+		bs.HRule(),
+		bs.Heading(3).Content("Horizontal Button Group"),
+		bs.ButtonGroup().Content(
+			bs.Button().Content("Left"),
+			bs.Button().Content("Middle"),
+			bs.Button().Content("Right"),
+		).AddEventListener("click", func(e Event) {
+			if view := mvc.ViewFromEvent(e); view != nil {
+				view.Content("Clicked!")
+			}
+		}),
+		bs.ButtonGroup(mvc.WithClass("mx-2")).Content(
+			bs.Button(bs.WithColor(bs.Danger)).Content("Left"),
+			bs.Button(bs.WithColor(bs.Warning)).Content("Middle"),
+			bs.Button(bs.WithColor(bs.Success)).Content("Right"),
+		).AddEventListener("click", func(e Event) {
+			if view := mvc.ViewFromEvent(e); view != nil {
+				view.Content("Clicked!")
+			}
+		}),
+		bs.ButtonGroup(mvc.WithClass("mx-2")).Content(
+			bs.OutlineButton(bs.WithColor(bs.Danger)).Content("Left"),
+			bs.OutlineButton(bs.WithColor(bs.Primary)).Content("Middle"),
+			bs.OutlineButton(bs.WithColor(bs.Success)).Content("Right"),
+		).AddEventListener("click", func(e Event) {
+			if view := mvc.ViewFromEvent(e); view != nil {
+				view.Content("Clicked!")
+			}
+		}),
+		bs.ButtonGroup(mvc.WithClass("mx-2"), bs.WithSize(bs.Small)).Content(
+			bs.Button(bs.WithColor(bs.Danger)).Content("Left"),
+			bs.Button(bs.WithColor(bs.Warning)).Content("Middle"),
+			bs.Button(bs.WithColor(bs.Success)).Content("Right"),
+		).AddEventListener("click", func(e Event) {
+			if view := mvc.ViewFromEvent(e); view != nil {
+				view.Content("Clicked!")
+			}
+		}), bs.ButtonGroup(mvc.WithClass("mx-2"), bs.WithSize(bs.Large)).Content(
+			bs.Button(bs.WithColor(bs.Danger)).Content("Left"),
+			bs.Button(bs.WithColor(bs.Warning)).Content("Middle"),
+			bs.Button(bs.WithColor(bs.Success)).Content("Right"),
+		).AddEventListener("click", func(e Event) {
+			if view := mvc.ViewFromEvent(e); view != nil {
+				view.Content("Clicked!")
+			}
+		}),
+		bs.HRule(),
+		bs.Heading(3).Content("Vertical Button Group"),
+		bs.VButtonGroup(mvc.WithClass("mx-2")).Content(
+			bs.Button(bs.WithColor(bs.Danger)).Content("Top"),
+			bs.Button(bs.WithColor(bs.Warning)).Content("Middle"),
+			bs.Button(bs.WithColor(bs.Success)).Content("Bottom"),
+		).AddEventListener("click", func(e Event) {
+			if view := mvc.ViewFromEvent(e); view != nil {
+				view.Content("Clicked!")
+			}
+		}),
+	)
+}
+
+func OffcanvasExamples() mvc.View {
+	return bs.Container().Content(
+		bs.Heading(1).Content("Offcanvas Example"),
+		bs.HRule(),
+		bs.Offcanvas("start", bs.WithPosition(bs.Start)).Content("This is the offcanvas content!"),
+		bs.Offcanvas("end", bs.WithPosition(bs.End)).Content("This is the offcanvas content!"),
+		bs.Offcanvas("top", bs.WithPosition(bs.Top)).Content("This is the offcanvas content!"),
+		bs.Offcanvas("bottom", bs.WithPosition(bs.Bottom)).Content("This is the offcanvas content!"),
+		bs.ButtonGroup().Content(
+			bs.Button(bs.WithOffcanvas("start")).Content("Start"),
+			bs.Button(bs.WithOffcanvas("end")).Content("End"),
+			bs.Button(bs.WithOffcanvas("top")).Content("Top"),
+			bs.Button(bs.WithOffcanvas("bottom")).Content("Bottom"),
+		),
 	)
 }

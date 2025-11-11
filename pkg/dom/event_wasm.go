@@ -58,7 +58,7 @@ func (e *event) Target() any {
 	}
 	switch {
 	case js.TypeOf(target).Equal(js.ElementProto):
-		panic("Supported element type")
+		return newElement(target)
 	case js.TypeOf(target).Equal(js.WindowProto):
 		return newWindow(target)
 	default:

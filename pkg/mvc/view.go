@@ -457,6 +457,30 @@ func (v *view) Opts(opts ...Opt) View {
 ///////////////////////////////////////////////////////////////////////////////
 // UTILITY METHODS
 
+// ViewFromEvent returns a View from an Event, or nil if the type is unsupported
+func ViewFromEvent(e dom.Event) View {
+	if e == nil {
+		return nil
+	}
+	switch element := e.Target().(type) {
+	case dom.Element:
+		// Work up the chain until a view is found
+		for {
+			if view, err := viewFromElement(element); err != nil {
+				fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+				return nil
+			} else if view != nil {
+				return view
+			}
+			element = element.ParentElement()
+			if element == nil {
+				break
+			}
+		}
+	}
+	return nil
+}
+
 // NodeFromAny returns a Node from a string, Element, Tag or View
 // or returns nil if the type is unsupported
 func NodeFromAny(child any) dom.Node {
@@ -562,27 +586,6 @@ func (v *view) replaceChildContent(target dom.Element, children ...any) {
 	for _, child := range children {
 		target.AppendChild(NodeFromAny(child))
 	}
-}
-
-// ViewFromNode returns a View from a Node, or nil if the type is unsupported
-func ViewFromNode(node dom.Node) View {
-	if element, ok := node.(dom.Element); ok {
-		// Work up the chain until a view is found
-		for {
-			if view, err := viewFromElement(element); err != nil {
-				fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-				return nil
-			} else if view != nil {
-				return view
-			}
-			element = element.ParentElement()
-			if element == nil {
-				break
-			}
-		}
-
-	}
-	return nil
 }
 
 func viewFromElement(element dom.Element) (View, error) {

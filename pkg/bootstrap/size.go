@@ -103,8 +103,8 @@ func sizePrefixForView(name string) string {
 		return "container"
 	case ViewButton:
 		return "btn"
-	//	case ViewButtonGroup:
-	//		return "btn-group"
+	case ViewButtonGroup:
+		return "btn-group"
 	//	case ViewNavbar:
 	//		return "navbar-expand"
 	default:
@@ -113,8 +113,7 @@ func sizePrefixForView(name string) string {
 }
 
 func allSizesForView(name string) []Size {
-	// || name == ViewButtonGroup
-	if name == ViewButton {
+	if name == ViewButton || name == ViewButtonGroup {
 		return allButtonSizes
 	}
 	//if name == ViewNavbar {

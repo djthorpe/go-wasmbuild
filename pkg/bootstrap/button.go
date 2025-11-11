@@ -35,7 +35,7 @@ const (
 
 func init() {
 	mvc.RegisterView(ViewButton, newButtonFromElement)
-	// mvc.RegisterView(ViewButtonGroup, newButtonGroupFromElement)
+	mvc.RegisterView(ViewButtonGroup, newButtonGroupFromElement)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -53,12 +53,15 @@ func CloseButton(opt ...mvc.Opt) mvc.View {
 	return mvc.NewView(new(button), ViewButton, "BUTTON", append([]mvc.Opt{mvc.WithAttr("type", "button"), mvc.WithClass("btn-close"), mvc.WithAriaLabel("close")}, opt...)...)
 }
 
-/*
-	func ButtonGroup(opt ...Opt) View {
-		opts := append([]Opt{WithAttr("role", "group"), WithClass("btn-group")}, opt...)
-		return NewView(new(buttongroup), ViewButtonGroup, "DIV", opts...)
-	}
-*/
+func ButtonGroup(opt ...mvc.Opt) mvc.View {
+	opts := append([]mvc.Opt{mvc.WithAttr("role", "group"), mvc.WithClass("btn-group")}, opt...)
+	return mvc.NewView(new(buttongroup), ViewButtonGroup, "DIV", opts...)
+}
+
+func VButtonGroup(opt ...mvc.Opt) mvc.View {
+	opts := append([]mvc.Opt{mvc.WithAttr("role", "group"), mvc.WithClass("btn-group-vertical")}, opt...)
+	return mvc.NewView(new(buttongroup), ViewButtonGroup, "DIV", opts...)
+}
 
 func newButtonFromElement(element Element) mvc.View {
 	if element.TagName() != "BUTTON" {
@@ -67,18 +70,21 @@ func newButtonFromElement(element Element) mvc.View {
 	return mvc.NewViewWithElement(new(button), element)
 }
 
-/*
-func newButtonGroupFromElement(element Element) View {
+func newButtonGroupFromElement(element Element) mvc.View {
 	if element.TagName() != "DIV" {
 		return nil
 	}
-	return NewViewWithElement(new(buttongroup), element)
+	return mvc.NewViewWithElement(new(buttongroup), element)
 }
-*/
+
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
 
 func (b *button) SetView(view mvc.View) {
+	b.View = view
+}
+
+func (b *buttongroup) SetView(view mvc.View) {
 	b.View = view
 }
 
@@ -87,6 +93,12 @@ func (b *button) Append(children ...any) mvc.View {
 	if b.Root().ClassList().Contains("btn-close") {
 		panic("Append: not supported for close button")
 	}
+	// Call superclass
+	return b.View.Append(children...)
+}
+
+func (b *buttongroup) Append(children ...any) mvc.View {
+	// Button groups can only include buttons
 	// Call superclass
 	return b.View.Append(children...)
 }
