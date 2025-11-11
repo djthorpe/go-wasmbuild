@@ -1,24 +1,26 @@
-package bs
+package bootstrap
 
 import (
+	// Packages
+	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
+
 	// Namespace imports
 	. "github.com/djthorpe/go-wasmbuild"
-	. "github.com/djthorpe/go-wasmbuild/pkg/mvc"
 )
 
 ///////////////////////////////////////////////////////////////////////////////
 // TYPES
 
 type button struct {
-	View
+	mvc.View
 }
 
 type buttongroup struct {
-	View
+	mvc.View
 }
 
-var _ ViewWithState = (*button)(nil)
-var _ ViewWithGroupState = (*buttongroup)(nil)
+var _ mvc.View = (*button)(nil)
+var _ mvc.View = (*buttongroup)(nil)
 
 ///////////////////////////////////////////////////////////////////////////////
 // GLOBALS
@@ -32,54 +34,64 @@ const (
 )
 
 func init() {
-	RegisterView(ViewButton, newButtonFromElement)
-	RegisterView(ViewButtonGroup, newButtonGroupFromElement)
+	mvc.RegisterView(ViewButton, newButtonFromElement)
+	// mvc.RegisterView(ViewButtonGroup, newButtonGroupFromElement)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
-func Button(opt ...Opt) View {
-	opts := append([]Opt{WithAttr("type", "button"), WithClass("btn"), WithClass("btn-primary")}, opt...)
-	return NewView(new(button), ViewButton, "BUTTON", opts...)
+func Button(opt ...mvc.Opt) mvc.View {
+	return mvc.NewView(new(button), ViewButton, "BUTTON", append([]mvc.Opt{mvc.WithAttr("type", "button"), mvc.WithClass("btn"), mvc.WithClass("btn-primary")}, opt...)...)
 }
 
-func OutlineButton(opt ...Opt) View {
-	opts := append([]Opt{WithAttr("type", "button"), WithClass("btn"), WithClass("btn-outline-primary"), WithClass(viewOutlineButtonClassPrefix)}, opt...)
-	return NewView(new(button), ViewButton, "BUTTON", opts...)
+func OutlineButton(opt ...mvc.Opt) mvc.View {
+	return mvc.NewView(new(button), ViewButton, "BUTTON", append([]mvc.Opt{mvc.WithAttr("type", "button"), mvc.WithClass("btn", "btn-outline"), mvc.WithClass("btn-outline-primary")}, opt...)...)
 }
 
-func CloseButton(opt ...Opt) View {
-	opts := append([]Opt{WithAttr("type", "button"), WithClass("btn-close"), WithAriaLabel("close")}, opt...)
-	return NewView(new(button), ViewButton, "BUTTON", opts...)
+func CloseButton(opt ...mvc.Opt) mvc.View {
+	return mvc.NewView(new(button), ViewButton, "BUTTON", append([]mvc.Opt{mvc.WithAttr("type", "button"), mvc.WithClass("btn-close"), mvc.WithAriaLabel("close")}, opt...)...)
 }
 
-func ButtonGroup(opt ...Opt) View {
-	opts := append([]Opt{WithAttr("role", "group"), WithClass("btn-group")}, opt...)
-	return NewView(new(buttongroup), ViewButtonGroup, "DIV", opts...)
-}
+/*
+	func ButtonGroup(opt ...Opt) View {
+		opts := append([]Opt{WithAttr("role", "group"), WithClass("btn-group")}, opt...)
+		return NewView(new(buttongroup), ViewButtonGroup, "DIV", opts...)
+	}
+*/
 
-func newButtonFromElement(element Element) View {
+func newButtonFromElement(element Element) mvc.View {
 	if element.TagName() != "BUTTON" {
 		return nil
 	}
-	return NewViewWithElement(new(button), element)
+	return mvc.NewViewWithElement(new(button), element)
 }
 
+/*
 func newButtonGroupFromElement(element Element) View {
 	if element.TagName() != "DIV" {
 		return nil
 	}
 	return NewViewWithElement(new(buttongroup), element)
 }
-
+*/
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
 
-func (b *button) SetView(view View) {
+func (b *button) SetView(view mvc.View) {
 	b.View = view
 }
 
+func (b *button) Append(children ...any) mvc.View {
+	// Close buttons cannot have children
+	if b.Root().ClassList().Contains("btn-close") {
+		panic("Append: not supported for close button")
+	}
+	// Call superclass
+	return b.View.Append(children...)
+}
+
+/*
 // Return true if button is disabled
 func (b *button) Disabled() bool {
 	return b.Root().HasAttribute("disabled")
@@ -119,3 +131,4 @@ func (b *buttongroup) Disabled() []Element {
 	}
 	return elements
 }
+*/

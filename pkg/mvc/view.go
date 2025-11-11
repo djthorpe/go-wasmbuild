@@ -383,9 +383,9 @@ func (v *view) Content(children ...any) View {
 		target = v.root
 	}
 
-	// Clear the content
+	// Clear existing content before appending new children
+	target.SetInnerHTML("")
 	if len(children) == 0 {
-		target.SetInnerHTML("")
 		return v
 	}
 

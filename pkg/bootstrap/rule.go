@@ -1,11 +1,13 @@
-package bs
+package bootstrap
 
 import (
 	"fmt"
 
+	// Packages
+	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
+
 	// Namespace imports
 	. "github.com/djthorpe/go-wasmbuild"
-	. "github.com/djthorpe/go-wasmbuild/pkg/mvc"
 )
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -13,10 +15,10 @@ import (
 
 // text are elements that represent text views
 type rule struct {
-	View
+	mvc.View
 }
 
-var _ View = (*rule)(nil)
+var _ mvc.View = (*rule)(nil)
 
 ///////////////////////////////////////////////////////////////////////////////
 // GLOBALS
@@ -26,36 +28,35 @@ const (
 )
 
 func init() {
-	RegisterView(ViewRule, newRuleFromElement)
+	mvc.RegisterView(ViewRule, newRuleFromElement)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
-func Rule(opt ...Opt) *rule {
-	return &rule{NewView(ViewRule, "HR", opt...)}
+func HRule(opt ...mvc.Opt) mvc.View {
+	return mvc.NewView(new(rule), ViewRule, "HR", opt...).(*rule)
 }
 
-func VerticalRule(opt ...Opt) *rule {
-	opt = append([]Opt{WithClass("vr")}, opt...)
-	return &rule{NewView(ViewRule, "DIV", opt...)}
+func VRule(opt ...mvc.Opt) mvc.View {
+	return mvc.NewView(new(rule), ViewRule, "DIV", append([]mvc.Opt{mvc.WithClass("vr")}, opt...)...)
 }
 
-func newRuleFromElement(element Element) View {
+func newRuleFromElement(element Element) mvc.View {
 	tagName := element.TagName()
 	if tagName != "HR" && tagName != "DIV" {
 		panic(fmt.Sprintf("newRuleFromElement: invalid tag name %q", tagName))
 	}
-	return &rule{NewViewWithElement(element)}
+	return mvc.NewViewWithElement(new(rule), element)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
 
-func (rule *rule) Append(children ...any) View {
-	panic("Append: not supported for rule")
+func (rule *rule) SetView(view mvc.View) {
+	rule.View = view
 }
 
-func (rule *rule) Content(children ...any) View {
-	panic("Content: not supported for rule")
+func (rule *rule) Append(children ...any) mvc.View {
+	panic("Append: not supported for rule")
 }

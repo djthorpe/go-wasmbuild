@@ -1,11 +1,13 @@
 package bootstrap
 
 import (
-	// Namespace imports
 	"slices"
 
-	. "github.com/djthorpe/go-wasmbuild"
+	// Packages
 	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
+
+	// Namespace imports
+	. "github.com/djthorpe/go-wasmbuild"
 )
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -15,26 +17,25 @@ import (
 type Size string
 
 const (
-	SizeDefault Size = ""
-	SizeSmall   Size = "sm"
-	SizeMedium  Size = "md"
-	SizeLarge   Size = "lg"
-	SizeXLarge  Size = "xl"
-	SizeXXLarge Size = "xxl"
+	Small   Size = "sm"
+	Medium  Size = "md"
+	Large   Size = "lg"
+	XLarge  Size = "xl"
+	XXLarge Size = "xxl"
 )
 
 var (
 	allSizes = []Size{
-		SizeSmall,
-		SizeMedium,
-		SizeLarge,
-		SizeXLarge,
-		SizeXXLarge,
+		Small,
+		Medium,
+		Large,
+		XLarge,
+		XXLarge,
 		"fluid",
 	}
 	allButtonSizes = []Size{
-		SizeSmall,
-		SizeLarge,
+		Small,
+		Large,
 	}
 )
 
@@ -68,7 +69,7 @@ func WithSize(size Size) mvc.Opt {
 // PRIVATE METHODS
 
 func (size Size) className(prefix string) string {
-	if size == SizeDefault {
+	if size == "" {
 		return prefix
 	}
 	return prefix + "-" + string(size)
@@ -100,8 +101,8 @@ func sizePrefixForView(name string) string {
 	switch name {
 	case ViewContainer:
 		return "container"
-	//	case ViewButton:
-	//		return "btn"
+	case ViewButton:
+		return "btn"
 	//	case ViewButtonGroup:
 	//		return "btn-group"
 	//	case ViewNavbar:
@@ -112,9 +113,10 @@ func sizePrefixForView(name string) string {
 }
 
 func allSizesForView(name string) []Size {
-	//	if name == ViewButton || name == ViewButtonGroup {
-	//		return allButtonSizes
-	//	}
+	// || name == ViewButtonGroup
+	if name == ViewButton {
+		return allButtonSizes
+	}
 	//if name == ViewNavbar {
 	// Include SizeDefault for navbar
 	//	return append([]Size{SizeDefault}, allSizes...)

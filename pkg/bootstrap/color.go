@@ -3,6 +3,8 @@ package bootstrap
 import (
 
 	// Packages
+	"slices"
+
 	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
 
 	// Namespace imports
@@ -73,12 +75,12 @@ func WithColor(color Color) mvc.Opt {
 			return ErrInternalAppError.Withf("WithColor: unsupported view %q", o.Name())
 		}
 
-		//else if o.Name() == ViewButton {
-		//	// For outline buttons, adjust prefix
-		//	if slices.Contains(o.Classes(), viewOutlineButtonClassPrefix) {
-		//		prefix = viewOutlineButtonClassPrefix
-		//	}
-		//}
+		if o.Name() == ViewButton {
+			// For outline buttons, adjust prefix
+			if slices.Contains(o.Classes(), viewOutlineButtonClassPrefix) {
+				prefix = viewOutlineButtonClassPrefix
+			}
+		}
 
 		// Remove all other color classes
 		if err := mvc.WithoutClass(color.allClassNames(prefix)...)(o); err != nil {
@@ -114,20 +116,20 @@ func (color Color) allClassNames(prefix string) []string {
 
 func colorPrefixForView(name string) string {
 	switch name {
+	case ViewBadge:
+		return "text-bg"
+	case ViewLink:
+		return "link"
+	case ViewButton:
+		return "btn"
 	//	case ViewHeading, ViewContainer:
 	//		return "text"
 	//	case ViewText:
 	//		return "text"
-	case ViewBadge:
-		return "text-bg"
-		//	case ViewButton:
-		//		return "btn"
-		//	case ViewLink:
-		//		return "link"
-		//	case ViewAlert:
-		//		return "alert"
-		//	case ViewNavbar:
-		//		return "bg"
+	//	case ViewAlert:
+	//		return "alert"
+	//	case ViewNavbar:
+	//		return "bg"
 	default:
 		return ""
 	}

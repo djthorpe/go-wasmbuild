@@ -1,7 +1,6 @@
 package mvc
 
 import (
-	"fmt"
 	"strings"
 
 	// Packages
@@ -53,12 +52,12 @@ func init() {
 // Create a Router
 func Router(opts ...Opt) RouterView {
 	self := NewView(new(router), ViewRouter, "div", opts...).(RouterView)
+	router := self.(*router)
+	window := dom.GetWindow()
 
 	// Set event listener for hashchange
-	dom.GetWindow().AddEventListener("hashchange", func(event Event) {
-		if window, ok := event.Target().(Window); ok {
-			fmt.Println("hashchange to:", window.Location().Hash())
-		}
+	window.AddEventListener("hashchange", func(Event) {
+		router.refresh(window.Location().Hash())
 	})
 
 	return self
@@ -84,10 +83,39 @@ func (router *router) Page(path string, view View) RouterView {
 		panic("Router.Page: path must start with '#'")
 	}
 
-	// Append page to list
-	// TODO
+	// Append page to list of pages
 	router.pages = append(router.pages, page{path: path, view: view})
+
+	// Refresh the view for the current hash or default page
+	router.refresh(dom.GetWindow().Location().Hash())
 
 	// Append the view to the router body, with a DIV
 	return router
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// PRIVATE METHODS
+
+// match returns the page which matches the specified hash, or nil
+func (router *router) match(hash string) *page {
+	for _, page := range router.pages {
+		if page.path == hash {
+			return &page
+		}
+	}
+	return nil
+}
+
+// refresh updates the router content based on the current hash. If no matching
+// page exists, the first registered page (if any) becomes the default view.
+func (router *router) refresh(hash string) {
+	if page := router.match(hash); page != nil {
+		router.Content(page.view)
+		return
+	}
+	if len(router.pages) > 0 {
+		router.Content(router.pages[0].view)
+		return
+	}
+	router.Content()
 }
