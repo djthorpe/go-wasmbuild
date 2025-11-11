@@ -38,10 +38,15 @@ func New() *app {
 	view := new(app)
 	view.self = view
 	view.name = ViewApp
-	view.root = doc.Body()
+	view.root = elementFactory("div")
 	if view.root == nil {
 		panic("document has no body element")
 	}
+
+	// Prepend the application div to the document body
+	doc.Body().Prepend(view.root)
+
+	// Return the view
 	return view
 }
 

@@ -127,8 +127,13 @@ type ViewConstructorFunc func(dom.Element) View
 // GLOBALS
 
 const (
-	// The attribute key which identifies a wasmbuild view
+	// The attribute key which identifies a wasmbuild component
 	DataComponentAttrKey = "data-wasmbuild"
+
+	componentPartHeader  = "header"
+	componentPartBody    = "body"
+	componentPartFooter  = "footer"
+	componentPartCaption = "caption"
 )
 
 var (
@@ -157,6 +162,15 @@ func NewView(self View, name string, tagName string, opts ...Opt) View {
 func NewViewEx(self View, name string, tagName string, header, body, footer, caption dom.Element, opts ...Opt) View {
 	if _, exists := views[name]; !exists {
 		panic(fmt.Sprintf("NewView: view not registered %q", name))
+	}
+	if isComponentPart(name) {
+		panic(fmt.Sprintf("NewView: view name %q is reserved", name))
+	}
+
+	// Ensure a dedicated body exists whenever structural parts are provided so that
+	// later content operations don't trample header, footer or caption nodes.
+	if body == nil && (header != nil || footer != nil || caption != nil) {
+		body = elementFactory("div")
 	}
 
 	// Create the view
@@ -194,11 +208,15 @@ func NewViewEx(self View, name string, tagName string, header, body, footer, cap
 		if v.header.IsConnected() {
 			panic("NewView: header element is already connected to the DOM")
 		}
+		markComponentPart(v.header, componentPartHeader)
 		v.root.AppendChild(v.header)
 	}
 	if v.body != nil {
 		if v.body.IsConnected() {
 			panic("NewView: body element is already connected to the DOM")
+		}
+		if v.body != v.root {
+			markComponentPart(v.body, componentPartBody)
 		}
 		v.root.AppendChild(v.body)
 	} else {
@@ -208,16 +226,18 @@ func NewViewEx(self View, name string, tagName string, header, body, footer, cap
 		if v.footer.IsConnected() {
 			panic("NewView: footer element is already connected to the DOM")
 		}
+		markComponentPart(v.footer, componentPartFooter)
 		v.root.AppendChild(v.footer)
 	}
 	if v.caption != nil {
 		if v.caption.IsConnected() {
 			panic("NewView: caption element is already connected to the DOM")
 		}
+		markComponentPart(v.caption, componentPartCaption)
 		v.root.AppendChild(v.caption)
 	}
 
-	// Set the data-wasmbuild attributes
+	// Set the component identifier
 	v.root.SetAttribute(DataComponentAttrKey, name)
 
 	// Apply options to the view
@@ -245,12 +265,32 @@ func NewViewWithElement(self View, element dom.Element, opts ...Opt) View {
 		name: element.GetAttribute(DataComponentAttrKey),
 		root: element,
 	}
+	if v.name == "" {
+		panic("NewViewWithElement: element missing data-wasmbuild attribute")
+	}
+	if isComponentPart(v.name) {
+		panic(fmt.Sprintf("NewViewWithElement: element uses reserved component value %q", v.name))
+	}
 
 	// Set the view in self
 	if self_, ok := self.(ViewWithSelf); !ok {
 		panic(fmt.Sprintf("NewView: %v does not implement ViewWithSelf", v.name))
 	} else {
 		self_.SetView(v)
+	}
+
+	// Discover structural elements from data attributes when present
+	v.header = findComponentPart(element, componentPartHeader)
+	if body := findComponentPart(element, componentPartBody); body != nil {
+		v.body = body
+	} else {
+		v.body = v.root
+	}
+	v.footer = findComponentPart(element, componentPartFooter)
+	v.caption = findComponentPart(element, componentPartCaption)
+
+	if v.body == v.root && (v.header != nil || v.footer != nil || v.caption != nil) {
+		panic("NewViewWithElement: element missing body component")
 	}
 
 	// Apply options to the view
@@ -291,19 +331,46 @@ func (v *view) Root() dom.Element {
 }
 
 func (v *view) Body(content any) View {
+	prevBody := v.body
 	node := NodeFromAny(content)
+	var newBody dom.Element
 	if element, ok := node.(dom.Element); ok {
-		v.body = element
+		newBody = element
 	} else if view, ok := node.(View); ok {
-		v.body = view.Root()
+		newBody = view.Root()
 	} else {
 		panic(fmt.Sprint("view.Body: invalid content type ", node.NodeType()))
 	}
 
-	// If the body is not already a child of the root, clear the root and set it
+	if prevBody != nil && prevBody.Equals(newBody) {
+		return v.self
+	}
+
+	v.body = newBody
+
+	// Remove previous body attribute and detach from root if needed
+	if prevBody != nil && prevBody != v.root {
+		if prevBody.HasAttribute(DataComponentAttrKey) && isComponentPart(prevBody.GetAttribute(DataComponentAttrKey)) {
+			prevBody.RemoveAttribute(DataComponentAttrKey)
+		}
+		if parent := prevBody.ParentNode(); parent != nil && parent.Equals(v.root) {
+			v.root.RemoveChild(prevBody)
+		}
+	}
+
+	if v.body != v.root {
+		markComponentPart(v.body, componentPartBody)
+	}
+
+	// Attach the body in the correct position if not already attached
 	if v.body.ParentNode() == nil {
-		v.root.SetInnerHTML("")
-		v.root.AppendChild(v.body)
+		if v.footer != nil && v.footer.ParentNode() != nil && v.footer.ParentNode().Equals(v.root) {
+			v.root.InsertBefore(v.body, v.footer)
+		} else if v.caption != nil && v.caption.ParentNode() != nil && v.caption.ParentNode().Equals(v.root) {
+			v.root.InsertBefore(v.body, v.caption)
+		} else {
+			v.root.AppendChild(v.body)
+		}
 	}
 
 	return v.self
@@ -339,6 +406,42 @@ func (v *view) Append(children ...any) View {
 	return v.self
 }
 
+func (v *view) Header(children ...any) ViewWithHeaderFooter {
+	viewWithHeader, ok := v.self.(ViewWithHeaderFooter)
+	if !ok {
+		panic(fmt.Sprintf("view.Header: view %T does not implement ViewWithHeaderFooter", v.self))
+	}
+
+	header := v.ensureHeaderElement()
+	v.replaceChildContent(header, children...)
+
+	return viewWithHeader
+}
+
+func (v *view) Footer(children ...any) ViewWithHeaderFooter {
+	viewWithFooter, ok := v.self.(ViewWithHeaderFooter)
+	if !ok {
+		panic(fmt.Sprintf("view.Footer: view %T does not implement ViewWithHeaderFooter", v.self))
+	}
+
+	footer := v.ensureFooterElement()
+	v.replaceChildContent(footer, children...)
+
+	return viewWithFooter
+}
+
+func (v *view) Caption(children ...any) ViewWithCaption {
+	viewWithCaption, ok := v.self.(ViewWithCaption)
+	if !ok {
+		panic(fmt.Sprintf("view.Caption: view %T does not implement ViewWithCaption", v.self))
+	}
+
+	caption := v.ensureCaptionElement()
+	v.replaceChildContent(caption, children...)
+
+	return viewWithCaption
+}
+
 func (v *view) AddEventListener(event string, handler func(dom.Event)) View {
 	v.root.AddEventListener(event, handler)
 	return v.self
@@ -372,6 +475,95 @@ func NodeFromAny(child any) dom.Node {
 	panic(dom.ErrInternalAppError.Withf("NodeFromAny: unsupported: %T", child))
 }
 
+func (v *view) ensureBodyContainer() dom.Element {
+	if v.root == nil {
+		panic("view.ensureBodyContainer: missing root element")
+	}
+	if v.body == nil {
+		v.body = v.root
+	}
+	if v.body != v.root {
+		return v.body
+	}
+
+	body := elementFactory("div")
+	markComponentPart(body, componentPartBody)
+
+	for _, child := range v.root.ChildNodes() {
+		if elem, ok := child.(dom.Element); ok {
+			if elem.HasAttribute(DataComponentAttrKey) {
+				if part := elem.GetAttribute(DataComponentAttrKey); isComponentPart(part) && part != componentPartBody {
+					continue
+				}
+			}
+		}
+		body.AppendChild(child)
+	}
+
+	v.root.AppendChild(body)
+	v.body = body
+
+	return v.body
+}
+
+func (v *view) ensureHeaderElement() dom.Element {
+	if v.header != nil {
+		return v.header
+	}
+	body := v.ensureBodyContainer()
+	header := elementFactory("header")
+	markComponentPart(header, componentPartHeader)
+
+	if parent := body.ParentNode(); parent != nil && parent.Equals(v.root) {
+		v.root.InsertBefore(header, body)
+	} else {
+		v.root.AppendChild(header)
+	}
+
+	v.header = header
+	return v.header
+}
+
+func (v *view) ensureFooterElement() dom.Element {
+	if v.footer != nil {
+		return v.footer
+	}
+	v.ensureBodyContainer()
+	footer := elementFactory("footer")
+	markComponentPart(footer, componentPartFooter)
+
+	if v.caption != nil && v.caption.ParentNode() != nil && v.caption.ParentNode().Equals(v.root) {
+		v.root.InsertBefore(footer, v.caption)
+	} else {
+		v.root.AppendChild(footer)
+	}
+
+	v.footer = footer
+	return v.footer
+}
+
+func (v *view) ensureCaptionElement() dom.Element {
+	if v.caption != nil {
+		return v.caption
+	}
+	v.ensureBodyContainer()
+	caption := elementFactory("caption")
+	markComponentPart(caption, componentPartCaption)
+	v.root.AppendChild(caption)
+	v.caption = caption
+	return v.caption
+}
+
+func (v *view) replaceChildContent(target dom.Element, children ...any) {
+	if target == nil {
+		return
+	}
+	target.SetInnerHTML("")
+	for _, child := range children {
+		target.AppendChild(NodeFromAny(child))
+	}
+}
+
 // ViewFromNode returns a View from a Node, or nil if the type is unsupported
 func ViewFromNode(node dom.Node) View {
 	if element, ok := node.(dom.Element); ok {
@@ -398,6 +590,9 @@ func viewFromElement(element dom.Element) (View, error) {
 		return nil, nil
 	}
 	name := element.GetAttribute(DataComponentAttrKey)
+	if isComponentPart(name) {
+		return nil, nil
+	}
 	if constructor, exists := views[name]; !exists {
 		return nil, dom.ErrInternalAppError.Withf("viewFromElement: no constructor for view %q", name)
 	} else if constructor == nil {
@@ -406,5 +601,47 @@ func viewFromElement(element dom.Element) (View, error) {
 		return nil, dom.ErrInternalAppError.Withf("viewFromElement: constructor for view %q returned nil", name)
 	} else {
 		return view, nil
+	}
+}
+
+func markComponentPart(element dom.Element, part string) {
+	if element == nil {
+		return
+	}
+	if element.HasAttribute(DataComponentAttrKey) {
+		value := element.GetAttribute(DataComponentAttrKey)
+		if value == part {
+			return
+		}
+		if !isComponentPart(value) {
+			panic(fmt.Sprintf("markComponentPart: element already bound to component %q", value))
+		}
+	}
+	element.SetAttribute(DataComponentAttrKey, part)
+}
+
+func findComponentPart(root dom.Element, part string) dom.Element {
+	if root == nil {
+		return nil
+	}
+	if root.HasAttribute(DataComponentAttrKey) && root.GetAttribute(DataComponentAttrKey) == part {
+		return root
+	}
+	for _, child := range root.ChildNodes() {
+		if el, ok := child.(dom.Element); ok {
+			if found := findComponentPart(el, part); found != nil {
+				return found
+			}
+		}
+	}
+	return nil
+}
+
+func isComponentPart(value string) bool {
+	switch value {
+	case componentPartHeader, componentPartBody, componentPartFooter, componentPartCaption:
+		return true
+	default:
+		return false
 	}
 }

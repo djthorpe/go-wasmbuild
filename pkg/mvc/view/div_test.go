@@ -1,4 +1,4 @@
-package views_test
+package view_test
 
 import (
 	"testing"

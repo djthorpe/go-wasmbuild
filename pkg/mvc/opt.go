@@ -16,10 +16,12 @@ type Opt func(OptSet) error
 
 // opt is a private struct which holds options
 type opt struct {
+	doc   dom.Document
 	name  string
 	id    string
 	class []string
 	attr  map[string]string
+	child dom.Node
 }
 
 // OptSet interface for applying options
@@ -49,7 +51,8 @@ func applyOpts(element dom.Element, opts ...Opt) error {
 		o.name = name
 	}
 
-	// Set existing ID and class
+	// Set existing Document, ID and class
+	o.doc = element.OwnerDocument()
 	o.id = element.ID()
 	o.class = element.ClassList().Values()
 
@@ -84,6 +87,12 @@ func applyOpts(element dom.Element, opts ...Opt) error {
 	// Apply attributes if set
 	for key, value := range o.attr {
 		element.SetAttribute(key, value)
+	}
+
+	// Apply child node if set
+	if o.child != nil {
+		element.SetInnerHTML("")
+		element.AppendChild(o.child)
 	}
 
 	return nil
@@ -147,6 +156,13 @@ func WithoutAttr(keys ...string) Opt {
 func WithID(id string) Opt {
 	return func(o OptSet) error {
 		o.(*opt).id = id
+		return nil
+	}
+}
+
+func WithInnerText(text string) Opt {
+	return func(o OptSet) error {
+		o.(*opt).child = o.(*opt).doc.CreateTextNode(text)
 		return nil
 	}
 }
