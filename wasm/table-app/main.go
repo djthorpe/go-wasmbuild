@@ -12,7 +12,7 @@ import (
 func main() {
 
 	// Create the table
-	table := view.Table(mvc.WithClass("table")).Header(
+	table := view.Table(mvc.WithClass("table", "table-hover")).Header(
 		"Month", "Cost",
 	).Footer(
 		"Total", "$725",
