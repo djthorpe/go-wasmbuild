@@ -15,10 +15,16 @@ func main() {
 	table := view.Table(mvc.WithClass("table")).Header(
 		"Month", "Cost",
 	).Footer(
-		"Total", "$100",
+		"Total", "$725",
 	).Content(
 		view.TableRow("Jan", "$100"),
-	)
+		view.TableRow("Feb", "$98"),
+		view.TableRow("Mar", "$109"),
+		view.TableRow("Apr", "$10"),
+		view.TableRow("May", "$121"),
+		view.TableRow("Jun", "$76"),
+		view.TableRow("Jul", "$31"),
+	).(view.TableView)
 
 	// Set the content of the application
 	app := mvc.New().Content(
