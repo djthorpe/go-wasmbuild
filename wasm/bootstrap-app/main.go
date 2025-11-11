@@ -182,7 +182,12 @@ func OffcanvasExamples() mvc.View {
 	return bs.Container().Content(
 		bs.Heading(1).Content("Offcanvas Example"),
 		bs.HRule(),
-		bs.Offcanvas("start", bs.WithPosition(bs.Start)).Content("This is the offcanvas content!"),
+		bs.Offcanvas("start", bs.WithPosition(bs.Start)).Header(
+			mvc.HTML("H4", mvc.WithInnerText("This is the offcanvas title")),
+			bs.CloseButton(mvc.WithAttr("data-bs-dismiss", "offcanvas")),
+		).Content(
+			"This is the offcanvas content!",
+		),
 		bs.Offcanvas("end", bs.WithPosition(bs.End)).Content("This is the offcanvas content!"),
 		bs.Offcanvas("top", bs.WithPosition(bs.Top)).Content("This is the offcanvas content!"),
 		bs.Offcanvas("bottom", bs.WithPosition(bs.Bottom)).Content("This is the offcanvas content!"),

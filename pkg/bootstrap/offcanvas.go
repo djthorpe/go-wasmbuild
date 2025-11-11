@@ -14,7 +14,7 @@ import (
 // TYPES
 
 type offcanvas struct {
-	mvc.View
+	mvc.ViewWithHeaderFooter
 }
 
 var _ mvc.View = (*offcanvas)(nil)
@@ -33,9 +33,11 @@ func init() {
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
-func Offcanvas(id string, opt ...mvc.Opt) mvc.View {
+func Offcanvas(id string, opt ...mvc.Opt) *offcanvas {
 	opts := append([]mvc.Opt{mvc.WithAttr("id", id), mvc.WithClass("offcanvas", "offcanvas-start"), mvc.WithAttr("tabindex", "-1"), mvc.WithAttr("aria-labelledby", id+"-label")}, opt...)
-	return mvc.NewView(new(offcanvas), ViewOffcanvas, "DIV", opts...)
+	header := mvc.HTML("DIV", mvc.WithClass("offcanvas-header"))
+	body := mvc.HTML("DIV", mvc.WithClass("offcanvas-body"))
+	return mvc.NewViewEx(new(offcanvas), ViewOffcanvas, "DIV", header, body, nil, nil, opts...).(*offcanvas)
 }
 
 func newOffcanvasFromElement(element Element) mvc.View {
@@ -50,7 +52,7 @@ func newOffcanvasFromElement(element Element) mvc.View {
 // PUBLIC METHODS
 
 func (offcanvas *offcanvas) SetView(view mvc.View) {
-	offcanvas.View = view
+	offcanvas.ViewWithHeaderFooter = view.(mvc.ViewWithHeaderFooter)
 }
 
 func WithOffcanvas(id string) mvc.Opt {
