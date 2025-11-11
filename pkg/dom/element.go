@@ -453,6 +453,46 @@ func (element *element) PreviousElementSibling() Element {
 	return nil
 }
 
+func (element *element) ReplaceWith(nodes ...Node) {
+	parent := element.ParentNode()
+	if parent == nil {
+		return
+	}
+
+	for _, child := range nodes {
+		if child == nil {
+			continue
+		}
+		parent.InsertBefore(child, element)
+	}
+
+	parent.RemoveChild(element)
+}
+
+func (element *element) Prepend(nodes ...Node) {
+	if len(nodes) == 0 {
+		return
+	}
+
+	first := element.FirstChild()
+	for _, child := range nodes {
+		if child == nil {
+			continue
+		}
+		if first == nil {
+			element.AppendChild(child)
+		} else {
+			element.InsertBefore(child, first)
+		}
+	}
+}
+
+func (element *element) Remove() {
+	if parent := element.ParentNode(); parent != nil {
+		parent.RemoveChild(element)
+	}
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
 

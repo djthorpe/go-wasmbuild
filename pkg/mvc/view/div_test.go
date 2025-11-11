@@ -8,7 +8,7 @@ import (
 	assert "github.com/stretchr/testify/assert"
 
 	// Namespace imports
-	. "github.com/djthorpe/go-wasmbuild/pkg/mvc/views"
+	. "github.com/djthorpe/go-wasmbuild/pkg/mvc/view"
 )
 
 func TestDivType(t *testing.T) {

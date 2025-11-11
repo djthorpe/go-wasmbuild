@@ -91,10 +91,9 @@ type Element interface {
 	LastElementChild() Element
 	NextElementSibling() Element
 	PreviousElementSibling() Element
-	/*
-		ReplaceWith(...Node)
-		Remove()
-	*/
+	ReplaceWith(...Node)
+	Remove()
+	Prepend(...Node)
 }
 
 // Document implements https://developer.mozilla.org/en-US/docs/Web/API/Document

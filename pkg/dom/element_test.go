@@ -432,3 +432,123 @@ func TestElementAppendChildReparents(t *testing.T) {
 	assert.Len(parentA.Children(), 0)
 	assert.Len(parentB.Children(), 1)
 }
+
+func TestElementReplaceWith(t *testing.T) {
+	assert := assert.New(t)
+	doc := dom.GetWindow().Document()
+	if !assert.NotNil(doc) {
+		assert.FailNow("Expected document, got nil")
+	}
+
+	parent := doc.CreateElement("div")
+	first := doc.CreateElement("p")
+	first.SetAttribute("data-id", "first")
+	parent.AppendChild(first)
+
+	target := doc.CreateElement("span")
+	target.SetAttribute("data-id", "target")
+	parent.AppendChild(target)
+
+	last := doc.CreateElement("p")
+	last.SetAttribute("data-id", "last")
+	parent.AppendChild(last)
+
+	replacementText := doc.CreateTextNode("replacement")
+	replacement := doc.CreateElement("a")
+	replacement.SetAttribute("data-id", "replacement")
+
+	target.ReplaceWith(replacementText, replacement)
+
+	children := parent.ChildNodes()
+	if assert.Len(children, 4) {
+		assert.True(children[0].Equals(first))
+		assert.True(children[1].Equals(replacementText))
+		assert.True(children[2].Equals(replacement))
+		assert.True(children[3].Equals(last))
+	}
+
+	assert.Nil(target.ParentNode())
+	if assert.NotNil(replacement.ParentNode()) {
+		assert.True(replacement.ParentNode().Equals(parent))
+	}
+	if assert.NotNil(replacementText.ParentNode()) {
+		assert.True(replacementText.ParentNode().Equals(parent))
+	}
+}
+
+func TestElementPrepend(t *testing.T) {
+	assert := assert.New(t)
+	doc := dom.GetWindow().Document()
+	if !assert.NotNil(doc) {
+		assert.FailNow("Expected document, got nil")
+	}
+
+	parent := doc.CreateElement("ul")
+	existing := doc.CreateElement("li")
+	existing.SetAttribute("data-id", "existing")
+	parent.AppendChild(existing)
+
+	textNode := doc.CreateTextNode("intro")
+	newItem := doc.CreateElement("li")
+	newItem.SetAttribute("data-id", "new")
+
+	parent.Prepend(textNode, newItem)
+	children := parent.ChildNodes()
+	if assert.Len(children, 3) {
+		assert.True(children[0].Equals(textNode))
+		assert.True(children[1].Equals(newItem))
+		assert.True(children[2].Equals(existing))
+	}
+	assert.True(parent.FirstChild().Equals(textNode))
+	assert.True(parent.LastChild().Equals(existing))
+	if assert.NotNil(textNode.ParentNode()) {
+		assert.True(textNode.ParentNode().Equals(parent))
+	}
+	if assert.NotNil(newItem.ParentNode()) {
+		assert.True(newItem.ParentNode().Equals(parent))
+	}
+
+	// Prepend into empty element appends in order
+	empty := doc.CreateElement("div")
+	first := doc.CreateElement("span")
+	second := doc.CreateElement("span")
+	empty.Prepend(first, second)
+	children = empty.ChildNodes()
+	if assert.Len(children, 2) {
+		assert.True(children[0].Equals(first))
+		assert.True(children[1].Equals(second))
+	}
+}
+
+func TestElementRemove(t *testing.T) {
+	assert := assert.New(t)
+	doc := dom.GetWindow().Document()
+	if !assert.NotNil(doc) {
+		assert.FailNow("Expected document, got nil")
+	}
+
+	parent := doc.CreateElement("div")
+	first := doc.CreateElement("span")
+	second := doc.CreateElement("span")
+	third := doc.CreateElement("span")
+
+	parent.AppendChild(first)
+	parent.AppendChild(second)
+	parent.AppendChild(third)
+
+	assert.Len(parent.ChildNodes(), 3)
+	assert.True(parent.Contains(second))
+
+	second.Remove()
+	children := parent.ChildNodes()
+	if assert.Len(children, 2) {
+		assert.True(children[0].Equals(first))
+		assert.True(children[1].Equals(third))
+	}
+	assert.Nil(second.ParentNode())
+	assert.False(parent.Contains(second))
+
+	// Removing again is a no-op
+	second.Remove()
+	assert.Len(parent.ChildNodes(), 2)
+}

@@ -8,7 +8,7 @@ import (
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
-func Element(tagName string, opts ...Opt) dom.Element {
+func HTML(tagName string, opts ...Opt) dom.Element {
 	e := elementFactory(tagName)
 	if len(opts) > 0 {
 		if err := applyOpts(e, opts...); err != nil {
