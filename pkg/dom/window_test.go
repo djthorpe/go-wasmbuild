@@ -32,6 +32,22 @@ func TestWindow_Document(t *testing.T) {
 	_ = doc // Just verify it doesn't panic
 }
 
+func TestWindow_Location(t *testing.T) {
+	window := GetWindow()
+	if window == nil {
+		t.Fatal("Expected non-nil window")
+	}
+
+	location := window.Location()
+	if location == nil {
+		t.Fatal("Expected non-nil location")
+	}
+
+	// Accessing href should always be safe
+	_ = location.Href()
+	_ = location.Hash()
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // TESTS - Window EventTarget Interface
 

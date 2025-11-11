@@ -6,9 +6,6 @@ import (
 	"bytes"
 	"io"
 
-	// Packages
-	js "github.com/djthorpe/go-wasmbuild/pkg/js"
-
 	// Namespace imports
 	. "github.com/djthorpe/go-wasmbuild"
 )
@@ -29,7 +26,7 @@ var _ Document = (*document)(nil)
 func newDocument(parent Node) Document {
 	node := newNode(nil, parent, "#document", DOCUMENT_NODE, "")
 	return &document{
-		EventTarget: js.NewEventTarget(),
+		EventTarget: NewEventTarget(),
 		node:        node,
 	}
 }

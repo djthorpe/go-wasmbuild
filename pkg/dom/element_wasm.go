@@ -33,7 +33,7 @@ func newElement(value js.Value) Element {
 	}
 	return &element{
 		node:        newNode(value),
-		EventTarget: js.NewEventTarget(value),
+		EventTarget: NewEventTarget(value),
 	}
 }
 

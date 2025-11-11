@@ -22,6 +22,7 @@ const (
 	MapProto
 	TextProto
 	CommentProto
+	WindowProto
 	DocumentProto
 	DocumentTypeProto
 	ElementProto

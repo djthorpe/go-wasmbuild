@@ -3,10 +3,10 @@
 package dom
 
 import (
-	// Package imports
 	"bytes"
 	"io"
 
+	// Packages
 	js "github.com/djthorpe/go-wasmbuild/pkg/js"
 
 	// Namespace imports
@@ -32,7 +32,7 @@ func newDocument(value js.Value) Document {
 	}
 	return &document{
 		Value:       value,
-		EventTarget: js.NewEventTarget(value),
+		EventTarget: NewEventTarget(value),
 	}
 }
 

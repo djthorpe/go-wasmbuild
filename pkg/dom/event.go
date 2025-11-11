@@ -1,8 +1,11 @@
 //go:build !(js && wasm)
 
-package js
+package dom
 
 import (
+	// Packages
+	js "github.com/djthorpe/go-wasmbuild/pkg/js"
+
 	// Namespace imports
 	. "github.com/djthorpe/go-wasmbuild"
 )
@@ -16,8 +19,12 @@ type eventtarget struct {
 }
 
 type event struct {
-	value Value
+	event  string
+	target js.Value
 }
+
+var _ EventTarget = (*eventtarget)(nil)
+var _ Event = (*event)(nil)
 
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
@@ -28,13 +35,8 @@ func NewEventTarget() *eventtarget {
 
 func NewEvent(eventType string) *event {
 	return &event{
-		value: Value{
-			t: EventProto,
-			v: map[string]any{
-				"type":   eventType,
-				"target": Undefined(),
-			},
-		},
+		event:  eventType,
+		target: js.Undefined(),
 	}
 }
 
@@ -45,24 +47,14 @@ func (e *event) Type() string {
 	if e == nil {
 		return ""
 	}
-	if data, ok := e.value.v.(map[string]any); ok {
-		if v, ok := data["type"].(string); ok {
-			return v
-		}
-	}
-	return ""
+	return e.event
 }
 
-func (e *event) Target() Value {
+func (e *event) Target() any {
 	if e == nil {
-		return Undefined()
+		return nil
 	}
-	if data, ok := e.value.v.(map[string]any); ok {
-		if v, ok := data["target"].(Value); ok {
-			return v
-		}
-	}
-	return Undefined()
+	return e.target
 }
 
 ///////////////////////////////////////////////////////////////////////////////

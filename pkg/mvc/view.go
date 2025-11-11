@@ -390,7 +390,7 @@ func (v *view) Content(children ...any) View {
 	}
 
 	// Append each child
-	return v.Append(children...)
+	return v.self.Append(children...)
 }
 
 // Append appends text, Element or View children at the bottom of the view body

@@ -1,10 +1,12 @@
 //go:build js && wasm
 
-package js
+package dom
 
 import (
 	"fmt"
-	"syscall/js"
+
+	// Packages
+	js "github.com/djthorpe/go-wasmbuild/pkg/js"
 
 	// Namespace imports
 	. "github.com/djthorpe/go-wasmbuild"
@@ -15,18 +17,21 @@ import (
 
 // EventTarget wraps a JavaScript EventTarget object
 type eventtarget struct {
-	Value
+	js.Value
 	listeners map[string][]js.Func
 }
 
 type event struct {
-	Value
+	js.Value
 }
+
+var _ EventTarget = (*eventtarget)(nil)
+var _ Event = (*event)(nil)
 
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
-func NewEventTarget(value Value) *eventtarget {
+func NewEventTarget(value js.Value) *eventtarget {
 	return &eventtarget{
 		Value:     value,
 		listeners: make(map[string][]js.Func),
@@ -34,11 +39,8 @@ func NewEventTarget(value Value) *eventtarget {
 }
 
 func NewEvent(eventType string) *event {
-	if EventProto.IsUndefined() || EventProto.IsNull() {
-		panic("Event constructor is unavailable")
-	}
 	return &event{
-		Value: EventProto.New(eventType),
+		Value: js.EventProto.New(eventType),
 	}
 }
 
@@ -49,12 +51,20 @@ func (e *event) Type() string {
 	return e.Get("type").String()
 }
 
-func (e *event) Target() Value {
+func (e *event) Target() any {
 	target := e.Get("target")
 	if target.IsUndefined() || target.IsNull() {
-		return Undefined()
+		return nil
 	}
-	return target
+	switch {
+	case js.TypeOf(target).Equal(js.ElementProto):
+		panic("Supported element type")
+	case js.TypeOf(target).Equal(js.WindowProto):
+		return newWindow(target)
+	default:
+		panic(fmt.Sprintf("Unsupported event type %q", js.InstanceName(target)))
+	}
+
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -72,8 +82,8 @@ func (e *eventtarget) AddEventListener(eventType string, callback func(Event)) {
 	}
 
 	// Create a JS function wrapper
-	jsCallback := js.FuncOf(func(this js.Value, args []js.Value) any {
-		fmt.Println("TODO: Callback for event type:", eventType)
+	jsCallback := js.NewFunc(func(this js.Value, args []js.Value) any {
+		callback(&event{Value: args[0]})
 		return nil
 	})
 

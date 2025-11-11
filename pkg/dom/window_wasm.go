@@ -25,9 +25,13 @@ var _ Window = (*window)(nil)
 
 // GetWindow returns a global window object
 func GetWindow() Window {
+	return newWindow(js.Global())
+}
+
+func newWindow(value js.Value) Window {
 	return &window{
-		Value:       js.Global(),
-		EventTarget: js.NewEventTarget(js.Global()),
+		Value:       value,
+		EventTarget: NewEventTarget(value),
 	}
 }
 
@@ -36,4 +40,8 @@ func GetWindow() Window {
 
 func (window *window) Document() Document {
 	return newDocument(window.Value.Get("document"))
+}
+
+func (window *window) Location() Location {
+	return newLocation(window.Value.Get("location"))
 }

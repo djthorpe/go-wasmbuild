@@ -1,13 +1,15 @@
-package bs
+package bootstrap
 
 import (
 	"fmt"
 	"maps"
 	"slices"
 
+	// Packages
+	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
+
 	// Namespace imports
 	. "github.com/djthorpe/go-wasmbuild"
-	. "github.com/djthorpe/go-wasmbuild/pkg/mvc"
 )
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -15,10 +17,10 @@ import (
 
 // heading represents a heading element, e.g. H1, H2, etc.
 type heading struct {
-	View
+	mvc.View
 }
 
-var _ View = (*heading)(nil)
+var _ mvc.View = (*heading)(nil)
 
 ///////////////////////////////////////////////////////////////////////////////
 // GLOBALS
@@ -39,31 +41,31 @@ var (
 )
 
 func init() {
-	RegisterView(ViewHeading, newHeadingFromElement)
+	mvc.RegisterView(ViewHeading, newHeadingFromElement)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
-func Heading(level int, opt ...Opt) View {
+func Heading(level int, opt ...mvc.Opt) mvc.View {
 	if tagName, exists := headingLevels[level]; !exists {
 		panic(fmt.Sprintf("Heading: invalid level %d", level))
 	} else {
-		return NewView(new(heading), ViewHeading, tagName, opt...)
+		return mvc.NewView(new(heading), ViewHeading, tagName, opt...)
 	}
 }
 
-func newHeadingFromElement(element Element) View {
+func newHeadingFromElement(element Element) mvc.View {
 	tagName := element.TagName()
 	if !slices.Contains(slices.Collect(maps.Values(headingLevels)), tagName) {
 		panic(fmt.Sprintf("newHeadingFromElement: invalid tag name %q", tagName))
 	}
-	return NewViewWithElement(new(heading), element)
+	return mvc.NewViewWithElement(new(heading), element)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
 
-func (h *heading) SetView(view View) {
+func (h *heading) SetView(view mvc.View) {
 	h.View = view
 }

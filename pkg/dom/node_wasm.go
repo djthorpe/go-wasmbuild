@@ -33,7 +33,7 @@ func newNode(value js.Value) node {
 // WRITER
 
 func (node *node) Write(w io.Writer) (int, error) {
-	panic("Write: not implemented for node")
+	return w.Write([]byte(node.Get("nodeName").String()))
 }
 
 ///////////////////////////////////////////////////////////////////////////////

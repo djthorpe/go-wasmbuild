@@ -5,6 +5,7 @@ import (
 
 	// Packages
 	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
+	reflect "github.com/djthorpe/go-wasmbuild/pkg/mvc/reflect"
 
 	// Namespace imports
 	. "github.com/djthorpe/go-wasmbuild"
@@ -22,6 +23,7 @@ type TableView interface {
 
 type table struct {
 	TableView
+	proto *reflect.Proto
 }
 
 type tablerow struct {
@@ -51,9 +53,17 @@ func init() {
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
-// Create a Table
-func Table(opts ...mvc.Opt) TableView {
-	return mvc.NewViewEx(new(table), ViewTable, "table", mvc.HTML("thead"), mvc.HTML("tbody"), mvc.HTML("tfoot"), nil, opts...).(TableView)
+// Create a Table with a prototype row
+func Table(proto any, opts ...mvc.Opt) TableView {
+	self := mvc.NewViewEx(new(table), ViewTable, "table", mvc.HTML("thead"), mvc.HTML("tbody"), mvc.HTML("tfoot"), nil, opts...).(TableView)
+	if proto != nil {
+		if proto := reflect.NewProto(proto); proto == nil {
+			panic("Table: proto must be a struct")
+		} else {
+			self.(*table).proto = proto
+		}
+	}
+	return self
 }
 
 // Create a TableRowEx (children are td or th)
@@ -117,7 +127,12 @@ func (table *table) Append(children ...any) mvc.View {
 		case *tablerow:
 			table.TableView.Append(child.Root())
 		default:
-			panic(fmt.Sprintf("table.Append: invalid child type %T", child))
+			if table.proto != nil {
+				// TODO: Ensure the child is the same type
+				// TODO: Append this data as a new row based on the prototype
+			} else {
+				panic(fmt.Sprintf("table.Append: invalid child type %T", child))
+			}
 		}
 	}
 	return table

@@ -3,9 +3,6 @@
 package dom
 
 import (
-	// Packages
-	js "github.com/djthorpe/go-wasmbuild/pkg/js"
-
 	// Namespace imports
 	. "github.com/djthorpe/go-wasmbuild"
 )
@@ -16,6 +13,7 @@ import (
 type window struct {
 	EventTarget
 	document Document
+	location Location
 }
 
 var _ Window = (*window)(nil)
@@ -25,8 +23,9 @@ var _ Window = (*window)(nil)
 
 var (
 	_window = &window{
-		EventTarget: js.NewEventTarget(),
+		EventTarget: NewEventTarget(),
 		document:    newHTMLDocument(nil),
+		location:    newLocation("about:blank"),
 	}
 )
 
@@ -43,4 +42,8 @@ func GetWindow() Window {
 
 func (window *window) Document() Document {
 	return window.document
+}
+
+func (window *window) Location() Location {
+	return window.location
 }

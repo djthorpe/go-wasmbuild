@@ -45,7 +45,7 @@ var (
 func newElement(document Document, name string) Element {
 	node := newNode(document, nil, name, ELEMENT_NODE, "")
 	return &element{
-		EventTarget: js.NewEventTarget(),
+		EventTarget: NewEventTarget(),
 		node:        node,
 		class:       js.NewTokenList(),
 		attr:        make(map[string]*attr, 10),

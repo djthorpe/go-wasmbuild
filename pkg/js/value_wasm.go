@@ -13,6 +13,9 @@ import (
 // Value is an alias for js.Value for convenience.
 type Value = js.Value
 
+// Func is an alias for js.Func representing a JavaScript function.
+type Func = js.Func
+
 // Proto is an alias for js.Value representing a JavaScript prototype object.
 type Proto = js.Value
 
@@ -26,6 +29,7 @@ var (
 	MapProto          Proto = js.Global().Get("Map")
 	TextProto         Proto = js.Global().Get("Text")
 	CommentProto      Proto = js.Global().Get("Comment")
+	WindowProto       Proto = js.Global().Get("Window")
 	DocumentProto     Proto = js.Global().Get("HTMLDocument")
 	DocumentTypeProto Proto = js.Global().Get("DocumentType")
 	ElementProto      Proto = js.Global().Get("HTMLElement")
@@ -50,6 +54,11 @@ func NewArray() js.Value {
 // NewMap creates a new JavaScript Map.
 func NewMap() js.Value {
 	return MapProto.New()
+}
+
+// NewFunc creates a new function Value.
+func NewFunc(fn func(this Value, args []Value) any) Func {
+	return js.FuncOf(fn)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -80,6 +89,8 @@ func TypeOf(v Value) Proto {
 			return TextProto
 		case proto.Equal(CommentProto.Get("prototype")):
 			return CommentProto
+		case proto.Equal(WindowProto.Get("prototype")):
+			return WindowProto
 		case proto.Equal(DocumentTypeProto.Get("prototype")):
 			return DocumentTypeProto
 		case proto.Equal(AttrProto.Get("prototype")):
@@ -94,6 +105,16 @@ func TypeOf(v Value) Proto {
 			return ObjectProto
 		}
 	}
+}
+
+// Returns the instance name
+func InstanceName(v Value) string {
+	if v.IsUndefined() {
+		return "undefined"
+	} else if v.IsNull() {
+		return "null"
+	}
+	return v.Get("constructor").Get("name").String()
 }
 
 // Global returns the JavaScript global object (window in browsers, global in Node.js).

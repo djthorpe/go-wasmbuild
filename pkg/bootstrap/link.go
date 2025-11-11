@@ -1,11 +1,13 @@
-package bs
+package bootstrap
 
 import (
 	"fmt"
 
+	// Packages
+	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
+
 	// Namespace imports
 	. "github.com/djthorpe/go-wasmbuild"
-	. "github.com/djthorpe/go-wasmbuild/pkg/mvc"
 )
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -13,10 +15,10 @@ import (
 
 // text are elements that represent text views
 type link struct {
-	View
+	mvc.View
 }
 
-var _ View = (*link)(nil)
+var _ mvc.View = (*link)(nil)
 
 ///////////////////////////////////////////////////////////////////////////////
 // GLOBALS
@@ -26,28 +28,27 @@ const (
 )
 
 func init() {
-	RegisterView(ViewLink, newLinkFromElement)
+	mvc.RegisterView(ViewLink, newLinkFromElement)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
-func Link(href string, opt ...Opt) View {
-	opt = append([]Opt{WithAttr("href", href)}, opt...)
-	return NewView(new(link), ViewLink, "A", opt...)
+func Link(href string, opt ...mvc.Opt) mvc.View {
+	return mvc.NewView(new(link), ViewLink, "A", append([]mvc.Opt{mvc.WithAttr("href", href)}, opt...)...)
 }
 
-func newLinkFromElement(element Element) View {
+func newLinkFromElement(element Element) mvc.View {
 	tagName := element.TagName()
 	if tagName != "A" {
 		panic(fmt.Sprintf("newLinkFromElement: invalid tag name %q", tagName))
 	}
-	return NewViewWithElement(new(link), element)
+	return mvc.NewViewWithElement(new(link), element)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
 
-func (link *link) SetView(view View) {
+func (link *link) SetView(view mvc.View) {
 	link.View = view
 }

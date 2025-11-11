@@ -41,7 +41,7 @@ type Node interface {
 type Event interface {
 	// Properties
 	Type() string
-	Target() Node
+	Target() any
 }
 
 // EventTarget implements https://developer.mozilla.org/en-US/docs/Web/API/EventTarget
@@ -160,12 +160,20 @@ type DocumentType interface {
 	SystemId() string
 }
 
+// Location implements https://developer.mozilla.org/en-US/docs/Web/API/Location
+type Location interface {
+	// Properties
+	Href() string
+	Hash() string
+}
+
 // Window implements https://developer.mozilla.org/en-US/docs/Web/API/Window
 type Window interface {
 	EventTarget
 
 	// Properties
 	Document() Document
+	Location() Location
 }
 
 // TokenList implements https://developer.mozilla.org/en-US/docs/Web/API/DOMTokenList
