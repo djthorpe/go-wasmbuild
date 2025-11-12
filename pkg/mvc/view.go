@@ -110,6 +110,9 @@ type ViewWithValue interface {
 
 	// Return the value of the view as a string
 	Value() string
+
+	// Set the value of the view as a string
+	SetValue(string) ViewWithValue
 }
 
 ///////////////////////////////////////////////////////////////////////////////

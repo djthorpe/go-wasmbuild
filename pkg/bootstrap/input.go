@@ -190,6 +190,20 @@ func (rangeinput *rangeinput) Value() string {
 	return rangeinput.Root().Value()
 }
 
+func (input *input) SetValue(value string) mvc.ViewWithValue {
+	input.Root().SetValue(value)
+	return input
+}
+
+func (rangeinput *rangeinput) SetValue(value string) mvc.ViewWithValue {
+	rangeinput.Root().SetValue(value)
+	return rangeinput
+}
+
+func (textarea *textarea) SetValue(value string) mvc.ViewWithValue {
+	panic("SetValue: not implemented for textarea") // TODO
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // OPTIONS
 
@@ -232,15 +246,23 @@ func WithoutAutocomplete() mvc.Opt {
 
 func WithMinMax(min, max int) mvc.Opt {
 	return func(o mvc.OptSet) error {
-		if o.Name() != ViewInput && o.Name() != ViewRange {
+		if o.Name() != ViewInput && o.Name() != ViewRange && o.Name() != ViewProgress {
 			return ErrInternalAppError.Withf("WithMinMax: not supported for view type %q", o.Name())
 		}
 		if min > max {
 			return ErrBadParameter.Withf("WithMinMax: min (%d) must be less than or equal to max (%d)", min, max)
 		}
-		if err := mvc.WithAttr("min", fmt.Sprintf("%d", min))(o); err != nil {
-			return err
+		switch o.Name() {
+		case ViewProgress:
+			if err := mvc.WithAttr("aria-valuemin", fmt.Sprintf("%d", min))(o); err != nil {
+				return err
+			}
+			return mvc.WithAttr("aria-valuemax", fmt.Sprintf("%d", max))(o)
+		default:
+			if err := mvc.WithAttr("min", fmt.Sprintf("%d", min))(o); err != nil {
+				return err
+			}
+			return mvc.WithAttr("max", fmt.Sprintf("%d", max))(o)
 		}
-		return mvc.WithAttr("max", fmt.Sprintf("%d", max))(o)
 	}
 }

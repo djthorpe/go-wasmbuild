@@ -32,6 +32,8 @@ func main() {
 		bs.Link("#input", mvc.WithClass("m-2")).Content("Input"),
 		bs.VRule(),
 		bs.Link("#tooltips", mvc.WithClass("m-2")).Content("Tooltips"),
+		bs.VRule(),
+		bs.Link("#progress", mvc.WithClass("m-2")).Content("Progress Bars"),
 
 		mvc.Router(mvc.WithClass("container-fluid", "my-2")).Page(
 			"#text", TextExamples(),
@@ -55,6 +57,8 @@ func main() {
 			"#input", InputExamples(),
 		).Page(
 			"#tooltips", TooltipExamples(),
+		).Page(
+			"#progress", ProgressExamples(),
 		),
 	)
 
