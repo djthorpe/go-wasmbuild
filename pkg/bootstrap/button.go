@@ -19,15 +19,21 @@ type buttongroup struct {
 	mvc.View
 }
 
+type buttontoolbar struct {
+	mvc.View
+}
+
 var _ mvc.View = (*button)(nil)
 var _ mvc.View = (*buttongroup)(nil)
+var _ mvc.View = (*buttontoolbar)(nil)
 
 ///////////////////////////////////////////////////////////////////////////////
 // GLOBALS
 
 const (
-	ViewButton      = "mvc-bs-button"
-	ViewButtonGroup = "mvc-bs-buttongroup"
+	ViewButton        = "mvc-bs-button"
+	ViewButtonGroup   = "mvc-bs-buttongroup"
+	ViewButtonToolbar = "mvc-bs-buttontoolbar"
 
 	// The prefix class for outline buttons
 	viewOutlineButtonClassPrefix = "btn-outline"
@@ -36,21 +42,33 @@ const (
 func init() {
 	mvc.RegisterView(ViewButton, newButtonFromElement)
 	mvc.RegisterView(ViewButtonGroup, newButtonGroupFromElement)
+	mvc.RegisterView(ViewButtonToolbar, newButtonToolbarFromElement)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
-func Button(opt ...mvc.Opt) mvc.View {
-	return mvc.NewView(new(button), ViewButton, "BUTTON", append([]mvc.Opt{mvc.WithAttr("type", "button"), mvc.WithClass("btn"), mvc.WithClass("btn-primary")}, opt...)...)
+func Button(args ...any) mvc.View {
+	opts, content := gatherOpts(mvc.WithAttr("type", "button"), mvc.WithClass("btn", "btn-primary"), args)
+	return mvc.NewView(new(button), ViewButton, "BUTTON", opts...).Content(content...)
 }
 
-func OutlineButton(opt ...mvc.Opt) mvc.View {
-	return mvc.NewView(new(button), ViewButton, "BUTTON", append([]mvc.Opt{mvc.WithAttr("type", "button"), mvc.WithClass("btn", "btn-outline"), mvc.WithClass("btn-outline-primary")}, opt...)...)
+func OutlineButton(args ...any) mvc.View {
+	opts, content := gatherOpts(mvc.WithAttr("type", "button"), mvc.WithClass("btn", "btn-outline", "btn-outline-primary"), args)
+	return mvc.NewView(new(button), ViewButton, "BUTTON", opts...).Content(content...)
 }
 
-func CloseButton(opt ...mvc.Opt) mvc.View {
-	return mvc.NewView(new(button), ViewButton, "BUTTON", append([]mvc.Opt{mvc.WithAttr("type", "button"), mvc.WithClass("btn-close"), mvc.WithAriaLabel("close")}, opt...)...)
+func CloseButton(args ...any) mvc.View {
+	opts, content := gatherOpts(mvc.WithAttr("type", "button"), mvc.WithClass("btn", "btn-close"), mvc.WithAriaLabel("close"), args)
+	if len(content) > 0 {
+		panic("Button: content not supported in buttons")
+	}
+	return mvc.NewView(new(button), ViewButton, "BUTTON", opts...)
+}
+
+func ButtonToolbar(opt ...mvc.Opt) mvc.View {
+	opts := append([]mvc.Opt{mvc.WithAttr("role", "toolbar"), mvc.WithClass("btn-toolbar")}, opt...)
+	return mvc.NewView(new(buttontoolbar), ViewButtonToolbar, "DIV", opts...)
 }
 
 func ButtonGroup(opt ...mvc.Opt) mvc.View {
@@ -77,6 +95,13 @@ func newButtonGroupFromElement(element Element) mvc.View {
 	return mvc.NewViewWithElement(new(buttongroup), element)
 }
 
+func newButtonToolbarFromElement(element Element) mvc.View {
+	if element.TagName() != "DIV" {
+		return nil
+	}
+	return mvc.NewViewWithElement(new(buttontoolbar), element)
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
 
@@ -85,6 +110,10 @@ func (b *button) SetView(view mvc.View) {
 }
 
 func (b *buttongroup) SetView(view mvc.View) {
+	b.View = view
+}
+
+func (b *buttontoolbar) SetView(view mvc.View) {
 	b.View = view
 }
 
@@ -98,7 +127,7 @@ func (b *button) Append(children ...any) mvc.View {
 }
 
 func (b *buttongroup) Append(children ...any) mvc.View {
-	// Button groups can only include buttons
+	// TODO: Button groups can only include buttons
 	// Call superclass
 	return b.View.Append(children...)
 }

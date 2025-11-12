@@ -25,13 +25,13 @@ func main() {
 		bs.VRule(),
 		bs.Link("#button", mvc.WithClass("m-2")).Content("Buttons"),
 		bs.VRule(),
-		bs.Link("#button-group", mvc.WithClass("m-2")).Content("Button Groups"),
-		bs.VRule(),
 		bs.Link("#card", mvc.WithClass("m-2")).Content("Cards"),
 		bs.VRule(),
 		bs.Link("#offcanvas", mvc.WithClass("m-2")).Content("Offcanvas"),
 		bs.VRule(),
 		bs.Link("#input", mvc.WithClass("m-2")).Content("Input"),
+		bs.VRule(),
+		bs.Link("#tooltips", mvc.WithClass("m-2")).Content("Tooltips"),
 
 		mvc.Router(mvc.WithClass("container-fluid", "my-2")).Page(
 			"#text", TextExamples(),
@@ -44,8 +44,6 @@ func main() {
 		).Page(
 			"#button", ButtonExamples(),
 		).Page(
-			"#button-group", ButtonGroupExamples(),
-		).Page(
 			"#card", CardExamples(),
 		).Page(
 			"#icon", IconExamples(),
@@ -55,6 +53,8 @@ func main() {
 			"#offcanvas", OffcanvasExamples(),
 		).Page(
 			"#input", InputExamples(),
+		).Page(
+			"#tooltips", TooltipExamples(),
 		),
 	)
 
@@ -152,8 +152,8 @@ func ListExamples() mvc.View {
 }
 
 func IconExamples() mvc.View {
-	withButtonClasses := func(opts ...mvc.Opt) []mvc.Opt {
-		base := []mvc.Opt{mvc.WithClass("d-flex", "align-items-center", "gap-2", "justify-content-center", "my-1", "px-3")}
+	withButtonClasses := func(opts ...any) []any {
+		base := []any{mvc.WithClass("d-flex", "align-items-center", "gap-2", "justify-content-center", "my-1", "px-3")}
 		return append(base, opts...)
 	}
 	return bs.Container().Content(
@@ -197,100 +197,6 @@ func LinkExamples() mvc.View {
 			bs.Link("#link", bs.WithColor(bs.Secondary)).Content("Secondary Link Color"),
 			bs.Link("#link", bs.WithColor(bs.Danger)).Content("Danger Link Color"),
 		),
-	)
-}
-
-func ButtonExamples() mvc.View {
-	return bs.Container().Content(
-		bs.Heading(1).Content("Button Examples"),
-		bs.HRule(),
-		bs.Heading(3).Content("Standard Buttons"),
-		bs.Button(mvc.WithClass("mx-1")).Content("Default Button"),
-		bs.Button(bs.WithColor(bs.Secondary), mvc.WithClass("mx-1")).Content("Secondary Button"),
-		bs.Button(bs.WithColor(bs.Danger), mvc.WithClass("mx-1")).Content("Danger Button"),
-		bs.HRule(),
-		bs.Heading(3).Content("Outline Buttons"),
-		bs.OutlineButton(mvc.WithClass("mx-1")).Content("Default Button"),
-		bs.OutlineButton(bs.WithColor(bs.Secondary), mvc.WithClass("mx-1")).Content("Secondary Button"),
-		bs.OutlineButton(bs.WithColor(bs.Danger), mvc.WithClass("mx-1")).Content("Danger Button"),
-		bs.HRule(),
-		bs.Heading(3).Content("Close Buttons"),
-		bs.CloseButton(mvc.WithClass("mx-1")),
-		bs.HRule(),
-		bs.Heading(3).Content("Large Buttons"),
-		bs.Button(mvc.WithClass("mx-1"), bs.WithSize(bs.Large)).Content("Default Button"),
-		bs.HRule(),
-		bs.Heading(3).Content("Small Buttons"),
-		bs.Button(mvc.WithClass("mx-1"), bs.WithSize(bs.Small)).Content("Default Button"),
-		bs.HRule(),
-		bs.Heading(3).Content("Disabled Buttons"),
-		bs.Button(mvc.WithClass("mx-1"), bs.WithDisabled(true)).Content("Default Button"),
-		bs.Button(bs.WithColor(bs.Secondary), mvc.WithClass("mx-1"), bs.WithDisabled(true)).Content("Secondary Button"),
-		bs.Button(bs.WithColor(bs.Danger), mvc.WithClass("mx-1"), bs.WithDisabled(true)).Content("Danger Button"),
-		bs.HRule(),
-	)
-}
-
-func ButtonGroupExamples() mvc.View {
-	return bs.Container().Content(
-		bs.Heading(1).Content("Button Groups"),
-		bs.HRule(),
-		bs.Heading(3).Content("Horizontal Button Group"),
-		bs.ButtonGroup().Content(
-			bs.Button().Content("Left"),
-			bs.Button().Content("Middle"),
-			bs.Button().Content("Right"),
-		).AddEventListener("click", func(e Event) {
-			if view := mvc.ViewFromEvent(e); view != nil {
-				view.Content("Clicked!")
-			}
-		}),
-		bs.ButtonGroup(mvc.WithClass("mx-2")).Content(
-			bs.Button(bs.WithColor(bs.Danger)).Content("Left"),
-			bs.Button(bs.WithColor(bs.Warning)).Content("Middle"),
-			bs.Button(bs.WithColor(bs.Success)).Content("Right"),
-		).AddEventListener("click", func(e Event) {
-			if view := mvc.ViewFromEvent(e); view != nil {
-				view.Content("Clicked!")
-			}
-		}),
-		bs.ButtonGroup(mvc.WithClass("mx-2")).Content(
-			bs.OutlineButton(bs.WithColor(bs.Danger)).Content("Left"),
-			bs.OutlineButton(bs.WithColor(bs.Primary)).Content("Middle"),
-			bs.OutlineButton(bs.WithColor(bs.Success)).Content("Right"),
-		).AddEventListener("click", func(e Event) {
-			if view := mvc.ViewFromEvent(e); view != nil {
-				view.Content("Clicked!")
-			}
-		}),
-		bs.ButtonGroup(mvc.WithClass("mx-2"), bs.WithSize(bs.Small)).Content(
-			bs.Button(bs.WithColor(bs.Danger)).Content("Left"),
-			bs.Button(bs.WithColor(bs.Warning)).Content("Middle"),
-			bs.Button(bs.WithColor(bs.Success)).Content("Right"),
-		).AddEventListener("click", func(e Event) {
-			if view := mvc.ViewFromEvent(e); view != nil {
-				view.Content("Clicked!")
-			}
-		}), bs.ButtonGroup(mvc.WithClass("mx-2"), bs.WithSize(bs.Large)).Content(
-			bs.Button(bs.WithColor(bs.Danger)).Content("Left"),
-			bs.Button(bs.WithColor(bs.Warning)).Content("Middle"),
-			bs.Button(bs.WithColor(bs.Success)).Content("Right"),
-		).AddEventListener("click", func(e Event) {
-			if view := mvc.ViewFromEvent(e); view != nil {
-				view.Content("Clicked!")
-			}
-		}),
-		bs.HRule(),
-		bs.Heading(3).Content("Vertical Button Group"),
-		bs.VButtonGroup(mvc.WithClass("mx-2")).Content(
-			bs.Button(bs.WithColor(bs.Danger)).Content("Top"),
-			bs.Button(bs.WithColor(bs.Warning)).Content("Middle"),
-			bs.Button(bs.WithColor(bs.Success)).Content("Bottom"),
-		).AddEventListener("click", func(e Event) {
-			if view := mvc.ViewFromEvent(e); view != nil {
-				view.Content("Clicked!")
-			}
-		}),
 	)
 }
 
