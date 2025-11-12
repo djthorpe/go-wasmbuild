@@ -34,8 +34,8 @@ func init() {
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
-func Link(href string, opt ...mvc.Opt) mvc.View {
-	return mvc.NewView(new(link), ViewLink, "A", append([]mvc.Opt{mvc.WithAttr("href", href)}, opt...)...)
+func Link(href string, args ...any) mvc.View {
+	return mvc.NewView(new(link), ViewLink, "A", mvc.WithAttr("href", href), args)
 }
 
 func newLinkFromElement(element Element) mvc.View {

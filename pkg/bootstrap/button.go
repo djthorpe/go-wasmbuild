@@ -49,36 +49,27 @@ func init() {
 // LIFECYCLE
 
 func Button(args ...any) mvc.View {
-	opts, content := gatherOpts(mvc.WithAttr("type", "button"), mvc.WithClass("btn", "btn-primary"), args)
-	return mvc.NewView(new(button), ViewButton, "BUTTON", opts...).Content(content...)
+	return mvc.NewView(new(button), ViewButton, "BUTTON", mvc.WithAttr("type", "button"), mvc.WithClass("btn", "btn-primary"), args)
 }
 
 func OutlineButton(args ...any) mvc.View {
-	opts, content := gatherOpts(mvc.WithAttr("type", "button"), mvc.WithClass("btn", "btn-outline", "btn-outline-primary"), args)
-	return mvc.NewView(new(button), ViewButton, "BUTTON", opts...).Content(content...)
+	return mvc.NewView(new(button), ViewButton, "BUTTON", mvc.WithAttr("type", "button"), mvc.WithClass("btn", "btn-outline", "btn-outline-primary"), args)
 }
 
 func CloseButton(args ...any) mvc.View {
-	opts, content := gatherOpts(mvc.WithAttr("type", "button"), mvc.WithClass("btn", "btn-close"), mvc.WithAriaLabel("close"), args)
-	if len(content) > 0 {
-		panic("Button: content not supported in buttons")
-	}
-	return mvc.NewView(new(button), ViewButton, "BUTTON", opts...)
+	return mvc.NewView(new(button), ViewButton, "BUTTON", mvc.WithAttr("type", "button"), mvc.WithClass("btn", "btn-close"), mvc.WithAriaLabel("close"), args)
 }
 
-func ButtonToolbar(opt ...mvc.Opt) mvc.View {
-	opts := append([]mvc.Opt{mvc.WithAttr("role", "toolbar"), mvc.WithClass("btn-toolbar")}, opt...)
-	return mvc.NewView(new(buttontoolbar), ViewButtonToolbar, "DIV", opts...)
+func ButtonToolbar(args ...any) mvc.View {
+	return mvc.NewView(new(buttontoolbar), ViewButtonToolbar, "DIV", mvc.WithAttr("role", "toolbar"), mvc.WithClass("btn-toolbar"), args)
 }
 
-func ButtonGroup(opt ...mvc.Opt) mvc.View {
-	opts := append([]mvc.Opt{mvc.WithAttr("role", "group"), mvc.WithClass("btn-group")}, opt...)
-	return mvc.NewView(new(buttongroup), ViewButtonGroup, "DIV", opts...)
+func ButtonGroup(args ...any) mvc.View {
+	return mvc.NewView(new(buttongroup), ViewButtonGroup, "DIV", mvc.WithAttr("role", "group"), mvc.WithClass("btn-group"), args)
 }
 
-func VButtonGroup(opt ...mvc.Opt) mvc.View {
-	opts := append([]mvc.Opt{mvc.WithAttr("role", "group"), mvc.WithClass("btn-group-vertical")}, opt...)
-	return mvc.NewView(new(buttongroup), ViewButtonGroup, "DIV", opts...)
+func VButtonGroup(args ...any) mvc.View {
+	return mvc.NewView(new(buttongroup), ViewButtonGroup, "DIV", mvc.WithAttr("role", "group"), mvc.WithClass("btn-group-vertical"), args)
 }
 
 func newButtonFromElement(element Element) mvc.View {

@@ -34,12 +34,12 @@ func init() {
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
-func HRule(opt ...mvc.Opt) mvc.View {
-	return mvc.NewView(new(rule), ViewRule, "HR", opt...).(*rule)
+func HRule(args ...any) mvc.View {
+	return mvc.NewView(new(rule), ViewRule, "HR", args...).(*rule)
 }
 
-func VRule(opt ...mvc.Opt) mvc.View {
-	return mvc.NewView(new(rule), ViewRule, "DIV", append([]mvc.Opt{mvc.WithClass("vr")}, opt...)...)
+func VRule(args ...any) mvc.View {
+	return mvc.NewView(new(rule), ViewRule, "DIV", mvc.WithClass("vr"), args)
 }
 
 func newRuleFromElement(element Element) mvc.View {

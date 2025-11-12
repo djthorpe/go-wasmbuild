@@ -31,21 +31,20 @@ func init() {
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
-func List(opt ...mvc.Opt) mvc.View {
-	return mvc.NewView(new(list), ViewList, "OL", opt...)
+func List(args ...any) mvc.View {
+	return mvc.NewView(new(list), ViewList, "OL", args...)
 }
 
-func ListGroup(opt ...mvc.Opt) mvc.View {
-	opt = append([]mvc.Opt{mvc.WithClass("list-group")}, opt...)
-	return mvc.NewView(new(list), ViewListGroup, "UL", opt...)
+func ListGroup(args ...any) mvc.View {
+	return mvc.NewView(new(list), ViewListGroup, "UL", mvc.WithClass("list-group"), args)
 }
 
-func BulletList(opt ...mvc.Opt) mvc.View {
-	return mvc.NewView(new(list), ViewList, "UL", opt...)
+func BulletList(args ...any) mvc.View {
+	return mvc.NewView(new(list), ViewList, "UL", args...)
 }
 
-func UnstyledList(opt ...mvc.Opt) mvc.View {
-	return mvc.NewView(new(list), ViewList, "UL", append([]mvc.Opt{mvc.WithClass("list-unstyled")}, opt...)...)
+func UnstyledList(args ...any) mvc.View {
+	return mvc.NewView(new(list), ViewList, "UL", mvc.WithClass("list-unstyled"), args)
 }
 
 func newListFromElement(element Element) mvc.View {

@@ -21,7 +21,7 @@ func TextExamples() mvc.View {
 }
 
 func ParaExample() mvc.View {
-	return bs.Grid().Content(
+	return bs.Grid(
 		bs.Container(
 			mvc.WithClass("my-2"),
 			bs.Para("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."),
@@ -35,7 +35,7 @@ func ParaExample() mvc.View {
 }
 
 func LeadExample() mvc.View {
-	return bs.Grid().Content(
+	return bs.Grid(
 		bs.Container(mvc.WithClass("my-2")).Content(
 			bs.LeadPara("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."),
 		), bs.Container().Content(
@@ -50,7 +50,7 @@ func LeadExample() mvc.View {
 }
 
 func BlockquoteExample() mvc.View {
-	return bs.Grid().Content(
+	return bs.Grid(
 		bs.Container(mvc.WithClass("my-2")).Content(
 			bs.Blockquote("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."),
 		), bs.Container().Content(
@@ -65,7 +65,7 @@ func BlockquoteExample() mvc.View {
 }
 
 func ColorParaExample() mvc.View {
-	return bs.Grid().Content(
+	return bs.Grid(
 		bs.Container(mvc.WithClass("my-2"),
 			bs.Para(bs.WithColor(bs.Primary), "Lorem ipsum dolor sit amet, consectetur adipiscing elit."),
 			bs.Para(bs.WithColor(bs.Secondary), "Lorem ipsum dolor sit amet, consectetur adipiscing elit."),
@@ -92,7 +92,7 @@ bs.Para(bs.WithColor(bs.Dark), "Lorem ipsum dolor sit amet....")`,
 }
 
 func InlineTextExamples() mvc.View {
-	return bs.Grid().Content(
+	return bs.Grid(
 		bs.Container(mvc.WithClass("my-2"),
 			bs.Para(bs.Deleted("Lorem ipsum dolor sit amet, consectetur adipiscing elit.")),
 			bs.Para(bs.Highlighted("Lorem ipsum dolor sit amet, consectetur adipiscing elit.")),

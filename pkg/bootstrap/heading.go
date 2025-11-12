@@ -52,8 +52,7 @@ func Heading(level int, args ...any) mvc.View {
 	if !exists {
 		panic(fmt.Sprintf("Heading: invalid level %d", level))
 	}
-	opts, content := gatherOpts(args)
-	return mvc.NewView(new(heading), ViewHeading, tagName, opts...).Content(content...)
+	return mvc.NewView(new(heading), ViewHeading, tagName, args)
 }
 
 func newHeadingFromElement(element Element) mvc.View {

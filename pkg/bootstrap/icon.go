@@ -34,9 +34,8 @@ func init() {
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
-func Icon(name string, opts ...mvc.Opt) mvc.View {
-	opts = append([]mvc.Opt{mvc.WithClass("bi-" + name)}, opts...)
-	return mvc.NewView(new(icon), ViewIcon, "I", opts...)
+func Icon(name string, args ...any) mvc.View {
+	return mvc.NewView(new(icon), ViewIcon, "I", mvc.WithClass("bi-"+name), args)
 }
 
 func newIconFromElement(element Element) mvc.View {

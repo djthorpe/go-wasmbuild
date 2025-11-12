@@ -33,11 +33,10 @@ func init() {
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
-func Offcanvas(id string, opt ...mvc.Opt) *offcanvas {
-	opts := append([]mvc.Opt{mvc.WithAttr("id", id), mvc.WithClass("offcanvas", "offcanvas-start"), mvc.WithAttr("tabindex", "-1"), mvc.WithAttr("aria-labelledby", id+"-label")}, opt...)
+func Offcanvas(id string, args ...any) *offcanvas {
 	header := mvc.HTML("DIV", mvc.WithClass("offcanvas-header"))
 	body := mvc.HTML("DIV", mvc.WithClass("offcanvas-body"))
-	return mvc.NewViewEx(new(offcanvas), ViewOffcanvas, "DIV", header, body, nil, nil, opts...).(*offcanvas)
+	return mvc.NewViewEx(new(offcanvas), ViewOffcanvas, "DIV", header, body, nil, nil, mvc.WithAttr("id", id), mvc.WithClass("offcanvas", "offcanvas-start"), mvc.WithAttr("tabindex", "-1"), mvc.WithAttr("aria-labelledby", id+"-label"), args).(*offcanvas)
 }
 
 func newOffcanvasFromElement(element Element) mvc.View {

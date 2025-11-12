@@ -98,6 +98,24 @@ func applyOpts(element dom.Element, opts ...Opt) error {
 	return nil
 }
 
+func gatherOpts(args ...any) ([]Opt, []any) {
+	var opts []Opt
+	var content []any
+	for _, arg := range args {
+		switch v := arg.(type) {
+		case []any:
+			o, c := gatherOpts(v...)
+			opts = append(opts, o...)
+			content = append(content, c...)
+		case Opt:
+			opts = append(opts, v)
+		default:
+			content = append(content, v)
+		}
+	}
+	return opts, content
+}
+
 /////////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
 

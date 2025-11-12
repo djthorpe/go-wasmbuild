@@ -163,12 +163,12 @@ func RegisterView(name string, constructor ViewConstructorFunc) {
 // LIFECYCLE
 
 // Create a new empty view, applying any options to it
-func NewView(self View, name string, tagName string, opts ...Opt) View {
-	return NewViewEx(self, name, tagName, nil, nil, nil, nil, opts...)
+func NewView(self View, name string, tagName string, args ...any) View {
+	return NewViewEx(self, name, tagName, nil, nil, nil, nil, args...)
 }
 
 // Create a new empty view with a header, footer and caption
-func NewViewEx(self View, name string, tagName string, header, body, footer, caption dom.Element, opts ...Opt) View {
+func NewViewEx(self View, name string, tagName string, header, body, footer, caption dom.Element, args ...any) View {
 	if _, exists := views[name]; !exists {
 		panic(fmt.Sprintf("NewView: view not registered %q", name))
 	}
@@ -250,10 +250,16 @@ func NewViewEx(self View, name string, tagName string, header, body, footer, cap
 	v.root.SetAttribute(DataComponentAttrKey, name)
 
 	// Apply options to the view
+	opts, content := gatherOpts(args...)
 	if len(opts) > 0 {
 		if err := applyOpts(v.root, opts...); err != nil {
 			panic(err)
 		}
+	}
+
+	// Add content to the component
+	if len(content) > 0 {
+		v.self.Content(content...)
 	}
 
 	// Return the view

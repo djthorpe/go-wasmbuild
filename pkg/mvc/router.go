@@ -50,8 +50,8 @@ func init() {
 // LIFECYCLE
 
 // Create a Router
-func Router(opts ...Opt) RouterView {
-	self := NewView(new(router), ViewRouter, "div", opts...).(RouterView)
+func Router(args ...any) RouterView {
+	self := NewView(new(router), ViewRouter, "div", args).(RouterView)
 	router := self.(*router)
 	window := dom.GetWindow()
 

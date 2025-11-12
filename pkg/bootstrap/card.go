@@ -40,17 +40,15 @@ func init() {
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
-func Card(opt ...mvc.Opt) *card {
-	opts := append([]mvc.Opt{mvc.WithClass("card")}, opt...)
+func Card(args ...any) *card {
 	header := mvc.HTML("DIV", mvc.WithClass("card-header"))
 	body := mvc.HTML("DIV", mvc.WithClass("card-body"))
 	footer := mvc.HTML("DIV", mvc.WithClass("card-footer"))
-	return mvc.NewViewEx(new(card), ViewCard, "DIV", header, body, footer, nil, opts...).(*card)
+	return mvc.NewViewEx(new(card), ViewCard, "DIV", header, body, footer, nil, mvc.WithClass("card"), args).(*card)
 }
 
-func CardGroup(opt ...mvc.Opt) *cardgroup {
-	opts := append([]mvc.Opt{mvc.WithClass("card-group")}, opt...)
-	return mvc.NewView(new(cardgroup), ViewCardGroup, "DIV", opts...).(*cardgroup)
+func CardGroup(args ...any) *cardgroup {
+	return mvc.NewView(new(cardgroup), ViewCardGroup, "DIV", mvc.WithClass("card-group"), args).(*cardgroup)
 }
 
 func newCardFromElement(element Element) mvc.View {

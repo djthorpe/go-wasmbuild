@@ -64,39 +64,33 @@ func init() {
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
-func Form(name string, opt ...mvc.Opt) mvc.View {
-	opt = append([]mvc.Opt{mvc.WithAttr("name", name)}, opt...)
-	return mvc.NewView(new(form), ViewForm, "FORM", append([]mvc.Opt{mvc.WithClass("form")}, opt...)...)
+func Form(name string, args ...any) mvc.View {
+	return mvc.NewView(new(form), ViewForm, "FORM", mvc.WithAttr("name", name), args)
 }
 
-func Input(name string, opt ...mvc.Opt) mvc.View {
-	opt = append([]mvc.Opt{mvc.WithAttr("id", name)}, opt...)
+func Input(name string, args ...any) mvc.View {
 	label := mvc.HTML("LABEL", mvc.WithClass("form-label"), mvc.WithAttr("for", name))
-	return mvc.NewViewEx(new(input), ViewInput, "INPUT", nil, nil, nil, label, append([]mvc.Opt{mvc.WithClass("form-control")}, opt...)...)
+	return mvc.NewViewEx(new(input), ViewInput, "INPUT", nil, nil, nil, label, mvc.WithAttr("id", name), mvc.WithClass("form-control"), args)
 }
 
-func Password(name string, opt ...mvc.Opt) mvc.View {
-	opt = append([]mvc.Opt{mvc.WithAttr("type", "password")}, opt...)
-	return Input(name, opt...)
+func Password(name string, args ...any) mvc.View {
+	return Input(name, mvc.WithAttr("type", "password"), args)
 }
 
-func Number(name string, opt ...mvc.Opt) mvc.View {
-	opt = append([]mvc.Opt{mvc.WithAttr("type", "number")}, opt...)
-	return Input(name, opt...)
+func Number(name string, args ...any) mvc.View {
+	return Input(name, mvc.WithAttr("type", "number"), args)
 }
 
-func InputGroup(opt ...mvc.Opt) mvc.View {
-	return mvc.NewView(new(inputgroup), ViewInputGroup, "DIV", append([]mvc.Opt{mvc.WithClass("input-group")}, opt...)...)
+func InputGroup(args ...any) mvc.View {
+	return mvc.NewView(new(inputgroup), ViewInputGroup, "DIV", mvc.WithClass("input-group"), args)
 }
 
-func Textarea(name string, opt ...mvc.Opt) mvc.View {
-	opt = append([]mvc.Opt{mvc.WithAttr("id", name)}, opt...)
-	return mvc.NewView(new(textarea), ViewTextarea, "TEXTAREA", append([]mvc.Opt{mvc.WithClass("form-control")}, opt...)...)
+func Textarea(name string, args ...any) mvc.View {
+	return mvc.NewView(new(textarea), ViewTextarea, "TEXTAREA", mvc.WithAttr("id", name), mvc.WithClass("form-control"), args)
 }
 
-func Range(name string, opt ...mvc.Opt) mvc.View {
-	opt = append([]mvc.Opt{mvc.WithAttr("id", name), mvc.WithAttr("type", "range")}, opt...)
-	return mvc.NewView(new(rangeinput), ViewRange, "INPUT", append([]mvc.Opt{mvc.WithClass("form-range")}, opt...)...)
+func Range(name string, args ...any) mvc.View {
+	return mvc.NewView(new(rangeinput), ViewRange, "INPUT", mvc.WithAttr("id", name), mvc.WithAttr("type", "range"), args)
 }
 
 func newFormFromElement(element Element) mvc.View {

@@ -29,9 +29,8 @@ func init() {
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
-func CodeBlock(opt ...mvc.Opt) *codeblock {
-	opt = append([]mvc.Opt{mvc.WithClass("codeblock")}, opt...)
-	return mvc.NewView(new(codeblock), ViewCodeBlock, "PRE", opt...).(*codeblock)
+func CodeBlock(args ...any) *codeblock {
+	return mvc.NewView(new(codeblock), ViewCodeBlock, "PRE", mvc.WithClass("codeblock"), args).(*codeblock)
 }
 
 func newCodeBlockFromElement(element Element) mvc.View {

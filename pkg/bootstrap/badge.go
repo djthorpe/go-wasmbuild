@@ -30,30 +30,11 @@ func init() {
 // LIFECYCLE
 
 func Badge(args ...any) mvc.View {
-	opts, content := gatherOpts(mvc.WithClass("badge"), WithColor(Primary), args)
-	return mvc.NewView(new(badge), ViewBadge, "SPAN", opts...).Content(content...)
-}
-
-func gatherOpts(args ...any) ([]mvc.Opt, []any) {
-	var opts []mvc.Opt
-	var content []any
-	for _, arg := range args {
-		switch v := arg.(type) {
-		case []any:
-			o, c := gatherOpts(v...)
-			opts = append(opts, o...)
-			content = append(content, c...)
-		case mvc.Opt:
-			opts = append(opts, v)
-		default:
-			content = append(content, v)
-		}
-	}
-	return opts, content
+	return mvc.NewView(new(badge), ViewBadge, "SPAN", mvc.WithClass("badge"), WithColor(Primary), args)
 }
 
 func PillBadge(args ...any) mvc.View {
-	return Badge(append(args, mvc.WithClass("rounded-pill"))...)
+	return Badge(args, mvc.WithClass("rounded-pill"))
 }
 
 func newBadgeFromElement(element Element) mvc.View {

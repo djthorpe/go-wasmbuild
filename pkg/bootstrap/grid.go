@@ -33,9 +33,8 @@ func init() {
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
-func Grid(opt ...mvc.Opt) *grid {
-	opts := append([]mvc.Opt{mvc.WithClass("row")}, opt...)
-	return mvc.NewView(new(grid), ViewGrid, "DIV", opts...).(*grid)
+func Grid(args ...any) *grid {
+	return mvc.NewView(new(grid), ViewGrid, "DIV", mvc.WithClass("row"), args).(*grid)
 }
 
 func newGridFromElement(element Element) mvc.View {
