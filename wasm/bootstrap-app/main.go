@@ -36,6 +36,8 @@ func main() {
 		bs.Link("#progress", mvc.WithClass("m-2")).Content("Progress Bars"),
 		bs.VRule(),
 		bs.Link("#navbar", mvc.WithClass("m-2")).Content("Navbars"),
+		bs.VRule(),
+		bs.Link("#table", mvc.WithClass("m-2")).Content("Tables"),
 
 		mvc.Router(mvc.WithClass("container-fluid", "my-2")).Page(
 			"#text", TextExamples(),
@@ -61,6 +63,8 @@ func main() {
 			"#progress", ProgressExamples(),
 		).Page(
 			"#navbar", NavBarExamples(),
+		).Page(
+			"#table", TableExamples(),
 		),
 	)
 

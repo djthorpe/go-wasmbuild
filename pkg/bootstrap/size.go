@@ -41,6 +41,9 @@ var (
 		Small,
 		Large,
 	}
+	allTableSizes = []Size{
+		Small,
+	}
 )
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -111,6 +114,8 @@ func sizePrefixForView(name string) string {
 		return "btn-group"
 	case ViewInput:
 		return "form-control"
+	case ViewTable:
+		return "table"
 	//	case ViewNavbar:
 	//		return "navbar-expand"
 	default:
@@ -124,6 +129,9 @@ func allSizesForView(name string) []Size {
 	}
 	if name == ViewInput {
 		return allInputSizes
+	}
+	if name == ViewTable {
+		return allTableSizes
 	}
 	//if name == ViewNavbar {
 	// Include SizeDefault for navbar
