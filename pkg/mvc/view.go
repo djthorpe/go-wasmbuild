@@ -224,15 +224,8 @@ func NewViewEx(self View, name string, tagName string, header, body, footer, cap
 		v.root.AppendChild(v.header)
 	}
 	if v.body != nil {
-		if v.body.IsConnected() {
-			panic("NewView: body element is already connected to the DOM")
-		}
-		if v.body != v.root {
-			markComponentPart(v.body, componentPartBody)
-		}
+		v.body.SetAttribute(DataComponentAttrKey, componentPartBody)
 		v.root.AppendChild(v.body)
-	} else {
-		v.body = v.root
 	}
 	if v.footer != nil {
 		if v.footer.IsConnected() {
@@ -242,10 +235,7 @@ func NewViewEx(self View, name string, tagName string, header, body, footer, cap
 		v.root.AppendChild(v.footer)
 	}
 	if v.caption != nil {
-		if v.caption.IsConnected() {
-			panic("NewView: caption element is already connected to the DOM")
-		}
-		markComponentPart(v.caption, componentPartCaption)
+		v.caption.SetAttribute(DataComponentAttrKey, componentPartCaption)
 		v.root.AppendChild(v.caption)
 	}
 
@@ -262,7 +252,7 @@ func NewViewEx(self View, name string, tagName string, header, body, footer, cap
 
 	// Add content to the component
 	if len(content) > 0 {
-		v.self.Content(content...)
+		v.self.Append(content...)
 	}
 
 	// Return the view
@@ -452,8 +442,12 @@ func (v *view) Caption(children ...any) ViewWithCaption {
 	viewWithCaption, ok := v.self.(ViewWithCaption)
 	if !ok {
 		panic(fmt.Sprintf("view.Caption: view %T does not implement ViewWithCaption", v.self))
+	} else if v.caption == nil || v.caption.GetAttribute(DataComponentAttrKey) != componentPartCaption {
+		panic("view.Caption: caption element is missing")
 	}
 
+	// If the existing caption under the root is a placeholder, then replace it with the
+	// actual caption
 	caption := v.ensureCaptionElement()
 	v.replaceChildContent(caption, children...)
 

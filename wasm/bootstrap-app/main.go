@@ -27,13 +27,15 @@ func main() {
 		bs.VRule(),
 		bs.Link("#card", mvc.WithClass("m-2")).Content("Cards"),
 		bs.VRule(),
-		bs.Link("#offcanvas", mvc.WithClass("m-2")).Content("Offcanvas"),
+		bs.Link("#modal", mvc.WithClass("m-2")).Content("Modal"),
 		bs.VRule(),
 		bs.Link("#input", mvc.WithClass("m-2")).Content("Input"),
 		bs.VRule(),
 		bs.Link("#tooltips", mvc.WithClass("m-2")).Content("Tooltips"),
 		bs.VRule(),
 		bs.Link("#progress", mvc.WithClass("m-2")).Content("Progress Bars"),
+		bs.VRule(),
+		bs.Link("#navbar", mvc.WithClass("m-2")).Content("Navbars"),
 
 		mvc.Router(mvc.WithClass("container-fluid", "my-2")).Page(
 			"#text", TextExamples(),
@@ -50,15 +52,15 @@ func main() {
 		).Page(
 			"#icon", IconExamples(),
 		).Page(
-			"#offcanvas", OffcanvasExamples(),
-		).Page(
-			"#offcanvas", OffcanvasExamples(),
+			"#modal", ModalExamples(),
 		).Page(
 			"#input", InputExamples(),
 		).Page(
 			"#tooltips", TooltipExamples(),
 		).Page(
 			"#progress", ProgressExamples(),
+		).Page(
+			"#navbar", NavBarExamples(),
 		),
 	)
 
@@ -243,33 +245,6 @@ func CardExamples() mvc.View {
 			bs.Card().Header("Header").Footer(
 				"Card Footer",
 			).Content("This is some card content!"),
-		),
-	)
-}
-
-func OffcanvasExamples() mvc.View {
-	return bs.Container().Content(
-		bs.Heading(1).Content("Offcanvas Example"),
-		bs.HRule(),
-		bs.Offcanvas("start", bs.WithPosition(bs.Start)).Header(
-			mvc.HTML("H4", mvc.WithInnerText("This is the offcanvas title")),
-			bs.CloseButton(mvc.WithAttr("data-bs-dismiss", "offcanvas")),
-		).Content(
-			"This is the offcanvas content!",
-		),
-		bs.Offcanvas("end", bs.WithPosition(bs.End), bs.WithTheme(bs.Dark)).Header(
-			mvc.HTML("H4", mvc.WithInnerText("This is the offcanvas title")),
-			bs.CloseButton(mvc.WithAttr("data-bs-dismiss", "offcanvas")),
-		).Content(
-			"This is the offcanvas content!",
-		),
-		bs.Offcanvas("top", bs.WithPosition(bs.Top)).Content("This is the offcanvas content!"),
-		bs.Offcanvas("bottom", bs.WithPosition(bs.Bottom)).Content("This is the offcanvas content!"),
-		bs.ButtonGroup().Content(
-			bs.Button(bs.WithOffcanvas("start")).Content("Start"),
-			bs.Button(bs.WithOffcanvas("end"), bs.WithColor(bs.Dark)).Content("End"),
-			bs.Button(bs.WithOffcanvas("top")).Content("Top"),
-			bs.Button(bs.WithOffcanvas("bottom")).Content("Bottom"),
 		),
 	)
 }

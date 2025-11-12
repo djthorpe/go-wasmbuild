@@ -13,16 +13,24 @@ func ButtonExamples() mvc.View {
 	return bs.Container(
 		ButtonSingleExamples(),
 		bs.HRule(),
+		ButtonWithIndicatorExamples(),
+		bs.HRule(),
 		ButtonGroupExamples(),
 		bs.HRule(),
 		ButtonToolbarExamples(),
 	)
 }
 
+func ButtonWithIndicatorExamples() mvc.View {
+	return bs.Container(
+		bs.Heading(3, "Button With Indicator Examples"),
+		bs.Button(mvc.WithClass("mx-1"), "Default Button").Caption("99+"),
+	)
+}
+
 func ButtonSingleExamples() mvc.View {
 	return bs.Container(
 		bs.Heading(1, "Button Examples"),
-		bs.HRule(),
 		bs.Heading(3, "Standard Buttons"),
 		bs.Button(mvc.WithClass("mx-1")).Content("Default Button"),
 		bs.Button(bs.WithColor(bs.Secondary), mvc.WithClass("mx-1")).Content("Secondary Button"),
@@ -53,7 +61,6 @@ func ButtonSingleExamples() mvc.View {
 func ButtonToolbarExamples() mvc.View {
 	return bs.Container(
 		bs.Heading(1, "Button Toolbar Examples"),
-		bs.HRule(),
 		bs.ButtonToolbar(mvc.WithAttr("aria-label", "Formatting toolbar"),
 			bs.ButtonGroup(mvc.WithClass("me-2"), mvc.WithAttr("aria-label", "Text formatting"),
 				toolbarIconButton("Bold", "type-bold"),
@@ -94,7 +101,6 @@ func toolbarIconButton(label, iconName string) mvc.View {
 func ButtonGroupExamples() mvc.View {
 	return bs.Container(
 		bs.Heading(1, "Button Groups"),
-		bs.HRule(),
 		bs.Heading(3, "Horizontal Button Group"),
 		bs.ButtonGroup(
 			bs.Button().Content("Left"),

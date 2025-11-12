@@ -90,7 +90,7 @@ func Textarea(name string, args ...any) mvc.View {
 }
 
 func Range(name string, args ...any) mvc.View {
-	return mvc.NewView(new(rangeinput), ViewRange, "INPUT", mvc.WithAttr("id", name), mvc.WithAttr("type", "range"), args)
+	return mvc.NewView(new(rangeinput), ViewRange, "INPUT", mvc.WithAttr("id", name), mvc.WithAttr("type", "range"), mvc.WithClass("form-range"), args)
 }
 
 func newFormFromElement(element Element) mvc.View {

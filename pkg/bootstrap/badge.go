@@ -2,6 +2,7 @@ package bootstrap
 
 import (
 	// Packages
+
 	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
 
 	// Namespace imports
@@ -29,11 +30,15 @@ func init() {
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
-func Badge(args ...any) mvc.View {
-	return mvc.NewView(new(badge), ViewBadge, "SPAN", mvc.WithClass("badge"), WithColor(Primary), args)
+func Badge(args ...any) *badge {
+	// Return the badge
+	return mvc.NewView(
+		new(badge), ViewBadge, "SPAN",
+		mvc.WithClass("badge", "position-relative"), WithColor(Primary), args,
+	).(*badge)
 }
 
-func PillBadge(args ...any) mvc.View {
+func PillBadge(args ...any) *badge {
 	return Badge(args, mvc.WithClass("rounded-pill"))
 }
 

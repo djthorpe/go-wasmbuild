@@ -143,12 +143,14 @@ func colorPrefixForView(name string) string {
 		return "bg"
 	case ViewText:
 		return "text"
-		//	case ViewHeading, ViewContainer:
+	case ViewProgress:
+		return "progress-bar"
+	case ViewContainer:
+		return "bg"
 		//		return "text"
 	//	case ViewAlert:
 	//		return "alert"
 	//	case ViewNavbar:
-	//		return "bg"
 	default:
 		return ""
 	}

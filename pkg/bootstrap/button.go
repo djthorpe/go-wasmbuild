@@ -12,7 +12,8 @@ import (
 // TYPES
 
 type button struct {
-	mvc.View
+	mvc.ViewWithCaption
+	caption Element
 }
 
 type buttongroup struct {
@@ -23,7 +24,7 @@ type buttontoolbar struct {
 	mvc.View
 }
 
-var _ mvc.View = (*button)(nil)
+var _ mvc.ViewWithCaption = (*button)(nil)
 var _ mvc.View = (*buttongroup)(nil)
 var _ mvc.View = (*buttontoolbar)(nil)
 
@@ -48,16 +49,23 @@ func init() {
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
-func Button(args ...any) mvc.View {
-	return mvc.NewView(new(button), ViewButton, "BUTTON", mvc.WithAttr("type", "button"), mvc.WithClass("btn", "btn-primary"), args)
+func Button(args ...any) *button {
+	caption := mvc.Placeholder()
+	view := mvc.NewViewEx(
+		new(button), ViewButton, "BUTTON",
+		nil, nil, nil, caption,
+		mvc.WithAttr("type", "button"), mvc.WithClass("btn", "btn-primary"), args,
+	).(*button)
+	view.caption = caption
+	return view
 }
 
-func OutlineButton(args ...any) mvc.View {
-	return mvc.NewView(new(button), ViewButton, "BUTTON", mvc.WithAttr("type", "button"), mvc.WithClass("btn", "btn-outline", "btn-outline-primary"), args)
+func OutlineButton(args ...any) *button {
+	return mvc.NewView(new(button), ViewButton, "BUTTON", mvc.WithAttr("type", "button"), mvc.WithClass("btn", "btn-outline", "btn-outline-primary"), args).(*button)
 }
 
-func CloseButton(args ...any) mvc.View {
-	return mvc.NewView(new(button), ViewButton, "BUTTON", mvc.WithAttr("type", "button"), mvc.WithClass("btn", "btn-close"), mvc.WithAriaLabel("close"), args)
+func CloseButton(args ...any) *button {
+	return mvc.NewView(new(button), ViewButton, "BUTTON", mvc.WithAttr("type", "button"), mvc.WithClass("btn", "btn-close"), mvc.WithAriaLabel("close"), args).(*button)
 }
 
 func ButtonToolbar(args ...any) mvc.View {
@@ -97,7 +105,7 @@ func newButtonToolbarFromElement(element Element) mvc.View {
 // PUBLIC METHODS
 
 func (b *button) SetView(view mvc.View) {
-	b.View = view
+	b.ViewWithCaption = view.(mvc.ViewWithCaption)
 }
 
 func (b *buttongroup) SetView(view mvc.View) {
@@ -108,13 +116,22 @@ func (b *buttontoolbar) SetView(view mvc.View) {
 	b.View = view
 }
 
+func (b *button) Caption(children ...any) mvc.ViewWithCaption {
+	// Replace whatever is in the caption with the indicator badge
+	// TODO: We actualy have to replace the caption element, which is currently a placeholder
+	// and set the attribute so we can re-create the view from the element
+	b.Root().ClassList().Add("position-relative")
+	b.caption.ReplaceWith(mvc.HTML("SPAN", mvc.WithClass("position-absolute", "top-0", "start-100", "translate-middle", "badge", "rounded-pill", "bg-danger")))
+	return b
+}
+
 func (b *button) Append(children ...any) mvc.View {
 	// Close buttons cannot have children
 	if b.Root().ClassList().Contains("btn-close") {
 		panic("Append: not supported for close button")
 	}
 	// Call superclass
-	return b.View.Append(children...)
+	return b.ViewWithCaption.Append(children...)
 }
 
 func (b *buttongroup) Append(children ...any) mvc.View {

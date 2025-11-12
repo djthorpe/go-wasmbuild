@@ -8,6 +8,7 @@ import (
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
+// HTML returns an element with the given tag name and class/attribute options
 func HTML(tagName string, opts ...Opt) dom.Element {
 	e := elementFactory(tagName)
 	if len(opts) > 0 {
@@ -18,6 +19,12 @@ func HTML(tagName string, opts ...Opt) dom.Element {
 	return e
 }
 
+// CData returns a text node with the given text
 func CData(text string) dom.Text {
 	return doc.CreateTextNode(text)
+}
+
+// Placeholder returns a placeholder element which is not rendered and has no effect
+func Placeholder(opts ...Opt) dom.Element {
+	return HTML("SCRIPT", opts...)
 }
