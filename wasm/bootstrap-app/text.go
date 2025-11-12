@@ -47,7 +47,7 @@ func LeadExample() mvc.View {
 
 func ColorParaExample() mvc.View {
 	return bs.Grid().Content(
-		bs.Container(mvc.WithClass("my-2")).Content(
+		bs.Container(mvc.WithClass("my-2"),
 			bs.Para(bs.WithColor(bs.Primary), "Lorem ipsum dolor sit amet, consectetur adipiscing elit."),
 			bs.Para(bs.WithColor(bs.Secondary), "Lorem ipsum dolor sit amet, consectetur adipiscing elit."),
 			bs.Para(bs.WithColor(bs.Info), "Lorem ipsum dolor sit amet, consectetur adipiscing elit."),
@@ -55,7 +55,7 @@ func ColorParaExample() mvc.View {
 			bs.Para(bs.WithColor(bs.Success), "Lorem ipsum dolor sit amet, consectetur adipiscing elit."),
 			bs.Para(bs.WithColor(bs.Danger), "Lorem ipsum dolor sit amet, consectetur adipiscing elit."),
 			bs.Para(bs.WithColor(bs.Dark), "Lorem ipsum dolor sit amet, consectetur adipiscing elit."),
-		), bs.Container().Content(
+		), bs.Container(
 			bs.Para(
 				`Colored paragraphs can be created with the bs.WithColor option.`,
 			),
