@@ -17,3 +17,7 @@ func HTML(tagName string, opts ...Opt) dom.Element {
 	}
 	return e
 }
+
+func CData(text string) dom.Text {
+	return doc.CreateTextNode(text)
+}

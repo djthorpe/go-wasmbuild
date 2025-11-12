@@ -103,6 +103,15 @@ type ViewWithSelf interface {
 	SetView(view View)
 }
 
+// ViewWithValue represents a UI component that can set and get a value, typically
+// for form elements
+type ViewWithValue interface {
+	View
+
+	// Return the value of the view as a string
+	Value() string
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // PRIVATE TYPES
 

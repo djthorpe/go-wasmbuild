@@ -37,6 +37,10 @@ var (
 		Small,
 		Large,
 	}
+	allInputSizes = []Size{
+		Small,
+		Large,
+	}
 )
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -105,6 +109,8 @@ func sizePrefixForView(name string) string {
 		return "btn"
 	case ViewButtonGroup:
 		return "btn-group"
+	case ViewInput:
+		return "form-control"
 	//	case ViewNavbar:
 	//		return "navbar-expand"
 	default:
@@ -115,6 +121,9 @@ func sizePrefixForView(name string) string {
 func allSizesForView(name string) []Size {
 	if name == ViewButton || name == ViewButtonGroup {
 		return allButtonSizes
+	}
+	if name == ViewInput {
+		return allInputSizes
 	}
 	//if name == ViewNavbar {
 	// Include SizeDefault for navbar

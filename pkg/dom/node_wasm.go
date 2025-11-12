@@ -180,7 +180,7 @@ func toValue(n Node) js.Value {
 	case *attr:
 		return n.node.Value
 	case *element:
-		return n.Value
+		return n.node.Value
 	case *document:
 		return n.Value
 	default:

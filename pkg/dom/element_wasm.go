@@ -50,7 +50,7 @@ func (e *element) String() string {
 }
 
 func (e *element) Write(w io.Writer) (int, error) {
-	return w.Write([]byte(e.Value.Get("outerHTML").String()))
+	return w.Write([]byte(e.node.Value.Get("outerHTML").String()))
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -58,29 +58,29 @@ func (e *element) Write(w io.Writer) (int, error) {
 
 // Return the tag name in uppercase
 func (element *element) TagName() string {
-	return element.Value.Get("tagName").String()
+	return element.node.Value.Get("tagName").String()
 }
 
 // Return the ID
 func (element *element) ID() string {
-	return element.Value.Get("id").String()
+	return element.node.Value.Get("id").String()
 }
 
 // Set the ID
 func (element *element) SetID(id string) {
-	element.Value.Set("id", id)
+	element.node.Value.Set("id", id)
 }
 
 func (e *element) OuterHTML() string {
-	return e.Value.Get("outerHTML").String()
+	return e.node.Value.Get("outerHTML").String()
 }
 
 func (e *element) InnerHTML() string {
-	return e.Value.Get("innerHTML").String()
+	return e.node.Value.Get("innerHTML").String()
 }
 
 func (e *element) SetInnerHTML(value string) {
-	e.Value.Set("innerHTML", value)
+	e.node.Value.Set("innerHTML", value)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -88,17 +88,17 @@ func (e *element) SetInnerHTML(value string) {
 
 // Return the class attribute as a string
 func (element *element) ClassName() string {
-	return element.Value.Get("className").String()
+	return element.node.Value.Get("className").String()
 }
 
 // Set the class as a atring
 func (element *element) SetClassName(className string) {
-	element.Value.Set("className", className)
+	element.node.Value.Set("className", className)
 }
 
 // Return a TokenList of the classes
 func (element *element) ClassList() TokenList {
-	return js.GetTokenList(element.Value.Get("classList"))
+	return js.GetTokenList(element.node.Value.Get("classList"))
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -106,7 +106,7 @@ func (element *element) ClassList() TokenList {
 
 // Attributes
 func (element *element) Attributes() []Attr {
-	attrs := element.Value.Get("attributes")
+	attrs := element.node.Value.Get("attributes")
 	length := attrs.Get("length").Int()
 	result := make([]Attr, 0, length)
 	for i := 0; i < length; i++ {
@@ -117,7 +117,7 @@ func (element *element) Attributes() []Attr {
 
 // Get the attribute
 func (element *element) GetAttribute(name string) string {
-	result := element.Value.Call("getAttribute", name)
+	result := element.node.Value.Call("getAttribute", name)
 	if result.IsNull() {
 		return ""
 	}
@@ -126,7 +126,7 @@ func (element *element) GetAttribute(name string) string {
 
 // Get the attribute
 func (element *element) GetAttributeNode(name string) Attr {
-	attrNode := element.Value.Call("getAttributeNode", name)
+	attrNode := element.node.Value.Call("getAttributeNode", name)
 	if attrNode.IsNull() {
 		return nil
 	}
@@ -135,7 +135,7 @@ func (element *element) GetAttributeNode(name string) Attr {
 
 // Set the attribute
 func (element *element) SetAttribute(name, value string) Attr {
-	element.Value.Call("setAttribute", name, value)
+	element.node.Value.Call("setAttribute", name, value)
 	return element.GetAttributeNode(name)
 }
 
@@ -144,7 +144,7 @@ func (element *element) SetAttributeNode(node Attr) Attr {
 	if node == nil {
 		return nil
 	}
-	result := element.Value.Call("setAttributeNode", toValue(node))
+	result := element.node.Value.Call("setAttributeNode", toValue(node))
 	if result.IsNull() {
 		return nil
 	}
@@ -153,7 +153,7 @@ func (element *element) SetAttributeNode(node Attr) Attr {
 
 // Remove an attribute
 func (element *element) RemoveAttribute(name string) {
-	element.Value.Call("removeAttribute", name)
+	element.node.Value.Call("removeAttribute", name)
 }
 
 // Remove an attribute
@@ -170,12 +170,12 @@ func (element *element) RemoveAttributeNode(node Attr) {
 		}
 	}()
 
-	element.Value.Call("removeAttributeNode", toValue(node))
+	element.node.Value.Call("removeAttributeNode", toValue(node))
 }
 
 // Return an unsorted list of attribute names
 func (element *element) GetAttributeNames() []string {
-	names := element.Value.Call("getAttributeNames")
+	names := element.node.Value.Call("getAttributeNames")
 	length := names.Get("length").Int()
 	result := make([]string, 0, length)
 	for i := 0; i < length; i++ {
@@ -186,12 +186,12 @@ func (element *element) GetAttributeNames() []string {
 
 // Return true if the element has a specific attribute
 func (element *element) HasAttribute(name string) bool {
-	return element.Value.Call("hasAttribute", name).Bool()
+	return element.node.Value.Call("hasAttribute", name).Bool()
 }
 
 // Return true if the element has any attribute
 func (element *element) HasAttributes() bool {
-	return element.Value.Call("hasAttributes").Bool()
+	return element.node.Value.Call("hasAttributes").Bool()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -199,7 +199,7 @@ func (element *element) HasAttributes() bool {
 
 // Return the child elements
 func (element *element) Children() []Element {
-	children := element.Value.Get("children")
+	children := element.node.Value.Get("children")
 	length := children.Get("length").Int()
 	result := make([]Element, 0, length)
 	for i := 0; i < length; i++ {
@@ -209,11 +209,11 @@ func (element *element) Children() []Element {
 }
 
 func (element *element) ChildElementCount() int {
-	return element.Value.Get("childElementCount").Int()
+	return element.node.Value.Get("childElementCount").Int()
 }
 
 func (element *element) FirstElementChild() Element {
-	child := element.Value.Get("firstElementChild")
+	child := element.node.Value.Get("firstElementChild")
 	if child.IsNull() {
 		return nil
 	}
@@ -221,7 +221,7 @@ func (element *element) FirstElementChild() Element {
 }
 
 func (element *element) LastElementChild() Element {
-	child := element.Value.Get("lastElementChild")
+	child := element.node.Value.Get("lastElementChild")
 	if child.IsNull() {
 		return nil
 	}
@@ -229,7 +229,7 @@ func (element *element) LastElementChild() Element {
 }
 
 func (element *element) NextElementSibling() Element {
-	child := element.Value.Get("nextElementSibling")
+	child := element.node.Value.Get("nextElementSibling")
 	if child.IsNull() {
 		return nil
 	}
@@ -237,7 +237,7 @@ func (element *element) NextElementSibling() Element {
 }
 
 func (element *element) PreviousElementSibling() Element {
-	child := element.Value.Get("previousElementSibling")
+	child := element.node.Value.Get("previousElementSibling")
 	if child.IsNull() {
 		return nil
 	}
@@ -285,10 +285,21 @@ func (element *element) Remove() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS - HTMLDataElement
+
+func (element *element) Value() string {
+	return element.node.Value.Get("value").String()
+}
+
+func (element *element) SetValue(value string) {
+	element.node.Value.Set("value", value)
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
 
 func (element *element) GetElementsByClassName(className string) []Element {
-	nodes := element.Value.Call("getElementsByClassName", className)
+	nodes := element.node.Value.Call("getElementsByClassName", className)
 	length := nodes.Get("length").Int()
 	result := make([]Element, 0, length)
 	for i := 0; i < length; i++ {
@@ -298,7 +309,7 @@ func (element *element) GetElementsByClassName(className string) []Element {
 }
 
 func (element *element) GetElementsByTagName(tagName string) []Element {
-	nodes := element.Value.Call("getElementsByTagName", tagName)
+	nodes := element.node.Value.Call("getElementsByTagName", tagName)
 	length := nodes.Get("length").Int()
 	result := make([]Element, 0, length)
 	for i := 0; i < length; i++ {

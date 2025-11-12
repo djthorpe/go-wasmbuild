@@ -103,6 +103,18 @@ func (b *buttongroup) Append(children ...any) mvc.View {
 	return b.View.Append(children...)
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// OPTIONS
+
+func WithSubmit() mvc.Opt {
+	return func(o mvc.OptSet) error {
+		if o.Name() != ViewButton {
+			return ErrInternalAppError.With("WithSubmit: option only valid for button views")
+		}
+		return mvc.WithAttr("type", "submit")(o)
+	}
+}
+
 /*
 // Return true if button is disabled
 func (b *button) Disabled() bool {

@@ -94,6 +94,10 @@ type Element interface {
 	ReplaceWith(...Node)
 	Remove()
 	Prepend(...Node)
+
+	// HTMLDataElement specific methods
+	Value() string
+	SetValue(string)
 }
 
 // Document implements https://developer.mozilla.org/en-US/docs/Web/API/Document
@@ -120,6 +124,7 @@ type Text interface {
 
 	// Properties
 	Data() string
+	SetData(string)
 	Length() int
 }
 

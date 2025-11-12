@@ -63,6 +63,10 @@ var (
 		White,
 		Black,
 	}
+	themeColors = []Color{
+		Light,
+		Dark,
+	}
 )
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -96,6 +100,15 @@ func WithColor(color Color) mvc.Opt {
 	}
 }
 
+func WithTheme(color Color) mvc.Opt {
+	return func(o mvc.OptSet) error {
+		if !slices.Contains(themeColors, color) {
+			return ErrInternalAppError.Withf("WithThemeColor: invalid theme %q", color)
+		}
+		return mvc.WithAttr("data-bs-theme", string(color))(o)
+	}
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // PRIVATE FUNCTIONS
 
@@ -118,10 +131,14 @@ func colorPrefixForView(name string) string {
 	switch name {
 	case ViewBadge:
 		return "text-bg"
+	case ViewCard:
+		return "text-bg"
 	case ViewLink:
 		return "link"
 	case ViewButton:
 		return "btn"
+	case ViewIcon:
+		return "text"
 	//	case ViewHeading, ViewContainer:
 	//		return "text"
 	//	case ViewText:

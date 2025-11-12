@@ -26,6 +26,7 @@ type element struct {
 	node
 	class TokenList
 	attr  map[string]*attr
+	value string
 }
 
 var _ Element = (*element)(nil)
@@ -329,6 +330,11 @@ func (element *element) SetAttributeNode(node Attr) Attr {
 		element.class = js.NewTokenList(splitClassNames(node.Value())...)
 	}
 
+	// Sync value
+	if name == "value" {
+		element.value = node.Value()
+	}
+
 	// Set the attribute
 	element.attr[name] = node.(*attr)
 
@@ -506,6 +512,17 @@ func (element *element) GetElementsByTagName(tagName string) []Element {
 	var result []Element
 	element.getElementsByTagName(strings.ToUpper(tagName), &result)
 	return result
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS - HTMLDataElement
+
+func (element *element) Value() string {
+	return element.value
+}
+
+func (element *element) SetValue(value string) {
+	element.value = value
 }
 
 ///////////////////////////////////////////////////////////////////////////////

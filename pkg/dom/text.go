@@ -53,6 +53,10 @@ func (t *text) Data() string {
 	return t.cdata
 }
 
+func (t *text) SetData(cdata string) {
+	t.cdata = cdata
+}
+
 func (t *text) Length() int {
 	return len(t.cdata)
 }

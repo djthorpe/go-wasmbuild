@@ -36,6 +36,10 @@ func (t *text) Data() string {
 	return t.node.Get("data").String()
 }
 
+func (t *text) SetData(cdata string) {
+	t.node.Set("data", cdata)
+}
+
 func (t *text) Length() int {
 	return t.node.Get("length").Int()
 }
