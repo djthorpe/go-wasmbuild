@@ -30,12 +30,14 @@ func init() {
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
-func Container(opt ...mvc.Opt) mvc.View {
-	return mvc.NewView(new(container), ViewContainer, "DIV", append([]mvc.Opt{mvc.WithClass("container")}, opt...)...)
+func Container(args ...any) mvc.View {
+	opts, content := gatherOpts(mvc.WithClass("container"), args)
+	return mvc.NewView(new(container), ViewContainer, "DIV", opts...).Content(content...)
 }
 
-func FluidContainer(opt ...mvc.Opt) mvc.View {
-	return mvc.NewView(new(container), ViewContainer, "DIV", append([]mvc.Opt{mvc.WithClass("container-fluid")}, opt...)...)
+func FluidContainer(args ...any) mvc.View {
+	opts, content := gatherOpts(mvc.WithClass("container-fluid"), args)
+	return mvc.NewView(new(container), ViewContainer, "DIV", opts...).Content(content...)
 }
 
 func newContainerFromElement(element Element) mvc.View {

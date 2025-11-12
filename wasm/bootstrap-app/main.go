@@ -13,6 +13,8 @@ import (
 // Application displays examples of Bootstrap components
 func main() {
 	mvc.New().Content(
+		bs.Link("#text", mvc.WithClass("m-2")).Content("Text"),
+		bs.VRule(),
 		bs.Link("#badge", mvc.WithClass("m-2")).Content("Badges"),
 		bs.VRule(),
 		bs.Link("#link", mvc.WithClass("m-2")).Content("Links"),
@@ -32,6 +34,8 @@ func main() {
 		bs.Link("#input", mvc.WithClass("m-2")).Content("Input"),
 
 		mvc.Router(mvc.WithClass("container-fluid", "my-2")).Page(
+			"#text", TextExamples(),
+		).Page(
 			"#badge", BadgeExamples(),
 		).Page(
 			"#link", LinkExamples(),
@@ -180,40 +184,6 @@ func IconExamples() mvc.View {
 			bs.Button(withButtonClasses(bs.WithColor(bs.Success))...).Content("Next", bs.Icon("arrow-right")),
 			bs.Button(withButtonClasses(bs.WithColor(bs.Danger))...).Content(bs.Icon("trash"), "Delete"),
 			bs.OutlineButton(withButtonClasses(bs.WithColor(bs.Dark))...).Content("Refresh", bs.Icon("arrow-repeat")),
-		),
-	)
-}
-
-func BadgeExamples() mvc.View {
-	return bs.Container().Content(
-		bs.Heading(1).Content(
-			"Example heading ",
-			bs.Badge().Content("New"),
-		),
-		bs.HRule(),
-		bs.Heading(2).Content(
-			"Example heading ",
-			bs.Badge().Content("New"),
-		),
-		bs.HRule(),
-		bs.Heading(3).Content(
-			"Example heading ",
-			bs.Badge().Content("New"),
-		),
-		bs.HRule(),
-		bs.Heading(4).Content(
-			"Example heading ",
-			bs.Badge().Content("New"),
-		),
-		bs.HRule(),
-		bs.Heading(5).Content(
-			"Example heading ",
-			bs.Badge().Content("New"),
-		),
-		bs.HRule(),
-		bs.Heading(6).Content(
-			"Example heading ",
-			bs.Badge().Content("New"),
 		),
 	)
 }

@@ -139,10 +139,12 @@ func colorPrefixForView(name string) string {
 		return "btn"
 	case ViewIcon:
 		return "text"
-	//	case ViewHeading, ViewContainer:
-	//		return "text"
-	//	case ViewText:
-	//		return "text"
+	case ViewCodeBlock:
+		return "bg"
+	case ViewText:
+		return "text"
+		//	case ViewHeading, ViewContainer:
+		//		return "text"
 	//	case ViewAlert:
 	//		return "alert"
 	//	case ViewNavbar:

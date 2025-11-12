@@ -47,12 +47,13 @@ func init() {
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
-func Heading(level int, opt ...mvc.Opt) mvc.View {
-	if tagName, exists := headingLevels[level]; !exists {
+func Heading(level int, args ...any) mvc.View {
+	tagName, exists := headingLevels[level]
+	if !exists {
 		panic(fmt.Sprintf("Heading: invalid level %d", level))
-	} else {
-		return mvc.NewView(new(heading), ViewHeading, tagName, opt...)
 	}
+	opts, content := gatherOpts(args)
+	return mvc.NewView(new(heading), ViewHeading, tagName, opts...).Content(content...)
 }
 
 func newHeadingFromElement(element Element) mvc.View {
