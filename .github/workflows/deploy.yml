@@ -1,4 +1,4 @@
-name: Deploy WASM to GitHub Pages
+name: Deploy to GitHub Pages
 
 on:
     workflow_dispatch: # Allows manual triggering from Actions tab
