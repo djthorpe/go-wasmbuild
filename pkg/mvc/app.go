@@ -1,3 +1,5 @@
+// Package mvc provides a thin model-view-controller layer for building
+// declarative WASM user interfaces using the go-wasmbuild DOM wrappers.
 package mvc
 
 import (
@@ -18,6 +20,8 @@ type app struct {
 // GLOBALS
 
 const (
+	// ViewApp is the registered component name used for the root application
+	// container within the MVC system.
 	ViewApp = "mvc-app"
 )
 
@@ -32,7 +36,8 @@ var (
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
-// Create a new application
+// New creates an empty application root, attaches it to the document body and
+// returns the view so callers can begin composing content.
 func New() *app {
 	// Create the application
 	view := new(app)
@@ -53,12 +58,12 @@ func New() *app {
 ///////////////////////////////////////////////////////////////////////////////
 // PRIVATE METHODS
 
-// Create a new DOM element to be attached to a view
+// elementFactory creates a new DOM element to be attached to a view.
 func elementFactory(tagName string) dom.Element {
 	return doc.CreateElement(tagName)
 }
 
-// Create a new DOM text node to be attached to a view
+// textFactory creates a new DOM text node to be attached to a view.
 func textFactory(text string) dom.Node {
 	return doc.CreateTextNode(text)
 }
