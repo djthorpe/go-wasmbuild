@@ -2,10 +2,8 @@ package mvc
 
 import (
 	// Packages
-	"github.com/djthorpe/go-wasmbuild/pkg/dom"
-
-	// Namespace imports
-	. "github.com/djthorpe/go-wasmbuild"
+	dom "github.com/djthorpe/go-wasmbuild"
+	impl "github.com/djthorpe/go-wasmbuild/pkg/dom"
 )
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -27,19 +25,28 @@ func init() {
 	RegisterView(ViewApp, nil)
 }
 
+var (
+	doc = impl.GetWindow().Document()
+)
+
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
-// Create a new application with a title
-func New(title string) *app {
-	doc := dom.GetWindow().Document()
-
-	// TODO: Set document title
-
+// Create a new application
+func New() *app {
 	// Create the application
 	view := new(app)
+	view.self = view
 	view.name = ViewApp
-	view.root = doc.Body()
+	view.root = elementFactory("div")
+	if view.root == nil {
+		panic("document has no body element")
+	}
+
+	// Prepend the application div to the document body
+	doc.Body().Prepend(view.root)
+
+	// Return the view
 	return view
 }
 
@@ -47,11 +54,11 @@ func New(title string) *app {
 // PRIVATE METHODS
 
 // Create a new DOM element to be attached to a view
-func elementFactory(tagName string) Element {
-	return dom.GetWindow().Document().CreateElement(tagName)
+func elementFactory(tagName string) dom.Element {
+	return doc.CreateElement(tagName)
 }
 
 // Create a new DOM text node to be attached to a view
-func textFactory(text string) Node {
-	return dom.GetWindow().Document().CreateTextNode(text)
+func textFactory(text string) dom.Node {
+	return doc.CreateTextNode(text)
 }

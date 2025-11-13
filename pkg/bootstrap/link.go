@@ -1,47 +1,54 @@
 package bootstrap
 
 import (
-	// Packages
-	dom "github.com/djthorpe/go-wasmbuild/pkg/dom"
+	"fmt"
 
-	// Namespace import for interfaces
+	// Packages
+	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
+
+	// Namespace imports
 	. "github.com/djthorpe/go-wasmbuild"
 )
 
-////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 // TYPES
 
+// text are elements that represent text views
 type link struct {
-	component
+	mvc.View
 }
 
-// Ensure that link implements Component interface
-var _ Component = (*link)(nil)
+var _ mvc.View = (*link)(nil)
 
-////////////////////////////////////////////////////////////////////////////////
-// CONSTRUCTOR
+///////////////////////////////////////////////////////////////////////////////
+// GLOBALS
 
-// Link creates a Bootstrap link (anchor) element with optional href and content
-// The href parameter sets the link destination, and options can be used to style the link
-//
-// Example:
-//
-//	Link("/home", WithColor(PRIMARY)).Append("Home Page")
-//	Link("#section").Append("Jump to Section")
-//	Link("https://example.com", WithClass("link-offset-2")).Append("External Link")
-func Link(href string, opt ...Opt) *link {
-	c := newComponent(LinkComponent, dom.GetWindow().Document().CreateElement("A"))
+const (
+	ViewLink = "mvc-bs-link"
+)
 
-	// Set href attribute
-	if href != "" {
-		c.root.SetAttribute("href", href)
+func init() {
+	mvc.RegisterView(ViewLink, newLinkFromElement)
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// LIFECYCLE
+
+func Link(href string, args ...any) mvc.View {
+	return mvc.NewView(new(link), ViewLink, "A", mvc.WithAttr("href", href), args)
+}
+
+func newLinkFromElement(element Element) mvc.View {
+	tagName := element.TagName()
+	if tagName != "A" {
+		panic(fmt.Sprintf("newLinkFromElement: invalid tag name %q", tagName))
 	}
+	return mvc.NewViewWithElement(new(link), element)
+}
 
-	if err := c.applyTo(c.root, opt...); err != nil {
-		panic(err)
-	}
+///////////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS
 
-	return &link{
-		component: *c,
-	}
+func (link *link) SetView(view mvc.View) {
+	link.View = view
 }

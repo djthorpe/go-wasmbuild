@@ -1,44 +1,58 @@
 package bootstrap
 
 import (
-	// Packages
-	dom "github.com/djthorpe/go-wasmbuild/pkg/dom"
+	"fmt"
 
-	// Namespace import for interfaces
+	// Packages
+	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
+
+	// Namespace imports
 	. "github.com/djthorpe/go-wasmbuild"
 )
 
 ///////////////////////////////////////////////////////////////////////////////
 // TYPES
 
+// text are elements that represent text views
 type icon struct {
-	component
+	mvc.View
 }
 
-// Ensure that icon implements Component interface
-var _ Component = (*icon)(nil)
+var _ mvc.View = (*icon)(nil)
+
+///////////////////////////////////////////////////////////////////////////////
+// GLOBALS
+
+const (
+	ViewIcon = "mvc-bs-icon"
+)
+
+func init() {
+	mvc.RegisterView(ViewIcon, newIconFromElement)
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
-// Icon creates a new Bootstrap Icon element using the icon font.
-// The iconName parameter should be the name of the icon without the "bi-" prefix
-// (e.g., "heart-fill", "alarm", "bootstrap").
-// See https://icons.getbootstrap.com/ for available icons.
-//
-// Example:
-//
-//	Icon("heart-fill", WithColor(DANGER), WithClass("fs-3"))
-func Icon(iconName string, opt ...Opt) *icon {
-	c := newComponent(IconComponent, dom.GetWindow().Document().CreateElement("I"))
+func Icon(name string, args ...any) mvc.View {
+	return mvc.NewView(new(icon), ViewIcon, "I", mvc.WithClass("bi-"+name), args)
+}
 
-	// Add the base Bootstrap Icons class and the specific icon class, then apply user options
-	if err := c.applyTo(c.root, append([]Opt{WithClass("bi"), WithClass("bi-" + iconName)}, opt...)...); err != nil {
-		panic(err)
+func newIconFromElement(element Element) mvc.View {
+	tagName := element.TagName()
+	if tagName != "I" {
+		panic(fmt.Sprintf("newIconFromElement: invalid tag name %q", tagName))
 	}
+	return mvc.NewViewWithElement(new(icon), element)
+}
 
-	// Return the icon component
-	return &icon{
-		component: *c,
-	}
+///////////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS
+
+func (icon *icon) Append(children ...any) mvc.View {
+	panic("Append: not supported for icon")
+}
+
+func (icon *icon) SetView(view mvc.View) {
+	icon.View = view
 }

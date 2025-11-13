@@ -1,449 +1,563 @@
-//go:build !js
+//go:build !(js && wasm)
 
 package dom
 
 import (
 	"bytes"
-	"fmt"
+	"errors"
 	"io"
-	"sort"
+	"slices"
 	"strings"
 
 	// Packages
-	dom "github.com/djthorpe/go-wasmbuild"
+
+	js "github.com/djthorpe/go-wasmbuild/pkg/js"
+	html "golang.org/x/net/html"
+
+	// Namespace imports
+	. "github.com/djthorpe/go-wasmbuild"
 )
 
-/////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 // TYPES
 
 type element struct {
-	*node
-	classlist *tokenlist
-	attrs     map[string]dom.Attr
+	EventTarget
+	node
+	class TokenList
+	attr  map[string]*attr
+	value string
 }
 
-var _ dom.Element = (*element)(nil)
+var _ Element = (*element)(nil)
+
+/////////////////////////////////////////////////////////////////////
+// GLOBALS
+
+var (
+	startelementprefix = []byte("<")
+	endelementprefix   = []byte("</")
+	elementsuffix      = []byte(">")
+)
+
+///////////////////////////////////////////////////////////////////////////////
+// LIFECYCLE
+
+func newElement(document Document, name string) Element {
+	node := newNode(document, nil, name, ELEMENT_NODE, "")
+	return &element{
+		EventTarget: NewEventTarget(),
+		node:        node,
+		class:       js.NewTokenList(),
+		attr:        make(map[string]*attr, 10),
+	}
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // STRINGIFY
 
-func (this *element) String() string {
-	return this.OuterHTML()
-}
-
-/////////////////////////////////////////////////////////////////////
-// PROPERTIES
-
-func (this *element) InnerHTML() string {
-	buf := new(bytes.Buffer)
-	for child := this.FirstChild(); child != nil; child = child.NextSibling() {
-		writeNode(buf, child)
+func (element *element) String() string {
+	var b bytes.Buffer
+	if _, err := element.Write(&b); err != nil {
+		return err.Error()
+	} else {
+		return b.String()
 	}
-	return buf.String()
 }
 
-func (this *element) SetInnerHTML(html string) {
-	// Clear existing children
-	this.node.children = []dom.Node{}
+func (element *element) Write(w io.Writer) (int, error) {
+	var s int
+
+	// Start Element
+	if n, err := w.Write(startelementprefix); err != nil {
+		return s, err
+	} else {
+		s += n
+	}
+	if n, err := w.Write([]byte(element.name)); err != nil {
+		return s, err
+	} else {
+		s += n
+	}
+
+	// Attributes
+	for _, attr := range element.attr {
+		if n, err := w.Write([]byte(" ")); err != nil {
+			return s, err
+		} else {
+			s += n
+		}
+		if n, err := attr.Write(w); err != nil {
+			return s, err
+		} else {
+			s += n
+		}
+	}
+
+	// Close Start Element
+	if n, err := w.Write(elementsuffix); err != nil {
+		return s, err
+	} else {
+		s += n
+	}
+
+	// Children
+	for _, child := range element.children {
+		if n, err := child.Write(w); err != nil {
+			return s, err
+		} else {
+			s += n
+		}
+	}
+
+	// End Element
+	if n, err := w.Write(endelementprefix); err != nil {
+		return s, err
+	} else {
+		s += n
+	}
+	if n, err := w.Write([]byte(element.name)); err != nil {
+		return s, err
+	} else {
+		s += n
+	}
+	if n, err := w.Write(elementsuffix); err != nil {
+		return s, err
+	} else {
+		s += n
+	}
+
+	// Return success
+	return s, nil
 }
 
-func (this *element) OuterHTML() string {
-	buf := new(bytes.Buffer)
-	this.write(buf)
-	return buf.String()
-}
+///////////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS - PROPERTIES
 
-func (this *element) TagName() string {
-	if name := this.NodeName(); strings.HasPrefix(name, "#") {
+// Return the tag name in uppercase
+func (element *element) TagName() string {
+	if name := element.node.name; strings.HasPrefix(name, "#") {
 		return name
 	} else {
 		return strings.ToUpper(name)
 	}
 }
 
-func (this *element) Attributes() []dom.Attr {
-	result := make([]dom.Attr, 0, len(this.attrs))
-	for _, attr := range this.attrs {
+// Return the ID
+func (element *element) ID() string {
+	return element.GetAttribute("id")
+}
+
+// Set the ID
+func (element *element) SetID(id string) {
+	element.SetAttribute("id", id)
+}
+
+func (e *element) OuterHTML() string {
+	var buf bytes.Buffer
+	_, err := e.Write(&buf)
+	if err != nil {
+		panic(err)
+	}
+	return buf.String()
+}
+
+func (e *element) InnerHTML() string {
+	var buf bytes.Buffer
+	for child := e.FirstChild(); child != nil; child = child.NextSibling() {
+		if _, err := child.Write(&buf); err != nil {
+			panic(err)
+		}
+	}
+	return buf.String()
+}
+
+func (e *element) SetInnerHTML(value string) {
+	reader := bytes.NewReader([]byte(value))
+	tokenizer := html.NewTokenizer(reader)
+
+	// Remove all the children
+	e.RemoveAllChildren()
+
+	// Short circuit if value is empty
+	if value == "" {
+		return
+	}
+
+	// Create a stack of elements
+	stack := new(elements)
+	stack.push(e)
+
+	// Iterate through tokens
+	for {
+		// Check for error or EOF
+		if tokenizer.Next() == html.ErrorToken {
+			if errors.Is(tokenizer.Err(), io.EOF) {
+				break
+			}
+			panic(tokenizer.Err())
+		}
+
+		// Create tree of tokens
+		token := tokenizer.Token()
+		switch token.Type {
+		case html.CommentToken:
+			stack.cur().AppendChild(e.document.CreateComment(token.Data))
+		case html.TextToken:
+			stack.cur().AppendChild(e.document.CreateTextNode(token.Data))
+		case html.StartTagToken:
+			child := e.document.CreateElement(token.Data)
+			for _, attr := range token.Attr {
+				if attr.Namespace == "" {
+					child.SetAttribute(attr.Key, attr.Val)
+				}
+			}
+			stack.cur().AppendChild(child)
+			stack.push(child)
+		case html.EndTagToken:
+			// TODO: check the tag name for the popped token is the same
+			stack.pop()
+		default:
+			token := tokenizer.Token()
+			panic("Unsupported token " + token.String())
+		}
+	}
+
+	if stack.cur() != e {
+		panic("SetInnerHTML: invalid stack state")
+	}
+}
+
+type elements struct {
+	stack []Element
+}
+
+func (e *elements) cur() Element {
+	if len(e.stack) == 0 {
+		return nil
+	}
+	return e.stack[len(e.stack)-1]
+}
+
+func (e *elements) push(c Element) Element {
+	e.stack = append(e.stack, c)
+	return c
+}
+
+func (e *elements) pop() Element {
+	c := e.cur()
+	e.stack = e.stack[:len(e.stack)-1]
+	return c
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS - CLASSES
+
+// Return the class attribute as a string
+func (element *element) ClassName() string {
+	return element.GetAttribute("class")
+}
+
+// Set the class as a atring
+func (element *element) SetClassName(className string) {
+	element.SetAttribute("class", className)
+}
+
+// Return a TokenList of the classes
+func (element *element) ClassList() TokenList {
+	return element.class
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS - ATTRIBUTES
+
+// Attributes
+func (element *element) Attributes() []Attr {
+	result := make([]Attr, 0, len(element.attr))
+	for _, attr := range element.attr {
 		result = append(result, attr)
 	}
 	return result
 }
 
-func (this *element) HasAttributes() bool {
-	return len(this.attrs) > 0
-}
-
-func (this *element) Style() dom.Style {
-	// Not implemented for non-WASM builds
-	return nil
-}
-
-func (this *element) SetAttribute(name, value string) dom.Attr {
-	attr := this.document.CreateAttribute(name)
-	attr.SetValue(value)
-	getNode(attr).parent = this
-	this.attrs[name] = attr
-
-	// Sync classlist when class attribute is set
-	if name == "class" && value != "" {
-		classes := strings.Fields(value)
-		this.classlist = NewTokenList(classes...)
-	}
-
-	return attr
-}
-
-func (this *element) GetAttribute(name string) string {
-	attr := this.attrs[name]
+// Get the attribute
+func (element *element) GetAttribute(name string) string {
+	attr := element.GetAttributeNode(name)
 	if attr == nil {
 		return ""
 	}
 	return attr.Value()
 }
 
-func (this *element) GetAttributeNode(name string) dom.Attr {
-	return this.attrs[name]
+// Get the attribute
+func (element *element) GetAttributeNode(name string) Attr {
+	if attr, exists := element.attr[name]; exists {
+		return attr
+	} else {
+		return nil
+	}
 }
 
-func (this *element) HasAttribute(name string) bool {
-	_, exists := this.attrs[name]
+// Set the attribute
+func (element *element) SetAttribute(name, value string) Attr {
+	node := newAttr(element.document, element, name, value)
+	element.SetAttributeNode(node)
+	return node
+}
+
+// Set the attribute
+func (element *element) SetAttributeNode(node Attr) Attr {
+	if node == nil {
+		return nil
+	}
+
+	var previous Attr
+
+	// Detatch the previous node
+	name := node.Name()
+	if old := element.GetAttributeNode(name); old != nil {
+		if existing, ok := old.(*attr); ok {
+			existing.parent = nil
+		}
+		previous = old
+	}
+
+	// Set the parent of the node to the element
+	node.(*attr).parent = element
+
+	// Sync classlist when class attribute is set
+	if name == "class" {
+		element.class = js.NewTokenList(splitClassNames(node.Value())...)
+	}
+
+	// Sync value
+	if name == "value" {
+		element.value = node.Value()
+	}
+
+	// Set the attribute
+	element.attr[name] = node.(*attr)
+
+	// Return the previous attribute, if any
+	return previous
+}
+
+// Remove an attribute
+func (element *element) RemoveAttribute(name string) {
+	if node := element.attr[name]; node != nil {
+		element.RemoveAttributeNode(node)
+	}
+}
+
+// Remove an attribute
+func (element *element) RemoveAttributeNode(node Attr) {
+	if node == nil {
+		return
+	}
+
+	// Set the parent of the node to the element
+	name := node.Name()
+	if other := element.attr[name]; other == node {
+		node.(*attr).parent = nil
+		delete(element.attr, name)
+	}
+}
+
+// Return an unsorted list of attribute names
+func (element *element) GetAttributeNames() []string {
+	result := make([]string, 0, len(element.attr))
+	for name := range element.attr {
+		result = append(result, name)
+	}
+	return result
+}
+
+// Return true if the element has a specific attribute
+func (element *element) HasAttribute(name string) bool {
+	_, exists := element.attr[name]
 	return exists
 }
 
-func (this *element) RemoveAttribute(name string) {
-	if attr, exists := this.attrs[name]; exists {
-		getNode(attr).parent = nil
-		delete(this.attrs, name)
-	}
+// Return true if the element has any attribute
+func (element *element) HasAttributes() bool {
+	return len(element.attr) > 0
 }
 
-func (this *element) RemoveAttributeNode(attr dom.Attr) {
-	if attr == nil {
-		return
-	}
-	name := attr.Name()
-	if existing, exists := this.attrs[name]; exists && existing == attr {
-		getNode(attr).parent = nil
-		delete(this.attrs, name)
-	}
-}
+///////////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS - DOM MANIPULATION
 
-func (this *element) SetAttributeNode(attr dom.Attr) dom.Attr {
-	if attr == nil {
-		return nil
-	}
-	name := attr.Name()
-	oldAttr := this.attrs[name]
-	if oldAttr != nil {
-		getNode(oldAttr).parent = nil
-	}
-	getNode(attr).parent = this
-	this.attrs[name] = attr
-	return oldAttr
-}
-
-func (this *element) GetAttributeNames() []string {
-	names := make([]string, 0, len(this.attrs))
-	for name := range this.attrs {
-		names = append(names, name)
-	}
-	return names
-}
-
-func (this *element) ClassList() dom.TokenList {
-	// ClassList is already initialized when element is created
-	// Just return the existing instance
-	return this.classlist
-}
-
-func (this *element) GetElementsByClassName(className string) []dom.Element {
-	var result []dom.Element
-	this.getElementsByClassName(className, &result)
-	return result
-}
-
-func (this *element) getElementsByClassName(className string, result *[]dom.Element) {
-	// Check if this element has the class by directly checking the attribute
-	// This is more efficient than ClassList().Contains() which parses the entire class list
-	classAttr := this.GetAttribute("class")
-	if classAttr != "" {
-		// Split and check for exact match
-		for _, cls := range strings.Fields(classAttr) {
-			if cls == className {
-				*result = append(*result, this)
-				break
-			}
-		}
-	}
-	// Recursively check children
-	for _, child := range this.node.children {
-		if elem, ok := child.(dom.Element); ok {
-			if e, ok := elem.(*element); ok {
-				e.getElementsByClassName(className, result)
-			}
-		}
-	}
-}
-
-func (this *element) GetElementsByTagName(tagName string) []dom.Element {
-	var result []dom.Element
-	// Normalize tagName to uppercase for case-insensitive comparison
-	tagName = strings.ToUpper(tagName)
-	this.getElementsByTagName(tagName, &result)
-	return result
-}
-
-func (this *element) getElementsByTagName(tagName string, result *[]dom.Element) {
-	// Recursively check children only (not this element itself)
-	for _, child := range this.node.children {
-		if elem, ok := child.(dom.Element); ok {
-			// Check if this child matches (case-insensitive comparison via TagName which returns uppercase)
-			if elem.TagName() == tagName {
-				*result = append(*result, elem)
-			}
-			// Recursively check child's descendants
-			if e, ok := elem.(*element); ok {
-				e.getElementsByTagName(tagName, result)
-			}
-		}
-	}
-}
-
-func (this *element) Remove() {
-	if this.node.parent != nil {
-		this.node.parent.RemoveChild(this)
-	}
-}
-
-func (this *element) ReplaceWith(nodes ...dom.Node) {
-	parent := this.ParentNode()
-	if parent == nil {
-		return
-	}
-
-	// Insert all new nodes before this element
-	for _, node := range nodes {
-		parent.InsertBefore(node, this)
-	}
-
-	// Remove this element
-	parent.RemoveChild(this)
-}
-
-func (this *element) InsertAdjacentElement(position string, element dom.Element) dom.Element {
-	if element == nil {
-		return nil
-	}
-
-	switch strings.ToLower(position) {
-	case "beforebegin":
-		// Insert before this element
-		if this.node.parent != nil {
-			this.node.parent.InsertBefore(element, this)
-			return element
-		}
-	case "afterbegin":
-		// Insert as first child
-		if len(this.node.children) > 0 {
-			this.InsertBefore(element, this.node.children[0])
-		} else {
-			this.AppendChild(element)
-		}
-		return element
-	case "beforeend":
-		// Insert as last child
-		this.AppendChild(element)
-		return element
-	case "afterend":
-		// Insert after this element
-		if this.node.parent != nil {
-			nextSibling := this.NextSibling()
-			if nextSibling != nil {
-				this.node.parent.InsertBefore(element, nextSibling)
-			} else {
-				this.node.parent.AppendChild(element)
-			}
-			return element
-		}
-	}
-	return nil
-}
-
-func (this *element) ID() string {
-	return this.GetAttribute("id")
-}
-
-func (this *element) SetID(id string) {
-	this.SetAttribute("id", id)
-}
-
-func (this *element) ClassName() string {
-	return this.GetAttribute("class")
-}
-
-func (this *element) SetClassName(className string) {
-	this.SetAttribute("class", className)
-	// Invalidate cached classlist
-	this.classlist = nil
-}
-
-func (this *element) Children() []dom.Element {
-	var result []dom.Element
-	for _, child := range this.node.children {
-		if elem, ok := child.(dom.Element); ok {
+// Return the child elements
+func (element *element) Children() []Element {
+	var result []Element
+	for _, child := range element.children {
+		if elem, ok := child.(Element); ok {
 			result = append(result, elem)
 		}
 	}
 	return result
 }
 
-func (this *element) ChildElementCount() int {
+func (element *element) ChildElementCount() int {
 	count := 0
-	for _, child := range this.node.children {
-		if _, ok := child.(dom.Element); ok {
+	for _, child := range element.children {
+		if _, ok := child.(Element); ok {
 			count++
 		}
 	}
 	return count
 }
 
-func (this *element) FirstElementChild() dom.Element {
-	for _, child := range this.node.children {
-		if elem, ok := child.(dom.Element); ok {
+func (element *element) FirstElementChild() Element {
+	for _, child := range element.children {
+		if elem, ok := child.(Element); ok {
 			return elem
 		}
 	}
 	return nil
 }
 
-func (this *element) LastElementChild() dom.Element {
-	for i := len(this.node.children) - 1; i >= 0; i-- {
-		if elem, ok := this.node.children[i].(dom.Element); ok {
+func (element *element) LastElementChild() Element {
+	for i := len(element.children) - 1; i >= 0; i-- {
+		if elem, ok := element.children[i].(Element); ok {
 			return elem
 		}
 	}
 	return nil
 }
 
-func (this *element) NextElementSibling() dom.Element {
-	if this.node.parent == nil {
+func (element *element) NextElementSibling() Element {
+	if element.parent == nil {
 		return nil
 	}
-
-	// Get parent as *node to access children
-	parent := getNode(this.node.parent)
-	if parent == nil {
-		return nil
-	}
-
 	found := false
-	for _, child := range parent.children {
+	for _, child := range element.parent.ChildNodes() {
 		if found {
-			if elem, ok := child.(dom.Element); ok {
+			if elem, ok := child.(Element); ok {
 				return elem
 			}
 		}
-		if child == this {
+		if child.Equals(element) {
 			found = true
 		}
 	}
 	return nil
 }
 
-func (this *element) PreviousElementSibling() dom.Element {
-	if this.node.parent == nil {
+func (element *element) PreviousElementSibling() Element {
+	if element.parent == nil {
 		return nil
 	}
-
-	// Get parent as *node to access children
-	parent := getNode(this.node.parent)
-	if parent == nil {
-		return nil
-	}
-
-	var prevElement dom.Element
-	for _, child := range parent.children {
-		if child == this {
-			return prevElement
+	var prev Element
+	for _, child := range element.parent.ChildNodes() {
+		if child.Equals(element) {
+			return prev
 		}
-		if elem, ok := child.(dom.Element); ok {
-			prevElement = elem
+		if elem, ok := child.(Element); ok {
+			prev = elem
 		}
 	}
 	return nil
 }
 
-func (this *element) AddEventListener(eventType string, callback func(dom.Node)) dom.Element {
-	// Event listeners are not supported in non-WASM builds
-	// This is a no-op since there's no event loop outside the browser
-	return this
+func (element *element) ReplaceWith(nodes ...Node) {
+	parent := element.ParentNode()
+	if parent == nil {
+		return
+	}
+
+	for _, child := range nodes {
+		if child == nil {
+			continue
+		}
+		parent.InsertBefore(child, element)
+	}
+
+	parent.RemoveChild(element)
 }
 
-func (this *element) Blur() {
-	// Not supported in non-WASM builds
+func (element *element) Prepend(nodes ...Node) {
+	if len(nodes) == 0 {
+		return
+	}
+
+	first := element.FirstChild()
+	for _, child := range nodes {
+		if child == nil {
+			continue
+		}
+		if first == nil {
+			element.AppendChild(child)
+		} else {
+			element.InsertBefore(child, first)
+		}
+	}
 }
 
-func (this *element) Focus() {
-	// Not supported in non-WASM builds
+func (element *element) Remove() {
+	if parent := element.ParentNode(); parent != nil {
+		parent.RemoveChild(element)
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS
+
+func (element *element) GetElementsByClassName(className string) []Element {
+	var result []Element
+	element.getElementsByClassName(className, &result)
+	return result
+}
+
+func (element *element) GetElementsByTagName(tagName string) []Element {
+	var result []Element
+	element.getElementsByTagName(strings.ToUpper(tagName), &result)
+	return result
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS - HTMLDataElement
+
+func (element *element) Value() string {
+	return element.value
+}
+
+func (element *element) SetValue(value string) {
+	element.value = value
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // PRIVATE METHODS
 
-func (this *element) v() *node {
-	return this.node
+// Return class names from a list of class names as a string
+func splitClassNames(value string) []string {
+	return strings.Fields(value)
 }
 
-func (this *element) write(w io.Writer) (int, error) {
-	s := 0
-
-	// Sync classlist to class attribute before writing
-	if this.classlist != nil && this.classlist.Length() > 0 {
-		this.SetAttribute("class", this.classlist.Value())
-	}
-
-	// Write opening tag with attributes (lowercase to match browser behavior)
-	tagName := strings.ToLower(this.node.name)
-	tag := "<" + tagName
-
-	// Add attributes in sorted order for consistent output
-	if len(this.attrs) > 0 {
-		// Get sorted attribute names
-		names := make([]string, 0, len(this.attrs))
-		for name := range this.attrs {
-			names = append(names, name)
-		}
-		sort.Strings(names)
-
-		// Write attributes in sorted order
-		for _, name := range names {
-			attr := this.attrs[name]
-			tag += fmt.Sprintf(" %s=%q", attr.Name(), attr.Value())
+func (e *element) getElementsByClassName(className string, result *[]Element) {
+	// Check if this element has the class by directly checking the attribute
+	classAttr := e.GetAttribute("class")
+	if classAttr != "" {
+		if slices.Contains(splitClassNames(classAttr), className) {
+			*result = append(*result, e)
 		}
 	}
 
-	tag += ">"
-	if n, err := w.Write([]byte(tag)); err != nil {
-		return 0, err
-	} else {
-		s += n
-	}
-
-	// Write children
-	for _, child := range this.node.children {
-		if n, err := writeNode(w, child); err != nil {
-			return 0, err
-		} else {
-			s += n
+	// Recursively check child elements
+	for _, child := range e.Children() {
+		if e, ok := child.(*element); ok {
+			e.getElementsByClassName(className, result)
 		}
 	}
+}
 
-	// Write closing tag (lowercase to match browser behavior)
-	if n, err := w.Write([]byte("</" + tagName + ">")); err != nil {
-		return 0, err
-	} else {
-		s += n
+func (e *element) getElementsByTagName(tagName string, result *[]Element) {
+	// Recursively check child elements
+	for _, child := range e.Children() {
+		if child.TagName() == tagName {
+			*result = append(*result, child)
+		}
+		if e, ok := child.(*element); ok {
+			e.getElementsByTagName(tagName, result)
+		}
 	}
-
-	return s, nil
 }

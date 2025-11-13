@@ -1,29 +1,70 @@
-//go:build js
+//go:build js && wasm
 
 package dom
 
 import (
-	"fmt"
+	"bytes"
+	"html"
+	"io"
+	"strconv"
 
-	dom "github.com/djthorpe/go-wasmbuild"
+	// Packages
+
+	js "github.com/djthorpe/go-wasmbuild/pkg/js"
+
+	// Namespace imports
+	. "github.com/djthorpe/go-wasmbuild"
 )
 
 ///////////////////////////////////////////////////////////////////////////////
 // TYPES
 
 type attr struct {
-	*node
+	node
+}
+
+var _ Attr = (*attr)(nil)
+
+///////////////////////////////////////////////////////////////////////////////
+// LIFECYCLE
+
+func newAttr(value js.Value) Attr {
+	if value.IsNull() || value.IsUndefined() {
+		return nil
+	}
+	return &attr{newNode(value)}
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // STRINGIFY
 
-func (this *attr) String() string {
-	str := "<DOMAttribute"
-	if name := this.Name(); name != "" {
-		str += fmt.Sprintf(" %v=%q", name, this.Value())
+func (attr *attr) String() string {
+	var b bytes.Buffer
+	if _, err := attr.Write(&b); err != nil {
+		return err.Error()
+	} else {
+		return b.String()
 	}
-	return str + ">"
+}
+
+func (attr *attr) Write(w io.Writer) (int, error) {
+	var s int
+	if n, err := w.Write([]byte(attr.Name())); err != nil {
+		return s, err
+	} else {
+		s += n
+	}
+	if n, err := w.Write([]byte("=")); err != nil {
+		return s, err
+	} else {
+		s += n
+	}
+	if n, err := w.Write([]byte(strconv.Quote(html.EscapeString(attr.Value())))); err != nil {
+		return s, err
+	} else {
+		s += n
+	}
+	return s, nil
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -41,17 +82,10 @@ func (this *attr) SetValue(value string) {
 	this.Set("value", value)
 }
 
-func (this *attr) OwnerElement() dom.Element {
+func (this *attr) OwnerElement() Element {
 	owner := this.Get("ownerElement")
 	if owner.IsNull() || owner.IsUndefined() {
 		return nil
 	}
-	return NewNode(owner).(dom.Element)
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// PRIVATE METHODS
-
-func (this *attr) v() *node {
-	return this.node
+	return newElement(owner)
 }

@@ -1,318 +1,175 @@
 package dom_test
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 
-	// Packages
-	"github.com/djthorpe/go-wasmbuild/pkg/dom"
-	"github.com/stretchr/testify/assert"
+	// Namespace imports
+	. "github.com/djthorpe/go-wasmbuild"
 )
 
-func TestDocument_Basic(t *testing.T) {
-	doc := dom.GetWindow().Document()
-	assert.NotNil(t, doc, "Document should not be nil")
-	assert.NotNil(t, doc.Body(), "Document body should not be nil")
-}
+///////////////////////////////////////////////////////////////////////////////
+// TESTS
 
-func TestDocument_CreateElement(t *testing.T) {
-	doc := dom.GetWindow().Document()
+func TestDocument_NodeMetadata(t *testing.T) {
+	doc := mustDocument(t)
 
-	tests := []struct {
-		name        string
-		tagName     string
-		expectError bool
-	}{
-		{"create div", "div", false},
-		{"create span", "span", false},
-		{"create p", "p", false},
-		{"create section", "section", false},
-		{"create article", "article", false},
-		{"create h1", "h1", false},
-		{"create input", "input", false},
-		{"create button", "button", false},
-		{"create img", "img", false},
-		{"create a", "a", false},
+	if name := doc.NodeName(); name != "#document" {
+		t.Fatalf("expected node name #document, got %q", name)
 	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			elem := doc.CreateElement(tt.tagName)
-			if tt.expectError {
-				assert.Nil(t, elem, "Expected nil element for invalid tag name")
-			} else {
-				assert.NotNil(t, elem, "Element should not be nil")
-				if elem != nil {
-					expectedTagName := strings.ToUpper(tt.tagName)
-					assert.Equal(t, expectedTagName, elem.TagName(), "Tag name should match (uppercase)")
-				}
-			}
-		})
+	if nodeType := doc.NodeType(); nodeType != DOCUMENT_NODE {
+		t.Fatalf("expected node type DOCUMENT_NODE, got %v", nodeType)
+	}
+	if owner := doc.OwnerDocument(); owner != nil {
+		t.Fatalf("expected owner document to be nil, got %v", owner)
+	}
+	if doc.ParentElement() != nil {
+		t.Fatal("expected parent element to be nil")
+	}
+	if !doc.HasChildNodes() {
+		t.Fatal("expected document to report child nodes")
 	}
 }
 
-func TestDocument_CreateTextNode(t *testing.T) {
-	doc := dom.GetWindow().Document()
+func TestDocument_HeadAndBodyAvailable(t *testing.T) {
+	doc := mustDocument(t)
 
-	tests := []struct {
-		name string
-		data string
-	}{
-		{"simple text", "Hello, World!"},
-		{"empty text", ""},
-		{"whitespace", "   "},
-		{"multiline text", "Line 1\nLine 2\nLine 3"},
-		{"special characters", "Special chars: !@#$%^&*()"},
-		{"unicode text", "Unicode: 你好世界"},
-		{"html entities", "&lt;div&gt;&amp;&quot;"},
+	head := doc.Head()
+	if head == nil {
+		t.Fatal("expected head element")
+	}
+	if head.TagName() != "HEAD" {
+		t.Fatalf("expected HEAD tag, got %q", head.TagName())
+	}
+	if owner := head.OwnerDocument(); owner == nil || owner.NodeType() != DOCUMENT_NODE {
+		t.Fatal("expected head owner to be the document")
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			textNode := doc.CreateTextNode(tt.data)
-			assert.NotNil(t, textNode, "Text node should not be nil")
-			assert.Equal(t, tt.data, textNode.Data(), "Text data should match")
-
-			// Length calculation may differ between WASM (JS string length) and non-WASM (Go byte length)
-			// Especially for unicode strings, so we just check that length is reasonable
-			length := textNode.Length()
-			assert.GreaterOrEqual(t, length, 0, "Text length should be non-negative")
-			if tt.data == "" {
-				assert.Equal(t, 0, length, "Empty text should have zero length")
-			} else {
-				assert.Greater(t, length, 0, "Non-empty text should have positive length")
-			}
-		})
-	}
-}
-
-func TestDocument_CreateComment(t *testing.T) {
-	doc := dom.GetWindow().Document()
-
-	tests := []struct {
-		name string
-		data string
-	}{
-		{"simple comment", "This is a comment"},
-		{"empty comment", ""},
-		{"whitespace comment", "   "},
-		{"multiline comment", "Line 1\nLine 2"},
-		{"special chars comment", "Comment with !@#$%"},
-		{"html in comment", "<div>HTML in comment</div>"},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			comment := doc.CreateComment(tt.data)
-			assert.NotNil(t, comment, "Comment should not be nil")
-			assert.Equal(t, tt.data, comment.Data(), "Comment data should match")
-
-			// Length calculation may differ between WASM (JS string length) and non-WASM (Go byte length)
-			length := comment.Length()
-			assert.GreaterOrEqual(t, length, 0, "Comment length should be non-negative")
-			if tt.data == "" {
-				assert.Equal(t, 0, length, "Empty comment should have zero length")
-			} else {
-				assert.Greater(t, length, 0, "Non-empty comment should have positive length")
-			}
-		})
-	}
-}
-
-func TestDocument_CreateAttribute(t *testing.T) {
-	doc := dom.GetWindow().Document()
-
-	tests := []struct {
-		name     string
-		attrName string
-	}{
-		{"id attribute", "id"},
-		{"class attribute", "class"},
-		{"data attribute", "data-test"},
-		{"custom attribute", "my-custom-attr"},
-		{"special chars", "attr-with_chars"},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			attr := doc.CreateAttribute(tt.attrName)
-			assert.NotNil(t, attr, "Attribute should not be nil")
-			assert.Equal(t, tt.attrName, attr.Name(), "Attribute name should match")
-		})
-	}
-}
-
-func TestDocument_Title(t *testing.T) {
-	doc := dom.GetWindow().Document()
-
-	// Test getting title (it may be empty or have a value)
-	title := doc.Title()
-	assert.IsType(t, "", title, "Title should be a string")
-
-	// Note: We can't reliably test setting title in all environments
-	// as it depends on the specific DOM implementation
-}
-
-func TestDocument_Body(t *testing.T) {
-	doc := dom.GetWindow().Document()
 	body := doc.Body()
-
-	assert.NotNil(t, body, "Body should not be nil")
-	assert.Equal(t, "BODY", body.TagName(), "Body tag name should be 'BODY'")
-
-	// Test body manipulation
-	elem := doc.CreateElement("div")
-	assert.NotNil(t, elem, "Created element should not be nil")
-
-	appendedElem := body.AppendChild(elem)
-	assert.Equal(t, elem, appendedElem, "AppendChild should return the same element")
-}
-
-func TestDocument_Doctype(t *testing.T) {
-	doc := dom.GetWindow().Document()
-	doctype := doc.Doctype()
-
-	// Doctype might be nil in some test environments
-	if doctype != nil {
-		assert.NotNil(t, doctype, "Doctype should not be nil if present")
-		// Test basic doctype properties
-		name := doctype.Name()
-		assert.IsType(t, "", name, "Doctype name should be a string")
+	if body == nil {
+		t.Fatal("expected body element")
+	}
+	if body.TagName() != "BODY" {
+		t.Fatalf("expected BODY tag, got %q", body.TagName())
+	}
+	if owner := body.OwnerDocument(); owner == nil || owner.NodeType() != DOCUMENT_NODE {
+		t.Fatal("expected body owner to be the document")
 	}
 }
 
-func TestDocument_ElementOperations(t *testing.T) {
-	doc := dom.GetWindow().Document()
+func TestDocument_CreateElementLifecycle(t *testing.T) {
+	doc := mustDocument(t)
 	body := doc.Body()
+	if body == nil {
+		t.Fatal("expected body element")
+	}
 
-	// Create multiple elements and test operations
-	div := doc.CreateElement("div")
-	span := doc.CreateElement("span")
-	p := doc.CreateElement("p")
+	section := doc.CreateElement("section")
+	if section == nil {
+		t.Fatal("expected section element")
+	}
+	if owner := section.OwnerDocument(); owner == nil || owner.NodeType() != DOCUMENT_NODE {
+		t.Fatal("expected section owner to be the document")
+	}
+	if section.ParentNode() != nil {
+		t.Fatal("expected new element to have no parent")
+	}
 
-	assert.NotNil(t, div, "Div element should not be nil")
-	assert.NotNil(t, span, "Span element should not be nil")
-	assert.NotNil(t, p, "P element should not be nil")
+	content := fmt.Sprintf("document-section-content-%s", t.Name())
+	text := doc.CreateTextNode(content)
+	if text == nil {
+		t.Fatal("expected text node")
+	}
+	if text.ParentNode() != nil {
+		t.Fatal("expected new text node to have no parent")
+	}
+	section.AppendChild(text)
+	if text.ParentNode() == nil {
+		t.Fatal("expected text node to be attached after append")
+	}
 
-	// Test appending elements
-	body.AppendChild(div)
-	div.AppendChild(span)
-	span.AppendChild(p)
+	body.AppendChild(section)
+	appended := true
+	defer func() {
+		if appended {
+			body.RemoveChild(section)
+		}
+	}()
 
-	// Test text node creation and appending
-	textNode := doc.CreateTextNode("Test text content")
-	p.AppendChild(textNode)
+	if !body.Contains(section) {
+		t.Fatal("expected body to contain appended section")
+	}
+	if parent := section.ParentNode(); parent == nil || !parent.Equals(body) {
+		t.Fatal("expected section parent to be body")
+	}
 
-	assert.Equal(t, "Test text content", textNode.Data(), "Text node data should match")
+	body.RemoveChild(section)
+	appended = false
+
+	if section.ParentNode() != nil {
+		t.Fatal("expected section parent to be nil after removal")
+	}
+	if parent := text.ParentNode(); parent == nil || !parent.Equals(section) {
+		t.Fatal("expected text to remain attached to section after removal")
+	}
+	if body.Contains(section) {
+		t.Fatal("expected body to no longer contain section after removal")
+	}
 }
 
-func TestDocument_EdgeCases(t *testing.T) {
-	doc := dom.GetWindow().Document()
-
-	t.Run("empty tag name", func(t *testing.T) {
-		// In WASM (real DOM), empty tag names should cause an error
-		// In non-WASM, it might be allowed
-		defer func() {
-			if r := recover(); r != nil {
-				// This is expected behavior in WASM environment
-				t.Log("Empty tag name correctly caused an error in WASM environment:", r)
-			}
-		}()
-
-		elem := doc.CreateElement("")
-		// If we get here, we're in non-WASM environment
-		if elem != nil {
-			t.Log("Empty tag name allowed in non-WASM environment")
-		}
-	})
-
-	t.Run("invalid tag characters", func(t *testing.T) {
-		// Test various potentially invalid tag names
-		invalidTags := []string{
-			"div with space",
-			"div<script>",
-			"div>invalid",
-		}
-
-		for _, tagName := range invalidTags {
-			t.Run("tag: "+tagName, func(t *testing.T) {
-				defer func() {
-					if r := recover(); r != nil {
-						t.Logf("Invalid tag name '%s' correctly caused an error: %v", tagName, r)
-					}
-				}()
-
-				elem := doc.CreateElement(tagName)
-				if elem != nil {
-					t.Logf("Tag name '%s' was accepted", tagName)
-				}
-			})
-		}
-	})
-
-	t.Run("empty attribute name", func(t *testing.T) {
-		// In WASM (real DOM), empty attribute names should cause an error
-		// In non-WASM, it might be allowed
-		defer func() {
-			if r := recover(); r != nil {
-				// This is expected behavior in WASM environment
-				t.Log("Empty attribute name correctly caused an error in WASM environment:", r)
-			}
-		}()
-
-		attr := doc.CreateAttribute("")
-		// If we get here, we're in non-WASM environment
-		if attr != nil {
-			t.Log("Empty attribute name allowed in non-WASM environment")
-		}
-	})
-
-	t.Run("numeric attribute name", func(t *testing.T) {
-		// In WASM (real DOM), numeric attribute names may not be allowed
-		// In non-WASM, it might be allowed
-		defer func() {
-			if r := recover(); r != nil {
-				// This is expected behavior in WASM environment
-				t.Log("Numeric attribute name correctly caused an error in WASM environment:", r)
-			}
-		}()
-
-		attr := doc.CreateAttribute("123")
-		// If we get here, we're in non-WASM environment
-		if attr != nil {
-			t.Log("Numeric attribute name allowed in non-WASM environment")
-		}
-	})
-}
-
-func TestDocument_ComplexStructure(t *testing.T) {
-	doc := dom.GetWindow().Document()
+func TestDocument_TextContentTracksBodyChanges(t *testing.T) {
+	doc := mustDocument(t)
 	body := doc.Body()
+	if body == nil {
+		t.Fatal("expected body element")
+	}
 
-	// Create a more complex DOM structure
-	container := doc.CreateElement("div")
-	container.SetAttribute("class", "container")
-
-	header := doc.CreateElement("h1")
-	headerText := doc.CreateTextNode("Test Header")
-	header.AppendChild(headerText)
-
-	content := doc.CreateElement("div")
-	content.SetAttribute("class", "content")
+	unique := uniqueDocumentText(doc, t.Name())
 
 	paragraph := doc.CreateElement("p")
-	paragraphText := doc.CreateTextNode("This is test content.")
-	paragraph.AppendChild(paragraphText)
+	if paragraph == nil {
+		t.Fatal("expected paragraph element")
+	}
+	text := doc.CreateTextNode(unique)
+	paragraph.AppendChild(text)
 
-	// Build the structure
-	container.AppendChild(header)
-	content.AppendChild(paragraph)
-	container.AppendChild(content)
-	body.AppendChild(container)
+	body.AppendChild(paragraph)
+	appended := true
+	defer func() {
+		if appended {
+			body.RemoveChild(paragraph)
+		}
+	}()
 
-	// Test the structure
-	assert.Equal(t, "container", container.GetAttribute("class"), "Container class should match")
-	assert.Equal(t, "content", content.GetAttribute("class"), "Content class should match")
-	assert.Equal(t, "Test Header", headerText.Data(), "Header text should match")
-	assert.Equal(t, "This is test content.", paragraphText.Data(), "Paragraph text should match")
+	if !strings.Contains(body.TextContent(), unique) {
+		t.Fatalf("expected body text content to include %q", unique)
+	}
+
+	body.RemoveChild(paragraph)
+	appended = false
+
+	if strings.Contains(body.TextContent(), unique) {
+		t.Fatalf("expected body text content to drop %q after removal", unique)
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// HELPERS
+
+func uniqueDocumentText(doc Document, seed string) string {
+	base := fmt.Sprintf("go-wasmbuild-%s", seed)
+	body := doc.Body()
+	if body == nil {
+		return base
+	}
+	if !strings.Contains(body.TextContent(), base) {
+		return base
+	}
+	for i := 0; ; i++ {
+		candidate := fmt.Sprintf("%s-%d", base, i)
+		if !strings.Contains(body.TextContent(), candidate) {
+			return candidate
+		}
+	}
 }

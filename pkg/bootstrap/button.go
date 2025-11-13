@@ -2,9 +2,9 @@ package bootstrap
 
 import (
 	// Packages
-	dom "github.com/djthorpe/go-wasmbuild/pkg/dom"
+	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
 
-	// Namespace import for interfaces
+	// Namespace imports
 	. "github.com/djthorpe/go-wasmbuild"
 )
 
@@ -12,221 +12,184 @@ import (
 // TYPES
 
 type button struct {
-	component
+	mvc.ViewWithCaption
+	caption Element
 }
 
-type buttonGroup struct {
-	component
+type buttongroup struct {
+	mvc.View
 }
 
-// Ensure that button implements Component interface
-var _ Component = (*button)(nil)
+type buttontoolbar struct {
+	mvc.View
+}
 
-// Ensure that buttonGroup implements Component interface
-var _ Component = (*buttonGroup)(nil)
+var _ mvc.ViewWithCaption = (*button)(nil)
+var _ mvc.View = (*buttongroup)(nil)
+var _ mvc.View = (*buttontoolbar)(nil)
+
+///////////////////////////////////////////////////////////////////////////////
+// GLOBALS
+
+const (
+	ViewButton        = "mvc-bs-button"
+	ViewButtonGroup   = "mvc-bs-buttongroup"
+	ViewButtonToolbar = "mvc-bs-buttontoolbar"
+
+	// The prefix class for outline buttons
+	viewOutlineButtonClassPrefix = "btn-outline"
+)
+
+func init() {
+	mvc.RegisterView(ViewButton, newButtonFromElement)
+	mvc.RegisterView(ViewButtonGroup, newButtonGroupFromElement)
+	mvc.RegisterView(ViewButtonToolbar, newButtonToolbarFromElement)
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
-// buttonWithOptions is an internal helper to create buttons with specific default options
-func buttonWithOptions(defaults []Opt, opt ...Opt) *button {
-	// Create a new component
-	c := newComponent(ButtonComponent, dom.GetWindow().Document().CreateElement("BUTTON"))
+func Button(args ...any) *button {
+	caption := mvc.Placeholder()
+	view := mvc.NewViewEx(
+		new(button), ViewButton, "BUTTON",
+		nil, nil, nil, caption,
+		mvc.WithAttr("type", "button"), mvc.WithClass("btn", "btn-primary"), args,
+	).(*button)
+	view.caption = caption
+	return view
+}
 
-	// Apply options with defaults first, then user options
-	opts := append(defaults, opt...)
+func OutlineButton(args ...any) *button {
+	return mvc.NewView(new(button), ViewButton, "BUTTON", mvc.WithAttr("type", "button"), mvc.WithClass("btn", "btn-outline", "btn-outline-primary"), args).(*button)
+}
 
-	// Apply options
-	if err := c.applyTo(c.root, opts...); err != nil {
-		panic(err)
+func CloseButton(args ...any) *button {
+	return mvc.NewView(new(button), ViewButton, "BUTTON", mvc.WithAttr("type", "button"), mvc.WithClass("btn", "btn-close"), mvc.WithAriaLabel("close"), args).(*button)
+}
+
+func ButtonToolbar(args ...any) mvc.View {
+	return mvc.NewView(new(buttontoolbar), ViewButtonToolbar, "DIV", mvc.WithAttr("role", "toolbar"), mvc.WithClass("btn-toolbar"), args)
+}
+
+func ButtonGroup(args ...any) mvc.View {
+	return mvc.NewView(new(buttongroup), ViewButtonGroup, "DIV", mvc.WithAttr("role", "group"), mvc.WithClass("btn-group"), args)
+}
+
+func VButtonGroup(args ...any) mvc.View {
+	return mvc.NewView(new(buttongroup), ViewButtonGroup, "DIV", mvc.WithAttr("role", "group"), mvc.WithClass("btn-group-vertical"), args)
+}
+
+func newButtonFromElement(element Element) mvc.View {
+	if element.TagName() != "BUTTON" {
+		return nil
 	}
-
-	return &button{component: *c}
+	return mvc.NewViewWithElement(new(button), element)
 }
 
-// Button creates a new button element with "btn" class
-// Use WithColor to set the button variant (e.g., btn-primary)
-func Button(color Color, opt ...Opt) *button {
-	colorClass := "btn-" + string(color)
-	return buttonWithOptions([]Opt{
-		WithClass("btn", colorClass),
-		WithAttribute("type", "button"),
-	}, opt...)
-}
-
-// OutlineButton creates a new button with outline styling (btn-outline-*)
-// This is a convenience wrapper that uses outline button variants.
-func OutlineButton(color Color, opt ...Opt) *button {
-	outlineClass := "btn-outline-" + string(color)
-	return buttonWithOptions([]Opt{
-		WithClass("btn", outlineClass),
-		WithAttribute("type", "button"),
-	}, opt...)
-}
-
-// CloseButton creates a close button with the "btn-close" class.
-// This is commonly used for dismissing modals, alerts, offcanvas, and other components.
-// The button has no visible text but is accessible via aria-label.
-//
-// Example:
-//
-//	closeBtn := CloseButton()
-//	closeBtn.Element().SetAttribute("data-bs-dismiss", "modal")
-//	closeBtn.Element().SetAttribute("aria-label", "Close")
-func CloseButton(opt ...Opt) *button {
-	return buttonWithOptions([]Opt{
-		WithClass("btn-close"),
-		WithAttribute("type", "button"),
-		WithAttribute("aria-label", "Close"),
-	}, opt...)
-}
-
-// buttonGroupWithOptions is an internal helper to create button groups with specific default options
-func buttonGroupWithOptions(defaults []Opt, opt ...Opt) *buttonGroup {
-	// Create a new component
-	c := newComponent(ButtonGroupComponent, dom.GetWindow().Document().CreateElement("DIV"))
-
-	// Apply options with defaults first, then user options
-	opts := append(defaults, opt...)
-
-	// Apply options
-	if err := c.applyTo(c.root, opts...); err != nil {
-		panic(err)
+func newButtonGroupFromElement(element Element) mvc.View {
+	if element.TagName() != "DIV" {
+		return nil
 	}
-
-	return &buttonGroup{component: *c}
+	return mvc.NewViewWithElement(new(buttongroup), element)
 }
 
-// ButtonGroup creates a button group container with "btn-group" class
-// and appropriate ARIA attributes for accessibility
-func ButtonGroup(opt ...Opt) *buttonGroup {
-	return buttonGroupWithOptions([]Opt{
-		WithClass("btn-group"),
-		WithRole("group"),
-	}, opt...)
-}
-
-// VerticalButtonGroup creates a vertical button group with "btn-group-vertical" class
-func VerticalButtonGroup(opt ...Opt) *buttonGroup {
-	return buttonGroupWithOptions([]Opt{
-		WithClass("btn-group-vertical"),
-		WithRole("group"),
-	}, opt...)
-}
-
-// ButtonToolbar creates a button toolbar container with "btn-toolbar" class
-func ButtonToolbar(opt ...Opt) *buttonGroup {
-	return buttonGroupWithOptions([]Opt{
-		WithClass("btn-toolbar"),
-		WithRole("toolbar"),
-	}, opt...)
+func newButtonToolbarFromElement(element Element) mvc.View {
+	if element.TagName() != "DIV" {
+		return nil
+	}
+	return mvc.NewViewWithElement(new(buttontoolbar), element)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// METHODS
+// PUBLIC METHODS
 
-// Active gets or sets active buttons in the button group.
-// When called with no arguments, returns the indices of currently active buttons.
-// When called with indices, marks those buttons as active and deactivates others.
-// Passing -1 deactivates all buttons.
-// Indices that are out of bounds are ignored.
-// Returns []int containing the indices of active buttons.
-func (bg *buttonGroup) Active(indices ...int) []int {
-	if len(indices) > 0 {
-		// Set mode: mark specified buttons as active
-		activeIndices := make(map[int]bool)
-		for _, idx := range indices {
-			if idx >= 0 {
-				activeIndices[idx] = true
-			}
-		}
-
-		// Iterate through all child buttons and set/remove active class
-		currentIndex := 0
-		for child := bg.root.FirstChild(); child != nil; child = child.NextSibling() {
-			if elem, ok := child.(Element); ok && elem.TagName() == "BUTTON" {
-				classList := elem.ClassList()
-				if activeIndices[currentIndex] {
-					classList.Add("active")
-				} else {
-					classList.Remove("active")
-				}
-				currentIndex++
-			}
-		}
-
-		return indices
-	}
-
-	// Get mode: return currently active button indices
-	var activeButtons []int
-	currentIndex := 0
-	for child := bg.root.FirstChild(); child != nil; child = child.NextSibling() {
-		if elem, ok := child.(Element); ok && elem.TagName() == "BUTTON" {
-			if elem.ClassList().Contains("active") {
-				activeButtons = append(activeButtons, currentIndex)
-			}
-			currentIndex++
-		}
-	}
-
-	return activeButtons
+func (b *button) SetView(view mvc.View) {
+	b.ViewWithCaption = view.(mvc.ViewWithCaption)
 }
 
-// Disabled manages the disabled state of buttons in the button group.
-// With arguments: sets the disabled state for buttons at the specified indices.
-// Without arguments: returns the indices of currently disabled buttons.
-// Passing -1 disables all buttons.
-// Indices that are out of bounds are ignored.
-// Returns []int containing the indices of disabled buttons.
-func (bg *buttonGroup) Disabled(indices ...int) []int {
-	if len(indices) > 0 {
-		// Set mode: mark specified buttons as disabled
-		disabledIndices := make(map[int]bool)
-		for _, idx := range indices {
-			if idx >= 0 {
-				disabledIndices[idx] = true
-			}
-		}
-
-		// Iterate through all child buttons and set/remove disabled attribute
-		currentIndex := 0
-		for child := bg.root.FirstChild(); child != nil; child = child.NextSibling() {
-			if elem, ok := child.(Element); ok && elem.TagName() == "BUTTON" {
-				if disabledIndices[currentIndex] {
-					elem.SetAttribute("disabled", "")
-				} else {
-					elem.RemoveAttribute("disabled")
-				}
-				currentIndex++
-			}
-		}
-
-		return indices
-	}
-
-	// Get mode: return currently disabled button indices
-	var disabledButtons []int
-	currentIndex := 0
-	for child := bg.root.FirstChild(); child != nil; child = child.NextSibling() {
-		if elem, ok := child.(Element); ok && elem.TagName() == "BUTTON" {
-			if elem.HasAttribute("disabled") {
-				disabledButtons = append(disabledButtons, currentIndex)
-			}
-			currentIndex++
-		}
-	}
-
-	return disabledButtons
+func (b *buttongroup) SetView(view mvc.View) {
+	b.View = view
 }
 
-// SetDisabled sets or removes the disabled attribute
-func (button *button) SetDisabled(disabled bool) *button {
-	if disabled {
-		button.root.SetAttribute("disabled", "")
-	} else {
-		// Remove disabled attribute - need to check if there's a RemoveAttribute method
-		// For now, we'll work with what we have
-	}
-	return button
+func (b *buttontoolbar) SetView(view mvc.View) {
+	b.View = view
 }
+
+func (b *button) Caption(children ...any) mvc.ViewWithCaption {
+	// Replace whatever is in the caption with the indicator badge
+	// TODO: We actualy have to replace the caption element, which is currently a placeholder
+	// and set the attribute so we can re-create the view from the element
+	b.Root().ClassList().Add("position-relative")
+	b.caption.ReplaceWith(mvc.HTML("SPAN", mvc.WithClass("position-absolute", "top-0", "start-100", "translate-middle", "badge", "rounded-pill", "bg-danger")))
+	return b
+}
+
+func (b *button) Append(children ...any) mvc.View {
+	// Close buttons cannot have children
+	if b.Root().ClassList().Contains("btn-close") {
+		panic("Append: not supported for close button")
+	}
+	// Call superclass
+	return b.ViewWithCaption.Append(children...)
+}
+
+func (b *buttongroup) Append(children ...any) mvc.View {
+	// TODO: Button groups can only include buttons
+	// Call superclass
+	return b.View.Append(children...)
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// OPTIONS
+
+func WithSubmit() mvc.Opt {
+	return func(o mvc.OptSet) error {
+		if o.Name() != ViewButton {
+			return ErrInternalAppError.With("WithSubmit: option only valid for button views")
+		}
+		return mvc.WithAttr("type", "submit")(o)
+	}
+}
+
+/*
+// Return true if button is disabled
+func (b *button) Disabled() bool {
+	return b.Root().HasAttribute("disabled")
+}
+
+// Return true if button is active
+func (b *button) Active() bool {
+	return b.Root().ClassList().Contains("active")
+}
+
+// Return elements which are active in the button group
+func (b *buttongroup) Active() []Element {
+	var elements []Element
+
+	// Find active elements
+	child := b.Root().FirstElementChild()
+	for child != nil {
+		if child.ClassList().Contains("active") {
+			elements = append(elements, child)
+		}
+		child = child.NextElementSibling()
+	}
+	return elements
+}
+
+// Return elements which are disabled in the button group
+func (b *buttongroup) Disabled() []Element {
+	var elements []Element
+
+	// Find disabled elements
+	child := b.Root().FirstElementChild()
+	for child != nil {
+		if child.HasAttribute("disabled") {
+			elements = append(elements, child)
+		}
+		child = child.NextElementSibling()
+	}
+	return elements
+}
+*/

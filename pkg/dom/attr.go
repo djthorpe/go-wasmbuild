@@ -1,85 +1,84 @@
-//go:build !js
+//go:build !(js && wasm)
 
 package dom
 
 import (
-	"fmt"
+	"bytes"
 	"html"
 	"io"
 	"strconv"
-	"strings"
 
-	dom "github.com/djthorpe/go-wasmbuild"
+	// Namespace imports
+	. "github.com/djthorpe/go-wasmbuild"
 )
 
 ///////////////////////////////////////////////////////////////////////////////
 // TYPES
 
 type attr struct {
-	*node
+	node
+}
+
+var _ Attr = (*attr)(nil)
+
+///////////////////////////////////////////////////////////////////////////////
+// LIFECYCLE
+
+func newAttr(document Document, parent Element, name, value string) Attr {
+	node := newNode(document, parent, name, ELEMENT_NODE, value)
+	return &attr{
+		node: node,
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // STRINGIFY
 
-func (this *attr) String() string {
-	var b strings.Builder
-	b.WriteString("<DOMAttribute")
-	if name := this.Name(); name != "" {
-		fmt.Fprintf(&b, " %v=%q", name, this.Value())
+func (attr *attr) String() string {
+	var b bytes.Buffer
+	if _, err := attr.Write(&b); err != nil {
+		return err.Error()
+	} else {
+		return b.String()
 	}
-	b.WriteString(">")
-	return b.String()
+}
+
+func (attr *attr) Write(w io.Writer) (int, error) {
+	var s int
+	if n, err := w.Write([]byte(attr.name)); err != nil {
+		return s, err
+	} else {
+		s += n
+	}
+	if n, err := w.Write([]byte("=")); err != nil {
+		return s, err
+	} else {
+		s += n
+	}
+	if n, err := w.Write([]byte(strconv.Quote(html.EscapeString(attr.cdata)))); err != nil {
+		return s, err
+	} else {
+		s += n
+	}
+	return s, nil
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// PROPERTIES
+// ATTR
 
-func (this *attr) Name() string {
-	return this.name
+func (attr *attr) OwnerElement() Element {
+	return attr.ParentElement()
 }
 
-func (this *attr) Value() string {
-	return this.cdata
+func (attr *attr) Name() string {
+	return attr.name
+
 }
 
-func (this *attr) SetValue(cdata string) {
-	this.cdata = cdata
+func (attr *attr) Value() string {
+	return attr.cdata
 }
 
-func (this *attr) OwnerElement() dom.Element {
-	return this.ParentElement()
-}
-
-/////////////////////////////////////////////////////////////////////
-// PUBLIC METHODS
-
-func (this *attr) CloneNode(bool) dom.Node {
-	return NewNode(this.document, this.name, this.nodetype, this.cdata)
-}
-
-// Child manipulation methods are no-ops for attribute nodes (leaf nodes)
-func (this *attr) AppendChild(child dom.Node) dom.Node {
-	return nil
-}
-
-func (this *attr) InsertBefore(new dom.Node, ref dom.Node) dom.Node {
-	return nil
-}
-
-func (this *attr) RemoveChild(child dom.Node) {
-}
-
-func (this *attr) ReplaceChild(dom.Node, dom.Node) {
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// PRIVATE METHODS
-
-func (this *attr) v() *node {
-	return this.node
-}
-
-func (this *attr) write(w io.Writer) (int, error) {
-	return w.Write([]byte(this.name + "=" + strconv.Quote(html.EscapeString(this.cdata))))
+func (attr *attr) SetValue(value string) {
+	attr.cdata = value
 }

@@ -12,6 +12,8 @@ type NodeType int
 
 // Node implements https://developer.mozilla.org/en-US/docs/Web/API/Node
 type Node interface {
+	Writer
+
 	// Properties
 	ChildNodes() []Node
 	Contains(Node) bool
@@ -31,37 +33,49 @@ type Node interface {
 
 	// Methods
 	AppendChild(Node) Node
-	CloneNode(bool) Node
 	InsertBefore(Node, Node) Node
 	RemoveChild(Node)
-	ReplaceChild(Node, Node)
-	Component() Component
+}
+
+// Event implements https://developer.mozilla.org/en-US/docs/Web/API/Event
+type Event interface {
+	// Properties
+	Type() string
+	Target() any
+}
+
+// EventTarget implements https://developer.mozilla.org/en-US/docs/Web/API/EventTarget
+type EventTarget interface {
+	AddEventListener(string, func(Event))
+	RemoveEventListener(string)
 }
 
 // Element implements https://developer.mozilla.org/en-US/docs/Web/API/Element
 type Element interface {
+	EventTarget
 	Node
 
-	// Properties
+	// Element properties
 	TagName() string
 	ID() string
 	SetID(string)
-	ClassName() string
-	SetClassName(string)
 	OuterHTML() string
 	InnerHTML() string
 	SetInnerHTML(string)
-	Attributes() []Attr
-	Style() Style
+
+	// Classes
+	ClassName() string
+	SetClassName(string)
 	ClassList() TokenList
 
-	// Attribute Methods
+	// Attributes
+	Attributes() []Attr
 	RemoveAttribute(string)
 	RemoveAttributeNode(Attr)
 	SetAttribute(string, string) Attr
 	SetAttributeNode(Attr) Attr
-	GetAttribute(string) string
 	GetAttributeNames() []string
+	GetAttribute(string) string
 	GetAttributeNode(string) Attr
 	HasAttribute(string) bool
 	HasAttributes() bool
@@ -77,48 +91,44 @@ type Element interface {
 	LastElementChild() Element
 	NextElementSibling() Element
 	PreviousElementSibling() Element
-	Remove()
 	ReplaceWith(...Node)
-	InsertAdjacentElement(string, Element) Element
+	Remove()
+	Prepend(...Node)
 
-	// Event Methods
-	AddEventListener(string, func(Node)) Element
-
-	// Focus Methods
-	Blur()
-	Focus()
+	// HTMLDataElement specific methods
+	Value() string
+	SetValue(string)
 }
 
 // Document implements https://developer.mozilla.org/en-US/docs/Web/API/Document
 type Document interface {
+	EventTarget
 	Node
 
 	// Properties
+	Head() Element
 	Body() Element
-	//CharacterSet() string
-	//ContentType() string
-	Doctype() DocumentType
-	//DocumentElement() Element
-	//DocumentURI() string
-	//Head() Element
 	Title() string
+	Doctype() DocumentType
 
 	// Methods
 	CreateElement(string) Element
 	CreateAttribute(string) Attr
 	CreateComment(string) Comment
 	CreateTextNode(string) Text
-	//ActiveElement() Element
 }
 
+// Text implements https://developer.mozilla.org/en-US/docs/Web/API/Text
 type Text interface {
 	Node
 
 	// Properties
 	Data() string
+	SetData(string)
 	Length() int
 }
 
+// Comment implements https://developer.mozilla.org/en-US/docs/Web/API/Comment
 type Comment interface {
 	Node
 
@@ -127,6 +137,7 @@ type Comment interface {
 	Length() int
 }
 
+// Attr implements https://developer.mozilla.org/en-US/docs/Web/API/Attr
 type Attr interface {
 	Node
 
@@ -154,15 +165,20 @@ type DocumentType interface {
 	SystemId() string
 }
 
+// Location implements https://developer.mozilla.org/en-US/docs/Web/API/Location
+type Location interface {
+	// Properties
+	Href() string
+	Hash() string
+}
+
 // Window implements https://developer.mozilla.org/en-US/docs/Web/API/Window
 type Window interface {
+	EventTarget
+
 	// Properties
 	Document() Document
-
-	// Methods
-	Write(io.Writer, Node) (int, error)
-	NewMutationObserver(callback func()) MutationObserver
-	//Read(io.Reader, string) (Document, error)
+	Location() Location
 }
 
 // TokenList implements https://developer.mozilla.org/en-US/docs/Web/API/DOMTokenList
@@ -179,11 +195,9 @@ type TokenList interface {
 	Toggle(value string, force ...bool) bool
 }
 
-// MutationObserver implements https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver
-type MutationObserver interface {
-	// Methods
-	Observe(target Node, options map[string]interface{})
-	Disconnect()
+// Writer writes the node to an io.Writer
+type Writer interface {
+	Write(io.Writer) (int, error)
 }
 
 ///////////////////////////////////////////////////////////////////////////////

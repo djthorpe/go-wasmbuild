@@ -1,56 +1,80 @@
-package dom_test
+package dom
 
 import (
-	"bytes"
 	"testing"
 
-	// Packages
-	. "github.com/djthorpe/go-wasmbuild/pkg/dom"
+	// Namespace imports
+	. "github.com/djthorpe/go-wasmbuild"
 )
 
-func Test_Window_001(t *testing.T) {
+///////////////////////////////////////////////////////////////////////////////
+// TESTS - Window Creation
+
+func TestNewWindow(t *testing.T) {
 	window := GetWindow()
 	if window == nil {
-		t.Fatal("Window() returned nil")
-	} else {
-		t.Log("window=", window)
+		t.Fatal("Expected non-nil window")
 	}
-
-	document := window.Document()
-	if document == nil {
-		t.Fatal("Document() returned nil")
-	}
-	w := new(bytes.Buffer)
-	if _, err := window.Write(w, document); err != nil {
-		t.Fatal(err)
-	}
-	t.Log("document=", w.String())
 }
 
-/*
-func Test_Window_002(t *testing.T) {
+///////////////////////////////////////////////////////////////////////////////
+// TESTS - Window Properties
+
+func TestWindow_Document(t *testing.T) {
 	window := GetWindow()
-	tests := []struct {
-		mime, data string
-	}{
-		{"text/xml", "<warning>Beware of the tiger</warning>"},
-		{"image/svg+xml", "<circle cx=\"50\" cy=\"50\" r=\"50\"/>"},
-		{"text/html", "<strong>Beware of the leopard</strong>"},
-		{"text/html", "<!DOCTYPE html><html><head><title>test</title><meta charset=\"utf-8\"></head><body></body></html>"},
+	if window == nil {
+		t.Fatal("Expected non-nil window")
 	}
-	for _, test := range tests {
-		buf := bytes.NewBufferString(test.data)
-		document, err := window.Read(buf, test.mime)
-		if err != nil {
-			t.Error(err)
-			continue
-		}
-		buf.Reset()
-		if _, err := window.Write(buf, document); err != nil {
-			t.Error(err)
-			continue
-		}
-		t.Log("document=", buf.String())
-	}
+
+	doc := window.Document()
+	// In non-WASM mode, this might be nil
+	// In WASM mode, it should return the document
+	_ = doc // Just verify it doesn't panic
 }
-*/
+
+func TestWindow_Location(t *testing.T) {
+	window := GetWindow()
+	if window == nil {
+		t.Fatal("Expected non-nil window")
+	}
+
+	location := window.Location()
+	if location == nil {
+		t.Fatal("Expected non-nil location")
+	}
+
+	// Accessing href should always be safe
+	_ = location.Href()
+	_ = location.Hash()
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// TESTS - Window EventTarget Interface
+
+func TestWindow_AddEventListener(t *testing.T) {
+	window := GetWindow()
+	if window == nil {
+		t.Fatal("Expected non-nil window")
+	}
+
+	// Test adding an event listener
+	handler := func(e Event) {
+		// Handler implementation
+	}
+
+	// This should not panic
+	window.AddEventListener("test-event", handler)
+
+	// Note: We can't actually trigger the event in tests easily,
+	// but we verify the method exists and doesn't panic
+}
+
+func TestWindow_RemoveEventListener(t *testing.T) {
+	window := GetWindow()
+	if window == nil {
+		t.Fatal("Expected non-nil window")
+	}
+
+	// This should not panic
+	window.RemoveEventListener("test-event")
+}

@@ -1,21 +1,20 @@
 package main
 
 import (
+	"fmt"
+
 	// Packages
-	bs "github.com/djthorpe/go-wasmbuild/pkg/bootstrap"
+	dom "github.com/djthorpe/go-wasmbuild/pkg/dom"
+	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
 )
 
 func main() {
-	// Create the bootstrap app
-	bs.New().Insert(
-		bs.Container(
-			bs.WithBreakpoint(bs.BreakpointLarge),
-			bs.WithMargin(bs.TOP|bs.BOTTOM, 5),
-		).Insert(
-			bs.Heading(1, bs.WithTextAlign(bs.CENTER)).Insert("Hello, World!"),
-		),
-	)
+	doc := dom.GetWindow().Document()
+	body := doc.Body()
+	h1 := mvc.HTML("h1", mvc.WithClass("text-center", "my-4"))
+	h1.Prepend(doc.CreateTextNode("hello, world!"))
+	body.Prepend(h1)
 
-	// Run the application
-	select {}
+	// Print the body
+	fmt.Println(doc.Body())
 }

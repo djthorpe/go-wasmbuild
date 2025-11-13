@@ -1,7 +1,13 @@
 package bootstrap
 
 import (
-	"strconv"
+	"slices"
+
+	// Packages
+	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
+
+	// Namespace imports
+	. "github.com/djthorpe/go-wasmbuild"
 )
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -14,176 +20,149 @@ type Position uint
 // CONSTANTS
 
 const (
-	TOP Position = 1 << iota
-	BOTTOM
-	START
-	END
-	CENTER
-	MIDDLE
-	NONE Position = 0
+	Top Position = 1 << iota
+	Bottom
+	Start
+	End
+	Center
+	Middle
+	None Position = 0
 )
 
 const (
 	// All border positions
-	BorderAll = TOP | BOTTOM | START | END
+	BorderAll = Top | Bottom | Start | End
 
 	// All margin positions
-	MarginAll = TOP | BOTTOM | START | END
+	MarginAll = Top | Bottom | Start | End
 
 	// All padding positions
-	PaddingAll = TOP | BOTTOM | START | END
+	PaddingAll = Top | Bottom | Start | End
+
+	// All Offcanvas positions
+	OffcanvasAll = Start | End | Top | Bottom
 )
+
+///////////////////////////////////////////////////////////////////////////////
+// OPTIONS
+
+func WithPosition(position Position) mvc.Opt {
+	return func(o mvc.OptSet) error {
+		prefix := positionPrefixForView(o.Name())
+		if prefix == "" {
+			return ErrInternalAppError.Withf("WithPosition: unsupported view %q", o.Name())
+		}
+
+		// Remove all other classes
+		classNames := allPositionClassNamesForView(o.Name())
+		if err := mvc.WithoutClass(classNames...)(o); err != nil {
+			return err
+		}
+
+		// Add class for this position
+		className := position.className(prefix)
+		if !slices.Contains(classNames, className) {
+			return ErrInternalAppError.Withf("WithPosition: invalid position %d for view %q", position, o.Name())
+		}
+
+		return mvc.WithClass(className)(o)
+	}
+}
+
+func WithBorder(colors ...Color) mvc.Opt {
+	// TODO: If there is one color, use it for all borders
+	// If there are two, then use it for vertical and horizontal borders
+	// If there are four, use it for each border individually (Top, Right, Bottom, Left)
+	return func(o mvc.OptSet) error {
+		// Add border class
+		if err := mvc.WithClass("border")(o); err != nil {
+			return err
+		}
+
+		// Remove all other border color classes
+		prefix := borderPrefix()
+		if err := mvc.WithoutClass(allColorClassNames(prefix)...)(o); err != nil {
+			return err
+		}
+
+		// No border
+		if len(colors) == 0 {
+			return nil
+		}
+
+		// The single color use case
+		if len(colors) == 1 {
+			return mvc.WithClass(colors[0].className(prefix))(o)
+		}
+
+		// Not yet implemented
+		return ErrInternalAppError.Withf("WithBorder: multi-border colors not yet implemented")
+	}
+}
+
+func WithoutBorder() mvc.Opt {
+	return func(o mvc.OptSet) error {
+		// Remove border class
+		if err := mvc.WithoutClass("border")(o); err != nil {
+			return err
+		}
+
+		// Remove all other border color classes
+		prefix := borderPrefix()
+		if err := mvc.WithoutClass(allColorClassNames(prefix)...)(o); err != nil {
+			return err
+		}
+
+		// Return success
+		return nil
+	}
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // PRIVATE FUNCTIONS
 
-func (position Position) borderClassNames() []string {
-	prefix := "border"
+func borderPrefix() string {
+	return "border"
+}
 
-	// In the case of all borders, return just the prefix
-	if position == BorderAll {
-		return []string{prefix}
+func positionPrefixForView(name string) string {
+	switch name {
+	case ViewOffcanvas:
+		return "offcanvas-"
+	default:
+		return ""
 	}
+}
 
-	// Return a list of class names
-	classNames := []string{}
-	for i := TOP; i <= END; i = i << 1 {
-		if position&i != 0 {
-			classNames = append(classNames, i.borderClassName(prefix))
+func allPositionClassNamesForView(name string) []string {
+	switch name {
+	case ViewOffcanvas:
+		return []string{
+			Top.className("offcanvas-"),
+			Bottom.className("offcanvas-"),
+			Start.className("offcanvas-"),
+			End.className("offcanvas-"),
 		}
+	default:
+		return nil
 	}
-	return classNames
 }
 
 func (position Position) className(prefix string) string {
 	switch position {
-	case TOP:
+	case Top:
 		return prefix + "top"
-	case BOTTOM:
+	case Bottom:
 		return prefix + "bottom"
-	case START:
+	case Start:
 		return prefix + "start"
-	case END:
+	case End:
 		return prefix + "end"
+	case Center:
+		return prefix + "center"
+	case Middle:
+		return prefix + "middle"
 	default:
 		return ""
 	}
-}
-
-func (position Position) borderClassName(prefix string) string {
-	suffix := position.className("")
-	if suffix == "" {
-		return ""
-	}
-	return prefix + "-" + suffix
-}
-
-func (position Position) marginClassNames(size int) []string {
-	// Return a list of class names
-	classNames := []string{}
-
-	// Handle special case for all margins
-	if position == MarginAll {
-		return []string{formatMarginSize("m", size)}
-	}
-
-	// Track which positions have been handled by shorthands
-	handledPositions := Position(0)
-
-	// Handle shorthand for vertical (top & bottom)
-	if (position & (TOP | BOTTOM)) == (TOP | BOTTOM) {
-		classNames = append(classNames, formatMarginSize("my", size))
-		handledPositions |= TOP | BOTTOM
-	}
-
-	// Handle shorthand for horizontal (start & end)
-	if (position & (START | END)) == (START | END) {
-		classNames = append(classNames, formatMarginSize("mx", size))
-		handledPositions |= START | END
-	}
-
-	// Handle individual positions that weren't covered by shorthands
-	for i := TOP; i <= END; i = i << 1 {
-		if (position&i != 0) && (handledPositions&i == 0) {
-			classNames = append(classNames, i.marginClassName(size))
-		}
-	}
-	return classNames
-}
-
-func (position Position) marginClassName(size int) string {
-	switch position {
-	case TOP:
-		return formatMarginSize("mt", size)
-	case BOTTOM:
-		return formatMarginSize("mb", size)
-	case START:
-		return formatMarginSize("ms", size)
-	case END:
-		return formatMarginSize("me", size)
-	default:
-		return ""
-	}
-}
-
-// formatMarginSize formats a margin/padding size, handling negative values
-// For negative values, uses "n" prefix (e.g., "mt-n1" instead of "mt--1")
-func formatMarginSize(prefix string, size int) string {
-	if size < 0 {
-		return prefix + "-n" + strconv.Itoa(-size)
-	}
-	return prefix + "-" + strconv.Itoa(size)
-}
-
-func (position Position) paddingClassNames(size int) []string {
-	// Return a list of class names
-	classNames := []string{}
-
-	// Handle special case for all padding
-	if position == PaddingAll {
-		return []string{formatPaddingSize("p", size)}
-	}
-
-	// Track which positions have been handled by shorthands
-	handledPositions := Position(0)
-
-	// Handle shorthand for vertical (top & bottom)
-	if (position & (TOP | BOTTOM)) == (TOP | BOTTOM) {
-		classNames = append(classNames, formatPaddingSize("py", size))
-		handledPositions |= TOP | BOTTOM
-	}
-
-	// Handle shorthand for horizontal (start & end)
-	if (position & (START | END)) == (START | END) {
-		classNames = append(classNames, formatPaddingSize("px", size))
-		handledPositions |= START | END
-	}
-
-	// Handle individual positions that weren't covered by shorthands
-	for i := TOP; i <= END; i = i << 1 {
-		if (position&i != 0) && (handledPositions&i == 0) {
-			classNames = append(classNames, i.paddingClassName(size))
-		}
-	}
-	return classNames
-}
-
-func (position Position) paddingClassName(size int) string {
-	switch position {
-	case TOP:
-		return formatPaddingSize("pt", size)
-	case BOTTOM:
-		return formatPaddingSize("pb", size)
-	case START:
-		return formatPaddingSize("ps", size)
-	case END:
-		return formatPaddingSize("pe", size)
-	default:
-		return ""
-	}
-}
-
-// formatPaddingSize formats a padding size (only positive values allowed)
-func formatPaddingSize(prefix string, size int) string {
-	return prefix + "-" + strconv.Itoa(size)
 }

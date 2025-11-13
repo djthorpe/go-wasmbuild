@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	// Namespace imports
-	. "github.com/djthorpe/go-wasmbuild"
+	dom "github.com/djthorpe/go-wasmbuild"
 )
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -16,10 +16,12 @@ type Opt func(OptSet) error
 
 // opt is a private struct which holds options
 type opt struct {
+	doc   dom.Document
 	name  string
 	id    string
 	class []string
 	attr  map[string]string
+	child dom.Node
 }
 
 // OptSet interface for applying options
@@ -37,27 +39,31 @@ var _ OptSet = (*opt)(nil)
 /////////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
-func applyOpts(element Element, opts ...Opt) error {
+func applyOpts(element dom.Element, opts ...Opt) error {
 	var o opt
 
 	// Existing name from element
 	if element == nil {
-		return ErrBadParameter.Withf("Missing Element")
+		return dom.ErrBadParameter.Withf("Missing Element")
 	} else if name := element.GetAttribute(DataComponentAttrKey); name == "" {
-		return ErrBadParameter.Withf("Element does not have a valid component name")
+		o.name = element.TagName()
 	} else {
-		o.id = element.ID()
-		o.name = element.GetAttribute(DataComponentAttrKey)
-		o.class = element.ClassList().Values()
-		o.attr = make(map[string]string)
+		o.name = name
+	}
 
-		for _, attr := range element.Attributes() {
-			attrName := attr.Name()
+	// Set existing Document, ID and class
+	o.doc = element.OwnerDocument()
+	o.id = element.ID()
+	o.class = element.ClassList().Values()
 
-			// Skip id, class, and data-component as they're handled separately
-			if attrName != "id" && attrName != "class" && attrName != DataComponentAttrKey {
-				o.attr[attrName] = attr.Value()
-			}
+	// Set existing attributes
+	o.attr = make(map[string]string)
+	for _, attr := range element.Attributes() {
+		attrName := attr.Name()
+
+		// Skip id, class, and data-component as they're handled separately
+		if attrName != "id" && attrName != "class" && attrName != DataComponentAttrKey {
+			o.attr[attrName] = attr.Value()
 		}
 	}
 
@@ -83,7 +89,33 @@ func applyOpts(element Element, opts ...Opt) error {
 		element.SetAttribute(key, value)
 	}
 
+	// Apply child node if set
+	if o.child != nil {
+		element.SetInnerHTML("")
+		element.AppendChild(o.child)
+	}
+
 	return nil
+}
+
+func gatherOpts(args ...any) ([]Opt, []any) {
+	var opts []Opt
+	var content []any
+	for _, arg := range args {
+		switch v := arg.(type) {
+		case []any:
+			o, c := gatherOpts(v...)
+			opts = append(opts, o...)
+			content = append(content, c...)
+		case []Opt:
+			opts = append(opts, v...)
+		case Opt:
+			opts = append(opts, v)
+		default:
+			content = append(content, v)
+		}
+	}
+	return opts, content
 }
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -144,6 +176,13 @@ func WithoutAttr(keys ...string) Opt {
 func WithID(id string) Opt {
 	return func(o OptSet) error {
 		o.(*opt).id = id
+		return nil
+	}
+}
+
+func WithInnerText(text string) Opt {
+	return func(o OptSet) error {
+		o.(*opt).child = o.(*opt).doc.CreateTextNode(text)
 		return nil
 	}
 }

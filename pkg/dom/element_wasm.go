@@ -1,113 +1,164 @@
-//go:build js
+//go:build js && wasm
 
 package dom
 
 import (
-	"syscall/js"
+	"bytes"
+	"io"
 
 	// Packages
-	dom "github.com/djthorpe/go-wasmbuild"
+
+	js "github.com/djthorpe/go-wasmbuild/pkg/js"
+
+	// Namespace import
+	. "github.com/djthorpe/go-wasmbuild"
 )
 
-/////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 // TYPES
 
 type element struct {
-	*node
-	eventListeners map[string][]js.Func // Store event listeners to prevent GC
+	node
+	EventTarget
 }
 
-type style struct {
-	js.Value
-}
+var _ Element = (*element)(nil)
 
-var _ dom.Element = (*element)(nil)
+///////////////////////////////////////////////////////////////////////////////
+// LIFECYCLE
+
+func newElement(value js.Value) Element {
+	if value.IsNull() || value.IsUndefined() {
+		return nil
+	}
+	return &element{
+		node:        newNode(value),
+		EventTarget: NewEventTarget(value),
+	}
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // STRINGIFY
 
-func (this *element) String() string {
-	return this.OuterHTML()
+func (e *element) String() string {
+	var b bytes.Buffer
+	if _, err := e.Write(&b); err != nil {
+		return err.Error()
+	} else {
+		return b.String()
+	}
 }
 
-/////////////////////////////////////////////////////////////////////
-// PROPERTIES
-
-func (this *element) InnerHTML() string {
-	return this.Get("innerHTML").String()
+func (e *element) Write(w io.Writer) (int, error) {
+	return w.Write([]byte(e.node.Value.Get("outerHTML").String()))
 }
 
-func (this *element) SetInnerHTML(html string) {
-	this.Set("innerHTML", html)
+///////////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS - PROPERTIES
+
+// Return the tag name in uppercase
+func (element *element) TagName() string {
+	return element.node.Value.Get("tagName").String()
 }
 
-func (this *element) OuterHTML() string {
-	return this.Get("outerHTML").String()
+// Return the ID
+func (element *element) ID() string {
+	return element.node.Value.Get("id").String()
 }
 
-func (e *element) TagName() string {
-	return e.Get("tagName").String()
+// Set the ID
+func (element *element) SetID(id string) {
+	element.node.Value.Set("id", id)
 }
 
-func (e *element) Attributes() []dom.Attr {
-	attrs := e.Get("attributes")
+func (e *element) OuterHTML() string {
+	return e.node.Value.Get("outerHTML").String()
+}
+
+func (e *element) InnerHTML() string {
+	return e.node.Value.Get("innerHTML").String()
+}
+
+func (e *element) SetInnerHTML(value string) {
+	e.node.Value.Set("innerHTML", value)
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS - CLASSES
+
+// Return the class attribute as a string
+func (element *element) ClassName() string {
+	return element.node.Value.Get("className").String()
+}
+
+// Set the class as a atring
+func (element *element) SetClassName(className string) {
+	element.node.Value.Set("className", className)
+}
+
+// Return a TokenList of the classes
+func (element *element) ClassList() TokenList {
+	return js.GetTokenList(element.node.Value.Get("classList"))
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS - ATTRIBUTES
+
+// Attributes
+func (element *element) Attributes() []Attr {
+	attrs := element.node.Value.Get("attributes")
 	length := attrs.Get("length").Int()
-	result := make([]dom.Attr, 0, length)
+	result := make([]Attr, 0, length)
 	for i := 0; i < length; i++ {
-		result = append(result, NewNode(attrs.Call("item", i)).(dom.Attr))
+		result = append(result, newAttr(attrs.Call("item", i)))
 	}
 	return result
 }
 
-func (e *element) HasAttributes() bool {
-	return e.Call("hasAttributes").Bool()
-}
-
-func (e *element) Style() dom.Style {
-	return &style{e.Get("style")}
-}
-
-func (e *element) SetAttribute(name string, value string) dom.Attr {
-	e.Call("setAttribute", name, value)
-	return e.GetAttributeNode(name)
-}
-
-func (e *element) GetAttributeNode(name string) dom.Attr {
-	// Use getAttributeNode to get the Attr object
-	attrNode := e.Call("getAttributeNode", name)
-	if attrNode.IsNull() {
-		return nil
-	}
-	return NewNode(attrNode).(dom.Attr)
-}
-
-func (e *element) HasAttribute(name string) bool {
-	return e.Call("hasAttribute", name).Bool()
-}
-
-func (e *element) ClassList() dom.TokenList {
-	// Return a tokenlist that wraps the real DOM element's classList
-	classList := e.Get("classList")
-	return &tokenlist{
-		classList: classList,
-	}
-}
-
-func (e *element) GetAttribute(name string) string {
-	// Use getAttribute which directly returns a string
-	result := e.Call("getAttribute", name)
+// Get the attribute
+func (element *element) GetAttribute(name string) string {
+	result := element.node.Value.Call("getAttribute", name)
 	if result.IsNull() {
 		return ""
 	}
 	return result.String()
 }
 
-func (e *element) RemoveAttribute(name string) {
-	e.Call("removeAttribute", name)
+// Get the attribute
+func (element *element) GetAttributeNode(name string) Attr {
+	attrNode := element.node.Value.Call("getAttributeNode", name)
+	if attrNode.IsNull() {
+		return nil
+	}
+	return newAttr(attrNode)
 }
 
-func (e *element) RemoveAttributeNode(attr dom.Attr) {
-	if attr == nil {
+// Set the attribute
+func (element *element) SetAttribute(name, value string) Attr {
+	element.node.Value.Call("setAttribute", name, value)
+	return element.GetAttributeNode(name)
+}
+
+// Set the attribute
+func (element *element) SetAttributeNode(node Attr) Attr {
+	if node == nil {
+		return nil
+	}
+	result := element.node.Value.Call("setAttributeNode", toValue(node))
+	if result.IsNull() {
+		return nil
+	}
+	return newAttr(result)
+}
+
+// Remove an attribute
+func (element *element) RemoveAttribute(name string) {
+	element.node.Value.Call("removeAttribute", name)
+}
+
+// Remove an attribute
+func (element *element) RemoveAttributeNode(node Attr) {
+	if node == nil {
 		return
 	}
 
@@ -119,232 +170,150 @@ func (e *element) RemoveAttributeNode(attr dom.Attr) {
 		}
 	}()
 
-	attrValue := toJSValue(attr)
-	e.Call("removeAttributeNode", attrValue)
+	element.node.Value.Call("removeAttributeNode", toValue(node))
 }
 
-func (e *element) SetAttributeNode(attr dom.Attr) dom.Attr {
-	if attr == nil {
-		return nil
-	}
-	attrValue := toJSValue(attr)
-	result := e.Call("setAttributeNode", attrValue)
-	if result.IsNull() {
-		return nil
-	}
-	return NewNode(result).(dom.Attr)
-}
-
-func (e *element) GetAttributeNames() []string {
-	namesArray := e.Call("getAttributeNames")
-	length := namesArray.Get("length").Int()
-	names := make([]string, 0, length)
+// Return an unsorted list of attribute names
+func (element *element) GetAttributeNames() []string {
+	names := element.node.Value.Call("getAttributeNames")
+	length := names.Get("length").Int()
+	result := make([]string, 0, length)
 	for i := 0; i < length; i++ {
-		names = append(names, namesArray.Index(i).String())
-	}
-	return names
-}
-
-func (e *element) GetElementsByClassName(className string) []dom.Element {
-	nodeList := e.Call("getElementsByClassName", className)
-	length := nodeList.Get("length").Int()
-	result := make([]dom.Element, 0, length)
-	for i := 0; i < length; i++ {
-		result = append(result, NewNode(nodeList.Index(i)).(dom.Element))
+		result = append(result, names.Index(i).String())
 	}
 	return result
 }
 
-func (e *element) GetElementsByTagName(tagName string) []dom.Element {
-	nodeList := e.Call("getElementsByTagName", tagName)
-	length := nodeList.Get("length").Int()
-	result := make([]dom.Element, 0, length)
+// Return true if the element has a specific attribute
+func (element *element) HasAttribute(name string) bool {
+	return element.node.Value.Call("hasAttribute", name).Bool()
+}
+
+// Return true if the element has any attribute
+func (element *element) HasAttributes() bool {
+	return element.node.Value.Call("hasAttributes").Bool()
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS - DOM MANIPULATION
+
+// Return the child elements
+func (element *element) Children() []Element {
+	children := element.node.Value.Get("children")
+	length := children.Get("length").Int()
+	result := make([]Element, 0, length)
 	for i := 0; i < length; i++ {
-		result = append(result, NewNode(nodeList.Index(i)).(dom.Element))
+		result = append(result, newElement(children.Index(i)))
 	}
 	return result
 }
 
-func (e *element) Remove() {
-	e.Call("remove")
+func (element *element) ChildElementCount() int {
+	return element.node.Value.Get("childElementCount").Int()
 }
 
-func (e *element) ReplaceWith(nodes ...dom.Node) {
+func (element *element) FirstElementChild() Element {
+	child := element.node.Value.Get("firstElementChild")
+	if child.IsNull() {
+		return nil
+	}
+	return newElement(child)
+}
+
+func (element *element) LastElementChild() Element {
+	child := element.node.Value.Get("lastElementChild")
+	if child.IsNull() {
+		return nil
+	}
+	return newElement(child)
+}
+
+func (element *element) NextElementSibling() Element {
+	child := element.node.Value.Get("nextElementSibling")
+	if child.IsNull() {
+		return nil
+	}
+	return newElement(child)
+}
+
+func (element *element) PreviousElementSibling() Element {
+	child := element.node.Value.Get("previousElementSibling")
+	if child.IsNull() {
+		return nil
+	}
+	return newElement(child)
+}
+
+func (element *element) ReplaceWith(nodes ...Node) {
+	parent := element.ParentNode()
+	if parent == nil {
+		return
+	}
+
+	for _, child := range nodes {
+		if child == nil {
+			continue
+		}
+		parent.InsertBefore(child, element)
+	}
+
+	parent.RemoveChild(element)
+}
+
+func (element *element) Prepend(nodes ...Node) {
 	if len(nodes) == 0 {
 		return
 	}
 
-	// Convert nodes to JS values
-	args := make([]interface{}, len(nodes))
-	for i, node := range nodes {
-		args[i] = toJSValue(node)
+	first := element.FirstChild()
+	for _, child := range nodes {
+		if child == nil {
+			continue
+		}
+		if first == nil {
+			element.AppendChild(child)
+		} else {
+			element.InsertBefore(child, first)
+		}
 	}
-
-	e.Call("replaceWith", args...)
 }
 
-func (e *element) InsertAdjacentElement(position string, element dom.Element) dom.Element {
-	if element == nil {
-		return nil
+func (element *element) Remove() {
+	if parent := element.ParentNode(); parent != nil {
+		parent.RemoveChild(element)
 	}
-
-	elemValue := toJSValue(element)
-	result := e.Call("insertAdjacentElement", position, elemValue)
-	if result.IsNull() {
-		return nil
-	}
-	return NewNode(result).(dom.Element)
 }
 
-func (e *element) ID() string {
-	return e.Get("id").String()
+///////////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS - HTMLDataElement
+
+func (element *element) Value() string {
+	return element.node.Value.Get("value").String()
 }
 
-func (e *element) SetID(id string) {
-	e.Set("id", id)
+func (element *element) SetValue(value string) {
+	element.node.Value.Set("value", value)
 }
 
-func (e *element) ClassName() string {
-	return e.Get("className").String()
-}
+///////////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS
 
-func (e *element) SetClassName(className string) {
-	e.Set("className", className)
-}
-
-func (e *element) Children() []dom.Element {
-	children := e.Get("children")
-	length := children.Get("length").Int()
-	result := make([]dom.Element, 0, length)
+func (element *element) GetElementsByClassName(className string) []Element {
+	nodes := element.node.Value.Call("getElementsByClassName", className)
+	length := nodes.Get("length").Int()
+	result := make([]Element, 0, length)
 	for i := 0; i < length; i++ {
-		result = append(result, NewNode(children.Index(i)).(dom.Element))
+		result = append(result, newElement(nodes.Index(i)))
 	}
 	return result
 }
 
-func (e *element) ChildElementCount() int {
-	return e.Get("childElementCount").Int()
-}
-
-func (e *element) FirstElementChild() dom.Element {
-	child := e.Get("firstElementChild")
-	if child.IsNull() {
-		return nil
+func (element *element) GetElementsByTagName(tagName string) []Element {
+	nodes := element.node.Value.Call("getElementsByTagName", tagName)
+	length := nodes.Get("length").Int()
+	result := make([]Element, 0, length)
+	for i := 0; i < length; i++ {
+		result = append(result, newElement(nodes.Index(i)))
 	}
-	return NewNode(child).(dom.Element)
-}
-
-func (e *element) LastElementChild() dom.Element {
-	child := e.Get("lastElementChild")
-	if child.IsNull() {
-		return nil
-	}
-	return NewNode(child).(dom.Element)
-}
-
-func (e *element) NextElementSibling() dom.Element {
-	sibling := e.Get("nextElementSibling")
-	if sibling.IsNull() {
-		return nil
-	}
-	return NewNode(sibling).(dom.Element)
-}
-
-func (e *element) PreviousElementSibling() dom.Element {
-	sibling := e.Get("previousElementSibling")
-	if sibling.IsNull() {
-		return nil
-	}
-	return NewNode(sibling).(dom.Element)
-}
-
-func (e *element) AddEventListener(eventType string, callback func(dom.Node)) dom.Element {
-	// Initialize event listeners map if needed
-	if e.eventListeners == nil {
-		e.eventListeners = make(map[string][]js.Func)
-	}
-
-	// Create a JS function wrapper
-	jsCallback := js.FuncOf(func(this js.Value, args []js.Value) interface{} {
-		if len(args) > 0 {
-			// Create a Node from the event target
-			target := args[0].Get("target")
-			if !target.IsUndefined() && !target.IsNull() {
-				// Wrap as Element first if possible, then fall back to Node
-				// This ensures Component() can find components on the clicked element
-				if targetNode := NewNode(target); targetNode != nil {
-					callback(targetNode)
-				}
-			}
-		}
-		return nil
-	})
-
-	// Store the callback to prevent garbage collection
-	e.eventListeners[eventType] = append(e.eventListeners[eventType], jsCallback)
-
-	// Add event listener
-	e.Call("addEventListener", eventType, jsCallback)
-
-	return e
-}
-
-// RemoveEventListener removes all event listeners of the specified type and releases their resources
-func (e *element) RemoveEventListener(eventType string) {
-	if e.eventListeners == nil {
-		return
-	}
-
-	// Get all listeners for this event type
-	listeners := e.eventListeners[eventType]
-	if listeners == nil {
-		return
-	}
-
-	// Remove each listener from the DOM and release the js.Func
-	for _, jsCallback := range listeners {
-		e.Call("removeEventListener", eventType, jsCallback)
-		jsCallback.Release()
-	}
-
-	// Remove from the map
-	delete(e.eventListeners, eventType)
-}
-
-// ReleaseEventListeners removes all event listeners and releases their resources
-// Call this when discarding the element to prevent memory leaks
-func (e *element) ReleaseEventListeners() {
-	if e.eventListeners == nil {
-		return
-	}
-
-	// Remove and release all listeners
-	for eventType, listeners := range e.eventListeners {
-		for _, jsCallback := range listeners {
-			e.Call("removeEventListener", eventType, jsCallback)
-			jsCallback.Release()
-		}
-	}
-
-	// Clear the map
-	e.eventListeners = nil
-}
-
-func (e *element) Blur() {
-	e.Call("blur")
-}
-
-func (e *element) Focus() {
-	e.Call("focus")
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// STYLE METHODS
-
-func (s *style) Get(name string) string {
-	return s.Value.Get(name).String()
-}
-
-func (s *style) Set(name string, value string) {
-	s.Value.Set(name, value)
+	return result
 }

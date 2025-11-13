@@ -2,49 +2,70 @@ package bootstrap
 
 import (
 	"fmt"
+	"maps"
+	"slices"
 
 	// Packages
-	dom "github.com/djthorpe/go-wasmbuild/pkg/dom"
+	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
 
-	// Namespace import for interfaces
+	// Namespace imports
 	. "github.com/djthorpe/go-wasmbuild"
 )
 
 ///////////////////////////////////////////////////////////////////////////////
 // TYPES
 
+// heading represents a heading element, e.g. H1, H2, etc.
 type heading struct {
-	component
-	level int
+	mvc.View
 }
 
-// Ensure that heading implements Component interface
-var _ Component = (*heading)(nil)
+var _ mvc.View = (*heading)(nil)
+
+///////////////////////////////////////////////////////////////////////////////
+// GLOBALS
+
+const (
+	ViewHeading = "mvc-bs-heading"
+)
+
+var (
+	headingLevels = map[int]string{
+		1: "H1",
+		2: "H2",
+		3: "H3",
+		4: "H4",
+		5: "H5",
+		6: "H6",
+	}
+)
+
+func init() {
+	mvc.RegisterView(ViewHeading, newHeadingFromElement)
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
-// Heading creates a new heading element with the specified level (1-6)
-func Heading(level int, opt ...Opt) *heading {
-	if level < 1 || level > 6 {
-		panic("heading level must be between 1 and 6")
+func Heading(level int, args ...any) mvc.View {
+	tagName, exists := headingLevels[level]
+	if !exists {
+		panic(fmt.Sprintf("Heading: invalid level %d", level))
 	}
+	return mvc.NewView(new(heading), ViewHeading, tagName, args)
+}
 
-	c := newComponent(HeadingComponent, dom.GetWindow().Document().CreateElement(fmt.Sprintf("H%d", level)))
-	if err := c.applyTo(c.root, opt...); err != nil {
-		panic(err)
+func newHeadingFromElement(element Element) mvc.View {
+	tagName := element.TagName()
+	if !slices.Contains(slices.Collect(maps.Values(headingLevels)), tagName) {
+		panic(fmt.Sprintf("newHeadingFromElement: invalid tag name %q", tagName))
 	}
-
-	return &heading{
-		component: *c,
-		level:     level,
-	}
+	return mvc.NewViewWithElement(new(heading), element)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// PROPERTIES
+// PUBLIC METHODS
 
-// Level returns the heading level (1-6)
-func (h *heading) Level() int {
-	return h.level
+func (h *heading) SetView(view mvc.View) {
+	h.View = view
 }

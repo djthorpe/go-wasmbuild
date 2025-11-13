@@ -2,9 +2,10 @@ package bootstrap
 
 import (
 	// Packages
-	dom "github.com/djthorpe/go-wasmbuild/pkg/dom"
 
-	// Namespace import for interfaces
+	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
+
+	// Namespace imports
 	. "github.com/djthorpe/go-wasmbuild"
 )
 
@@ -12,33 +13,45 @@ import (
 // TYPES
 
 type badge struct {
-	component
+	mvc.View
 }
 
-// Ensure that badge implements Component interface
-var _ Component = (*badge)(nil)
+///////////////////////////////////////////////////////////////////////////////
+// GLOBALS
+
+const (
+	ViewBadge = "mvc-bs-badge"
+)
+
+func init() {
+	mvc.RegisterView(ViewBadge, newBadgeFromElement)
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
-// Badge creates a new bootstrap badge (span element)
-// Default badge uses "badge" class. Use WithBackground to set color variant.
-func Badge(opt ...Opt) *badge {
-	// Create a new component
-	c := newComponent(BadgeComponent, dom.GetWindow().Document().CreateElement("SPAN"))
-
-	// Apply options with badge class first
-	if err := c.applyTo(c.root, append([]Opt{WithClass("badge")}, opt...)...); err != nil {
-		panic(err)
-	}
-
-	// Return the component
-	return &badge{*c}
+func Badge(args ...any) *badge {
+	// Return the badge
+	return mvc.NewView(
+		new(badge), ViewBadge, "SPAN",
+		mvc.WithClass("badge", "position-relative"), WithColor(Primary), args,
+	).(*badge)
 }
 
-// PillBadge creates a new bootstrap rounded-pill badge (span element)
-func PillBadge(opt ...Opt) *badge {
-	// Append the "rounded-pill" class to options
-	opt = append(opt, WithClass("rounded-pill"))
-	return Badge(opt...)
+func PillBadge(args ...any) *badge {
+	return Badge(args, mvc.WithClass("rounded-pill"))
+}
+
+func newBadgeFromElement(element Element) mvc.View {
+	if element.TagName() != "SPAN" {
+		return nil
+	}
+	return mvc.NewViewWithElement(new(badge), element)
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS
+
+func (badge *badge) SetView(view mvc.View) {
+	badge.View = view
 }

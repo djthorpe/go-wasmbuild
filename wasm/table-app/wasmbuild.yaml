@@ -1,5 +1,5 @@
 vars:
-    Title: "Bootstrap Table Example"
+    Title: "Table MVC example"
     Header: |
         <!-- bootstrap -->
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
@@ -7,14 +7,7 @@ vars:
 
         <!-- bootstrap icons -->
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
-
-        <!-- test data -->
-        <script>
-        fetch('testdata.json')
-          .then(response => response.json())
-          .then(data => { window.testData = data; })
-          .catch(error => console.error('Error loading test data:', error));
-        </script>
-
-assets:
-  - testdata.json
+    Footer: |
+        <footer class="text-center mt-4">
+            <p>&copy; 2025 Hello World App</p>
+        </footer>
