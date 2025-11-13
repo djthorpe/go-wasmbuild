@@ -107,6 +107,8 @@ func gatherOpts(args ...any) ([]Opt, []any) {
 			o, c := gatherOpts(v...)
 			opts = append(opts, o...)
 			content = append(content, c...)
+		case []Opt:
+			opts = append(opts, v...)
 		case Opt:
 			opts = append(opts, v)
 		default:

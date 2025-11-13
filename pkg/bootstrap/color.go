@@ -87,7 +87,7 @@ func WithColor(color Color) mvc.Opt {
 		}
 
 		// Remove all other color classes
-		if err := mvc.WithoutClass(color.allClassNames(prefix)...)(o); err != nil {
+		if err := mvc.WithoutClass(allColorClassNames(prefix)...)(o); err != nil {
 			return err
 		}
 
@@ -119,7 +119,7 @@ func (color Color) className(prefix string) string {
 	return prefix + "-" + string(color)
 }
 
-func (color Color) allClassNames(prefix string) []string {
+func allColorClassNames(prefix string) []string {
 	classNames := make([]string, 0, len(allColors))
 	for _, c := range allColors {
 		classNames = append(classNames, c.className(prefix))

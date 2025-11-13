@@ -69,8 +69,61 @@ func WithPosition(position Position) mvc.Opt {
 	}
 }
 
+func WithBorder(colors ...Color) mvc.Opt {
+	// TODO: If there is one color, use it for all borders
+	// If there are two, then use it for vertical and horizontal borders
+	// If there are four, use it for each border individually (Top, Right, Bottom, Left)
+	return func(o mvc.OptSet) error {
+		// Add border class
+		if err := mvc.WithClass("border")(o); err != nil {
+			return err
+		}
+
+		// Remove all other border color classes
+		prefix := borderPrefix()
+		if err := mvc.WithoutClass(allColorClassNames(prefix)...)(o); err != nil {
+			return err
+		}
+
+		// No border
+		if len(colors) == 0 {
+			return nil
+		}
+
+		// The single color use case
+		if len(colors) == 1 {
+			return mvc.WithClass(colors[0].className(prefix))(o)
+		}
+
+		// Not yet implemented
+		return ErrInternalAppError.Withf("WithBorder: multi-border colors not yet implemented")
+	}
+}
+
+func WithoutBorder() mvc.Opt {
+	return func(o mvc.OptSet) error {
+		// Remove border class
+		if err := mvc.WithoutClass("border")(o); err != nil {
+			return err
+		}
+
+		// Remove all other border color classes
+		prefix := borderPrefix()
+		if err := mvc.WithoutClass(allColorClassNames(prefix)...)(o); err != nil {
+			return err
+		}
+
+		// Return success
+		return nil
+	}
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // PRIVATE FUNCTIONS
+
+func borderPrefix() string {
+	return "border"
+}
 
 func positionPrefixForView(name string) string {
 	switch name {
