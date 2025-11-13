@@ -73,6 +73,7 @@ func trimQualifiedName(name string) string {
 func Example(fn func() (mvc.View, string)) mvc.View {
 	view, source := fn()
 	source = strings.ReplaceAll(source, ", sourcecode()", "")
+	source = strings.ReplaceAll(source, "(mvc.View, string)", "mvc.View")
 	source = strings.ReplaceAll(source, "\t", "  ")
 	return bs.Grid(
 		view,

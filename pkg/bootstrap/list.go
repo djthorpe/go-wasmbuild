@@ -15,17 +15,23 @@ type list struct {
 	mvc.View
 }
 
+type deflist struct {
+	mvc.View
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // GLOBALS
 
 const (
-	ViewList      = "mvc-bs-list"
-	ViewListGroup = "mvc-bs-listgroup"
+	ViewList           = "mvc-bs-list"
+	ViewListGroup      = "mvc-bs-listgroup"
+	ViewDefinitionList = "mvc-bs-deflist"
 )
 
 func init() {
 	mvc.RegisterView(ViewList, newListFromElement)
 	mvc.RegisterView(ViewListGroup, newListGroupFromElement)
+	mvc.RegisterView(ViewDefinitionList, newDefinitionListFromElement)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -37,6 +43,10 @@ func List(args ...any) mvc.View {
 
 func ListGroup(args ...any) mvc.View {
 	return mvc.NewView(new(list), ViewListGroup, "UL", mvc.WithClass("list-group"), args)
+}
+
+func DefinitionList(args ...any) mvc.View {
+	return mvc.NewView(new(deflist), ViewDefinitionList, "DL", mvc.WithClass("row"), args)
 }
 
 func BulletList(args ...any) mvc.View {
@@ -61,11 +71,22 @@ func newListGroupFromElement(element Element) mvc.View {
 	return mvc.NewViewWithElement(new(list), element)
 }
 
+func newDefinitionListFromElement(element Element) mvc.View {
+	if element.TagName() != "DL" {
+		return nil
+	}
+	return mvc.NewViewWithElement(new(deflist), element)
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
 
 func (list *list) SetView(view mvc.View) {
 	list.View = view
+}
+
+func (deflist *deflist) SetView(view mvc.View) {
+	deflist.View = view
 }
 
 func (list *list) Append(children ...any) mvc.View {
@@ -79,4 +100,18 @@ func (list *list) Append(children ...any) mvc.View {
 		list.View.Append(col)
 	}
 	return list
+}
+
+func (deflist *deflist) Append(children ...any) mvc.View {
+	// All children must be of type "inputoption"
+	for _, child := range children {
+		switch child := child.(type) {
+		case *inputoption:
+			deflist.View.Append(mvc.HTML("DT", mvc.WithClass("col-3"), mvc.WithInnerText(child.Name)))
+			deflist.View.Append(mvc.HTML("DD", mvc.WithClass("col-9"), mvc.WithInnerText(child.Value)))
+		default:
+			panic("DefinitionList.Append: child must be of type Option")
+		}
+	}
+	return deflist
 }
