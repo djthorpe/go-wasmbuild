@@ -33,12 +33,13 @@ jobs:
 
             - name: Compile WASM application
               run: |
-                  ./build/wasmbuild compile -o ./dist ./wasm/bootstrap-app
+                  ./build/wasmbuild build -o ./build/dist ./wasm/bootstrap-app
+                  mv ./build/dist/wasm_exec.html ./build/dist/index.html
 
             - name: Upload artifact
               uses: actions/upload-pages-artifact@v3
               with:
-                  path: "./dist"
+                  path: "./build/dist"
 
     deploy:
         environment:

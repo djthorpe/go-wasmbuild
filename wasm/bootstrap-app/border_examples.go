@@ -1,31 +1,22 @@
 package main
 
 import (
-	// Packages
-	"strings"
-
 	bs "github.com/djthorpe/go-wasmbuild/pkg/bootstrap"
 	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
 )
 
-const exampleBorderCode = `
-default := bs.Container(bs.WithBorder(), "Default Border")
-primary := bs.Container(bs.WithBorder(bs.Primary), "Primary Border")
-noborder := bs.Container(bs.WithoutBorder(), "No Border")
-`
-
 func BorderExamples() mvc.View {
 	return bs.Container(
-		bs.Heading(1).Content("Border Examples"),
+		mvc.WithClass("my-4"),
+		bs.Heading(2, "Border Examples"),
 		bs.HRule(),
-		bs.Grid(
-			BorderColors(),
-			bs.CodeBlock(strings.TrimSpace(exampleBorderCode), bs.WithColor(bs.Light), mvc.WithClass("p-2"), bs.WithBorder(bs.Transparent)),
-		),
+		Example(Example_Borders_001),
 	)
 }
 
-func BorderColors() mvc.View {
+// Example_Borders_001 demonstrates borders around containers of
+// different colours
+func Example_Borders_001() (mvc.View, string) {
 	classes := []mvc.Opt{
 		mvc.WithAttr("style", "width: 7rem; height: 7rem;"), mvc.WithClass("m-3"), mvc.WithClass("shadow-lg"),
 	}
@@ -41,5 +32,5 @@ func BorderColors() mvc.View {
 		bs.Container(bs.WithBorder(bs.Dark), "Dark Border", classes),
 		bs.Container(bs.WithBorder(bs.Black), "Black Border", classes),
 		bs.Container(bs.WithoutBorder(), "No Border", classes),
-	)
+	), sourcecode()
 }
