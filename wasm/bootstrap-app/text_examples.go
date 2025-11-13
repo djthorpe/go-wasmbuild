@@ -9,20 +9,13 @@ import (
 func TextExamples() mvc.View {
 	return bs.Container(
 		mvc.WithClass("my-4"),
-		bs.Heading(2, "Text Examples"),
-		bs.HRule(),
-		bs.Heading(3, "Paragraph", mvc.WithClass("mt-5")),
-		Example(Example_Text_001),
-		bs.Heading(3, "Lead Paragraph", mvc.WithClass("mt-5")),
-		Example(Example_Text_002),
-		bs.Heading(3, "Blockquote", mvc.WithClass("mt-5")),
-		Example(Example_Text_003),
-		bs.Heading(3, "Colored Paragraphs", mvc.WithClass("mt-5")),
-		Example(Example_Text_004),
-		bs.Heading(3, "Inline Text Styles", mvc.WithClass("mt-5")),
-		Example(Example_Text_005),
-		bs.Heading(3, "Links", mvc.WithClass("mt-5")),
-		Example(Example_Text_006),
+		bs.Heading(2, "Text Examples"), bs.HRule(),
+		bs.Heading(3, "Paragraph", mvc.WithClass("mt-5")), Example(Example_Text_001),
+		bs.Heading(3, "Lead Paragraph", mvc.WithClass("mt-5")), Example(Example_Text_002),
+		bs.Heading(3, "Blockquote", mvc.WithClass("mt-5")), Example(Example_Text_003),
+		bs.Heading(3, "Colored Paragraphs", mvc.WithClass("mt-5")), Example(Example_Text_004),
+		bs.Heading(3, "Inline Text Styles", mvc.WithClass("mt-5")), Example(Example_Text_005),
+		bs.Heading(3, "Links", mvc.WithClass("mt-5")), Example(Example_Text_006),
 	)
 }
 
