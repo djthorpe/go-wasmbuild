@@ -15,8 +15,6 @@ func main() {
 		bs.VRule(),
 		bs.Link("#badge", mvc.WithClass("m-2")).Content("Badges"),
 		bs.VRule(),
-		bs.Link("#link", mvc.WithClass("m-2")).Content("Links"),
-		bs.VRule(),
 		bs.Link("#list", mvc.WithClass("m-2")).Content("Lists"),
 		bs.VRule(),
 		bs.Link("#icon", mvc.WithClass("m-2")).Content("Icons"),
@@ -43,8 +41,6 @@ func main() {
 			"#border", BorderExamples(),
 		).Page(
 			"#badge", BadgeExamples(),
-		).Page(
-			"#link", LinkExamples(),
 		).Page(
 			"#list", ListExamples(),
 		).Page(
@@ -157,18 +153,6 @@ func IconExamples() mvc.View {
 			bs.Button(withButtonClasses(bs.WithColor(bs.Success))...).Content("Next", bs.Icon("arrow-right")),
 			bs.Button(withButtonClasses(bs.WithColor(bs.Danger))...).Content(bs.Icon("trash"), "Delete"),
 			bs.OutlineButton(withButtonClasses(bs.WithColor(bs.Dark))...).Content("Refresh", bs.Icon("arrow-repeat")),
-		),
-	)
-}
-
-func LinkExamples() mvc.View {
-	return bs.Container().Content(
-		bs.Heading(1).Content("Link Examples"),
-		bs.HRule(),
-		bs.UnstyledList().Content(
-			bs.Link("#link").Content("Default Link Color"),
-			bs.Link("#link", bs.WithColor(bs.Secondary)).Content("Secondary Link Color"),
-			bs.Link("#link", bs.WithColor(bs.Danger)).Content("Danger Link Color"),
 		),
 	)
 }
