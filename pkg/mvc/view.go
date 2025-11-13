@@ -467,6 +467,18 @@ func (v *view) Opts(opts ...Opt) View {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS - ViewWithValue
+
+func (v *view) Value() string {
+	return v.root.Value()
+}
+
+func (v *view) SetValue(value string) ViewWithValue {
+	v.root.SetValue(value)
+	return v.self.(ViewWithValue)
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // UTILITY METHODS
 
 // ViewFromEvent returns a View from an Event, or nil if the type is unsupported

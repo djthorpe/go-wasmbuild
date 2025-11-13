@@ -2,12 +2,8 @@ package main
 
 import (
 	// Packages
-
 	bs "github.com/djthorpe/go-wasmbuild/pkg/bootstrap"
 	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
-
-	// Namespace imports
-	. "github.com/djthorpe/go-wasmbuild"
 )
 
 // Application displays examples of Bootstrap components
@@ -70,43 +66,6 @@ func main() {
 
 	// Wait
 	select {}
-}
-
-func InputExamples() mvc.View {
-	rangevalue := mvc.CData("")
-	return bs.Container().Content(
-		bs.Heading(1).Content("Input Examples"),
-		bs.HRule(),
-		bs.Form("input").Content(
-			bs.Card().Header(
-				bs.Heading(4).Content("Enter your details"),
-			).Content(
-				bs.InputGroup(mvc.WithClass("my-2")).Content(
-					bs.Input("username", bs.WithPlaceholder("Enter username"), bs.WithRequired(), bs.WithAutocomplete("user", "email")),
-					"@",
-					bs.Input("domain", bs.WithPlaceholder("Enter domain here"), bs.WithRequired(), bs.WithAutocomplete("domain")),
-				),
-				bs.Password("password", bs.WithPlaceholder("Enter password here"), mvc.WithClass("my-2"), bs.WithRequired(), bs.WithoutAutocomplete()),
-				bs.Number(
-					"number", bs.WithMinMax(-5, 5), bs.WithPlaceholder("Enter number here"), mvc.WithClass("my-2"), bs.WithRequired(), bs.WithoutAutocomplete(),
-				).(mvc.ViewWithCaption).Caption(
-					"Number of times",
-				),
-				bs.Textarea("description", bs.WithPlaceholder("Enter description here"), mvc.WithClass("my-2")),
-				bs.InputGroup(mvc.WithClass("my-2")).Content(
-					bs.Range("range", bs.WithMinMax(-5, 5)).AddEventListener("input", func(e Event) {
-						r := mvc.ViewFromEvent(e).(mvc.ViewWithValue)
-						if r != nil {
-							rangevalue.SetData(r.Value())
-						}
-					}),
-					rangevalue,
-				),
-			).(mvc.ViewWithHeaderFooter).Footer(
-				bs.Button(bs.WithColor(bs.Primary), bs.WithSubmit()).Content("Submit"),
-			),
-		),
-	)
 }
 
 func ListExamples() mvc.View {

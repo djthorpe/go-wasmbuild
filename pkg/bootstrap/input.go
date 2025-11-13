@@ -35,22 +35,44 @@ type rangeinput struct {
 	mvc.View
 }
 
+type selectinput struct {
+	mvc.View
+}
+
+type inputswitch struct {
+	mvc.ViewWithValue
+	inline bool
+}
+
+type inputoption struct {
+	Name  string
+	Value string
+}
+
 var _ mvc.View = (*form)(nil)
 var _ mvc.View = (*inputgroup)(nil)
 var _ mvc.ViewWithValue = (*textarea)(nil)
 var _ mvc.ViewWithValue = (*rangeinput)(nil)
 var _ mvc.ViewWithValue = (*input)(nil)
 var _ mvc.ViewWithCaption = (*input)(nil)
+var _ mvc.ViewWithValue = (*selectinput)(nil)
+var _ mvc.ViewWithValue = (*inputswitch)(nil)
 
 ///////////////////////////////////////////////////////////////////////////////
 // GLOBALS
 
 const (
-	ViewForm       = "mvc-bs-form"
-	ViewInput      = "mvc-bs-input"
-	ViewInputGroup = "mvc-bs-inputgroup"
-	ViewTextarea   = "mvc-bs-textarea"
-	ViewRange      = "mvc-bs-range"
+	ViewForm          = "mvc-bs-form"
+	ViewInput         = "mvc-bs-input"
+	ViewInputGroup    = "mvc-bs-inputgroup"
+	ViewTextarea      = "mvc-bs-textarea"
+	ViewRange         = "mvc-bs-range"
+	ViewSelect        = "mvc-bs-select"
+	ViewRadioGroup    = "mvc-bs-radiogroup"
+	ViewCheckboxGroup = "mvc-bs-checkboxgroup"
+
+	// Class used to indicate inline groups
+	classInlineGroup = "mvc-bs-inlinegroup"
 )
 
 func init() {
@@ -59,38 +81,77 @@ func init() {
 	mvc.RegisterView(ViewInputGroup, newInputGroupFromElement)
 	mvc.RegisterView(ViewTextarea, newTextareaFromElement)
 	mvc.RegisterView(ViewRange, newRangeFromElement)
+	mvc.RegisterView(ViewSelect, newSelectFromElement)
+	mvc.RegisterView(ViewRadioGroup, newRadioGroupFromElement)
+	mvc.RegisterView(ViewCheckboxGroup, newCheckboxGroupFromElement)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
-func Form(name string, args ...any) mvc.View {
-	return mvc.NewView(new(form), ViewForm, "FORM", mvc.WithAttr("name", name), args)
+func Form(name string, args ...any) *form {
+	return mvc.NewView(new(form), ViewForm, "FORM", mvc.WithAttr("name", name), args).(*form)
 }
 
-func Input(name string, args ...any) mvc.View {
+func Input(name string, args ...any) *input {
 	label := mvc.HTML("LABEL", mvc.WithClass("form-label"), mvc.WithAttr("for", name))
-	return mvc.NewViewEx(new(input), ViewInput, "INPUT", nil, nil, nil, label, mvc.WithAttr("id", name), mvc.WithClass("form-control"), args)
+	return mvc.NewViewEx(new(input), ViewInput, "INPUT", nil, nil, nil, label, mvc.WithAttr("id", name), mvc.WithClass("form-control"), args).(*input)
 }
 
-func Password(name string, args ...any) mvc.View {
+func Password(name string, args ...any) *input {
 	return Input(name, mvc.WithAttr("type", "password"), args)
 }
 
-func Number(name string, args ...any) mvc.View {
+func Number(name string, args ...any) *input {
 	return Input(name, mvc.WithAttr("type", "number"), args)
 }
 
-func InputGroup(args ...any) mvc.View {
-	return mvc.NewView(new(inputgroup), ViewInputGroup, "DIV", mvc.WithClass("input-group"), args)
+func InputGroup(args ...any) *inputgroup {
+	return mvc.NewView(new(inputgroup), ViewInputGroup, "DIV", mvc.WithClass("input-group"), args).(*inputgroup)
 }
 
-func Textarea(name string, args ...any) mvc.View {
-	return mvc.NewView(new(textarea), ViewTextarea, "TEXTAREA", mvc.WithAttr("id", name), mvc.WithClass("form-control"), args)
+func Textarea(name string, args ...any) *textarea {
+	return mvc.NewView(new(textarea), ViewTextarea, "TEXTAREA", mvc.WithAttr("id", name), mvc.WithClass("form-control"), args).(*textarea)
 }
 
-func Range(name string, args ...any) mvc.View {
-	return mvc.NewView(new(rangeinput), ViewRange, "INPUT", mvc.WithAttr("id", name), mvc.WithAttr("type", "range"), mvc.WithClass("form-range"), args)
+func Range(name string, args ...any) *rangeinput {
+	return mvc.NewView(new(rangeinput), ViewRange, "INPUT", mvc.WithAttr("id", name), mvc.WithAttr("type", "range"), mvc.WithClass("form-range"), args).(*rangeinput)
+}
+
+func Select(name string, args ...any) *selectinput {
+	return mvc.NewView(new(selectinput), ViewSelect, "SELECT", mvc.WithAttr("id", name), mvc.WithClass("form-select"), args).(*selectinput)
+}
+
+func MultiSelect(name string, args ...any) *selectinput {
+	return mvc.NewView(new(selectinput), ViewSelect, "SELECT", mvc.WithAttr("id", name), mvc.WithAttr("multiple", "multiple"), mvc.WithClass("form-select"), args).(*selectinput)
+}
+
+func RadioGroup(name string, args ...any) *inputswitch {
+	return mvc.NewView(new(inputswitch), ViewRadioGroup, "DIV", mvc.WithAttr("id", name), args).(*inputswitch)
+}
+
+func InlineRadioGroup(name string, args ...any) *inputswitch {
+	return RadioGroup(name, mvc.WithClass(classInlineGroup), args)
+}
+
+func CheckboxGroup(name string, args ...any) *inputswitch {
+	return mvc.NewView(new(inputswitch), ViewCheckboxGroup, "DIV", mvc.WithAttr("id", name), args).(*inputswitch)
+}
+
+func InlineCheckboxGroup(name string, args ...any) *inputswitch {
+	return CheckboxGroup(name, mvc.WithClass(classInlineGroup), args)
+}
+
+func SwitchGroup(name string, args ...any) *inputswitch {
+	return CheckboxGroup(name, mvc.WithClass("form-switch"), args)
+}
+
+func InlineSwitchGroup(name string, args ...any) *inputswitch {
+	return SwitchGroup(name, mvc.WithClass(classInlineGroup), args)
+}
+
+func Option(name, value string) *inputoption {
+	return &inputoption{Name: name, Value: value}
 }
 
 func newFormFromElement(element Element) mvc.View {
@@ -128,6 +189,27 @@ func newRangeFromElement(element Element) mvc.View {
 	return mvc.NewViewWithElement(new(rangeinput), element)
 }
 
+func newSelectFromElement(element Element) mvc.View {
+	if element.TagName() != "SELECT" {
+		return nil
+	}
+	return mvc.NewViewWithElement(new(selectinput), element)
+}
+
+func newRadioGroupFromElement(element Element) mvc.View {
+	if element.TagName() != "DIV" {
+		return nil
+	}
+	return mvc.NewViewWithElement(new(inputswitch), element)
+}
+
+func newCheckboxGroupFromElement(element Element) mvc.View {
+	if element.TagName() != "DIV" {
+		return nil
+	}
+	return mvc.NewViewWithElement(new(inputswitch), element)
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
 
@@ -149,6 +231,14 @@ func (textarea *textarea) SetView(view mvc.View) {
 
 func (rangeinput *rangeinput) SetView(view mvc.View) {
 	rangeinput.View = view
+}
+
+func (selectinput *selectinput) SetView(view mvc.View) {
+	selectinput.View = view
+}
+
+func (inputswitch *inputswitch) SetView(view mvc.View) {
+	inputswitch.ViewWithValue = view.(mvc.ViewWithValue)
 }
 
 func (input *input) Append(children ...any) mvc.View {
@@ -178,6 +268,83 @@ func (inputgroup *inputgroup) Append(children ...any) mvc.View {
 	return inputgroup
 }
 
+func (inputswitch *inputswitch) Append(children ...any) mvc.View {
+	isInline := inputswitch.Root().ClassList().Contains(classInlineGroup)
+
+	// Factory function to create switch element
+	switchFactory := func(index int, opt *inputoption) Element {
+		classes := []string{"form-check"}
+		if isInline {
+			classes = append(classes, "form-check-inline", "mx-3")
+		}
+		div := mvc.HTML("DIV", mvc.WithClass(classes...))
+		id := fmt.Sprintf("%s-%d", inputswitch.Root().ID(), index)
+		var input Element
+		switch inputswitch.Name() {
+		case ViewRadioGroup:
+			input = mvc.HTML("INPUT",
+				mvc.WithID(id),
+				mvc.WithClass("form-check-input"),
+				mvc.WithAttr("type", "radio"),
+				mvc.WithAttr("name", inputswitch.Root().ID()),
+				mvc.WithAttr("value", opt.Value),
+			)
+		case ViewCheckboxGroup:
+			input = mvc.HTML("INPUT",
+				mvc.WithID(id),
+				mvc.WithClass("form-check-input"),
+				mvc.WithAttr("type", "checkbox"),
+				mvc.WithAttr("value", opt.Value),
+			)
+		default:
+			panic("Append: unsupported inputswitch type")
+		}
+		label := mvc.HTML("LABEL",
+			mvc.WithClass("form-check-label"),
+			mvc.WithAttr("for", id),
+		)
+		label.AppendChild(mvc.NodeFromAny(opt.Name))
+		div.AppendChild(input)
+		div.AppendChild(label)
+		return div
+	}
+
+	// Wrap all text children in span with class "input-group-text"
+	for i, child := range children {
+		switch child := child.(type) {
+		case string:
+			inputswitch.ViewWithValue.Append(switchFactory(i, &inputoption{
+				Name:  child,
+				Value: child,
+			}))
+		case *inputoption:
+			inputswitch.ViewWithValue.Append(switchFactory(i, child))
+		default:
+			panic("Append: unsupported child type for select input")
+		}
+	}
+	return inputswitch
+}
+
+func (selectinput *selectinput) Append(children ...any) mvc.View {
+	// Wrap all text children in option elements
+	for _, child := range children {
+		switch child := child.(type) {
+		case string:
+			opt := mvc.HTML("OPTION")
+			opt.AppendChild(mvc.NodeFromAny(child))
+			selectinput.View.Append(opt)
+		case *inputoption:
+			opt := mvc.HTML("OPTION", mvc.WithAttr("value", child.Value))
+			opt.AppendChild(mvc.NodeFromAny(child.Name))
+			selectinput.View.Append(opt)
+		default:
+			panic("Append: unsupported child type for select input")
+		}
+	}
+	return selectinput
+}
+
 func (input *input) Value() string {
 	return input.Root().Value()
 }
@@ -188,6 +355,10 @@ func (textarea *textarea) Value() string {
 
 func (rangeinput *rangeinput) Value() string {
 	return rangeinput.Root().Value()
+}
+
+func (selectinput *selectinput) Value() string {
+	return selectinput.Root().Value()
 }
 
 func (input *input) SetValue(value string) mvc.ViewWithValue {
@@ -204,13 +375,20 @@ func (textarea *textarea) SetValue(value string) mvc.ViewWithValue {
 	panic("SetValue: not implemented for textarea") // TODO
 }
 
+func (selectinput *selectinput) SetValue(value string) mvc.ViewWithValue {
+	selectinput.Root().SetValue(value)
+	return selectinput
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // OPTIONS
 
 func WithPlaceholder(placeholder string) mvc.Opt {
 	return func(o mvc.OptSet) error {
-		if err := mvc.WithAttr("placeholder", placeholder)(o); err != nil {
-			return err
+		if o.Name() == ViewInput || o.Name() == ViewTextarea {
+			if err := mvc.WithAttr("placeholder", placeholder)(o); err != nil {
+				return err
+			}
 		}
 		if err := mvc.WithAttr("aria-label", placeholder)(o); err != nil {
 			return err
