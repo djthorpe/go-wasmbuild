@@ -46,6 +46,39 @@ const (
 ///////////////////////////////////////////////////////////////////////////////
 // OPTIONS
 
+func WithFlex(position Position) mvc.Opt {
+	return func(o mvc.OptSet) error {
+		// Add or remove flex class
+		if position != None {
+			mvc.WithClass("d-flex")(o)
+		} else {
+			mvc.WithoutClass("d-flex")(o)
+		}
+
+		// Add or remove direction as row or column
+		switch position {
+		case Top, Bottom, Middle:
+			mvc.WithoutClass("flex-row")(o)
+			mvc.WithClass("flex-column")(o)
+		case Start, End, Center:
+			mvc.WithClass("flex-row")(o)
+			mvc.WithoutClass("flex-column")(o)
+		case None:
+			mvc.WithoutClass("flex-row")(o)
+			mvc.WithoutClass("flex-column")(o)
+		default:
+			return ErrInternalAppError.With("WithFlex: invalid position")
+		}
+
+		// TODO: Add alignment classes
+		// justify-content-start, justify-content-center, justify-content-end
+
+		// Return success
+		return nil
+	}
+
+}
+
 func WithPosition(position Position) mvc.Opt {
 	return func(o mvc.OptSet) error {
 		prefix := positionPrefixForView(o.Name())

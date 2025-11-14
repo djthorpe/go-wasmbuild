@@ -57,7 +57,7 @@ func Example_Buttons_003() (mvc.View, string) {
 }
 
 func Example_Buttons_004() (mvc.View, string) {
-	response := mvc.CData("99+")
+	response := mvc.Text("99+")
 	return bs.Container(
 		bs.Button("Inbox", mvc.WithClass("m-3")).Caption(response),
 		response,

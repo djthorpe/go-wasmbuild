@@ -14,6 +14,7 @@ func CardExamples() mvc.View {
 		bs.Heading(3, "Single Card", mvc.WithClass("mt-5")), Example(Example_Cards_001),
 		bs.Heading(3, "Cards With Color", mvc.WithClass("mt-5")), Example(Example_Cards_002),
 		bs.Heading(3, "Cards With Header and Footer", mvc.WithClass("mt-5")), Example(Example_Cards_003),
+		bs.Heading(3, "Image Card", mvc.WithClass("mt-5")), Example(Example_Cards_004),
 	)
 }
 
@@ -57,6 +58,16 @@ func Example_Cards_003() (mvc.View, string) {
 			bs.Heading(5, "Are you sure?"),
 		).Footer(
 			bs.Button("OK", mvc.WithClass("mx-1")), bs.Button("Cancel", mvc.WithClass("mx-1")),
+		),
+	), sourcecode()
+}
+
+func Example_Cards_004() (mvc.View, string) {
+	return bs.Grid(
+		bs.Card(
+			"Some quick example text to build on the card title and make up the bulk of the card’s content.",
+		).Label(
+			bs.Image("favicon.png"),
 		),
 	), sourcecode()
 }

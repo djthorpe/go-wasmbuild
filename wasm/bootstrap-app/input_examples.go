@@ -14,7 +14,7 @@ import (
 )
 
 func InputExamples() mvc.View {
-	rangevalue := mvc.CData("")
+	rangevalue := mvc.Text("")
 	return bs.Container().Content(
 		bs.Heading(1).Content("Input Examples"),
 		bs.HRule(),

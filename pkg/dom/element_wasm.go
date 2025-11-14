@@ -317,3 +317,21 @@ func (element *element) GetElementsByTagName(tagName string) []Element {
 	}
 	return result
 }
+
+func (element *element) QuerySelector(selector string) Element {
+	result := element.node.Value.Call("querySelector", selector)
+	if result.IsNull() || result.IsUndefined() {
+		return nil
+	}
+	return newElement(result)
+}
+
+func (element *element) QuerySelectorAll(selector string) []Element {
+	nodes := element.node.Value.Call("querySelectorAll", selector)
+	length := nodes.Get("length").Int()
+	result := make([]Element, 0, length)
+	for i := 0; i < length; i++ {
+		result = append(result, newElement(nodes.Index(i)))
+	}
+	return result
+}
