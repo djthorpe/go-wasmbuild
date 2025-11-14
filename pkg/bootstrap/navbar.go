@@ -67,7 +67,7 @@ func NavBar(args ...any) *navbar {
 }
 
 func NavItem(href string, args ...any) *navitem {
-	// Return the navbar
+	// Return the navitem
 	return mvc.NewViewExEx(
 		new(navitem), ViewNavItem, templateNavItem, args,
 	).(*navitem)
