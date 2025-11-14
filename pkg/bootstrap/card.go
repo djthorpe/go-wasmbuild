@@ -87,10 +87,20 @@ func (cardgroup *cardgroup) SetView(view mvc.View) {
 	cardgroup.View = view
 }
 
+func (card *card) Header(children ...any) mvc.View {
+	return card.ReplaceSlot("header", mvc.HTML("div", mvc.WithClass("card-header"), children))
+}
+
+func (card *card) Footer(children ...any) mvc.View {
+	return card.ReplaceSlot("footer", mvc.HTML("div", mvc.WithClass("card-footer"), children))
+}
+
+func (card *card) Content(children ...any) mvc.View {
+	return card.ReplaceSlot("", mvc.HTML("div", mvc.WithClass("card-body"), children))
+}
+
 func (card *card) Label(children ...any) mvc.View {
-	// We only accept one image as a label for the card
 	if len(children) == 0 {
-		// Clear the content
 		return card.View.Label()
 	}
 	if len(children) > 1 {
@@ -100,12 +110,11 @@ func (card *card) Label(children ...any) mvc.View {
 	case mvc.View:
 		if child.Name() != ViewImage {
 			panic(fmt.Sprintf("card.Label: invalid child view type %q", child.Name()))
+		} else {
+			child.Root().ClassList().Add("card-img-top")
 		}
-		card.View.Label(child)
-		// TODO: Replace existing label with this child
-		fmt.Println("card.Label called", child)
+		return card.ReplaceSlot("label", child)
 	default:
 		panic(fmt.Sprintf("card.Label: invalid child type %T", child))
 	}
-	return card
 }
