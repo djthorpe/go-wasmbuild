@@ -16,31 +16,31 @@ func NavBarExamples() mvc.View {
 }
 
 func Example_Navbar_001() (mvc.View, string) {
-	return bs.Container(
-		bs.NavBar(bs.WithTheme(bs.Dark), mvc.WithClass("m-3")).Label(
-			bs.Icon("bootstrap-fill"), mvc.Text(" Bootstrap"),
-		).Content(
-			bs.NavItem("#navbar", bs.Icon("file-text-fill"), " Text"),
-			bs.NavItem("#navbar", bs.Icon("border-style"), " Borders"),
-			bs.NavItem("#navbar", bs.Icon("badge-4k-fill"), " Badges"),
-			bs.NavItem("#navbar", bs.Icon("list-ul"), " Lists"),
-			bs.NavItem("#navbar", bs.Icon("emoji-smile-fill"), " Icons"),
-			bs.NavItem("#navbar", bs.Icon("toggle-on"), " Buttons"),
-		),
+	return bs.NavBar(
+		bs.WithTheme(bs.Dark), mvc.WithClass("my-3"),
+	).Label(
+		bs.Icon("bootstrap-fill"), mvc.Text(" Bootstrap"),
+	).Content(
+		bs.NavItem("#navbar", bs.Icon("file-text-fill"), " Text"),
+		bs.NavItem("#navbar", bs.Icon("border-style"), " Borders"),
+		bs.NavItem("#navbar", bs.Icon("badge-4k-fill"), " Badges"),
+		bs.NavItem("#navbar", bs.Icon("list-ul"), " Lists"),
+		bs.NavItem("#navbar", bs.Icon("emoji-smile-fill"), " Icons"),
+		bs.NavItem("#navbar", bs.Icon("toggle-on"), " Buttons"),
 	), sourcecode()
 }
 
 func Example_Navbar_002() (mvc.View, string) {
-	return bs.Container(
-		bs.NavBar(bs.WithColor(bs.Dark), bs.WithTheme(bs.Dark), mvc.WithClass("m-3")).Label(
-			bs.Icon("bootstrap-fill"), mvc.Text(" Bootstrap"),
-		).Content(
-			bs.NavItem("#navbar", bs.Icon("file-text-fill"), " Text"),
-			bs.NavItem("#navbar", bs.Icon("border-style"), " Borders"),
-			bs.NavItem("#navbar", bs.Icon("badge-4k-fill"), " Badges"),
-			bs.NavItem("#navbar", bs.Icon("list-ul"), " Lists"),
-			bs.NavItem("#navbar", bs.Icon("emoji-smile-fill"), " Icons"),
-			bs.NavItem("#navbar", bs.Icon("toggle-on"), " Buttons"),
-		),
+	return bs.NavBar(
+		bs.WithTheme(bs.Dark), bs.WithColor(bs.Dark), mvc.WithClass("my-3"),
+	).Label(
+		bs.Icon("bootstrap-fill"), mvc.Text(" Bootstrap"),
+	).Content(
+		bs.NavItem("#navbar", bs.Icon("file-text-fill"), " Text"),
+		bs.NavItem("#navbar", bs.Icon("border-style"), " Borders"),
+		bs.NavItem("#navbar", bs.Icon("badge-4k-fill"), " Badges"),
+		bs.NavItem("#navbar", bs.Icon("list-ul"), " Lists"),
+		bs.NavItem("#navbar", bs.Icon("emoji-smile-fill"), " Icons"),
+		bs.NavItem("#navbar", bs.Icon("toggle-on"), " Buttons"),
 	), sourcecode()
 }
