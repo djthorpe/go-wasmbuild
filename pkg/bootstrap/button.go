@@ -2,6 +2,7 @@ package bootstrap
 
 import (
 	// Packages
+
 	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
 
 	// Namespace imports
@@ -12,8 +13,7 @@ import (
 // TYPES
 
 type button struct {
-	mvc.ViewWithCaption
-	caption Element
+	mvc.ViewWithLabel
 }
 
 type buttongroup struct {
@@ -24,7 +24,7 @@ type buttontoolbar struct {
 	mvc.View
 }
 
-var _ mvc.ViewWithCaption = (*button)(nil)
+var _ mvc.ViewWithLabel = (*button)(nil)
 var _ mvc.View = (*buttongroup)(nil)
 var _ mvc.View = (*buttontoolbar)(nil)
 
@@ -38,6 +38,11 @@ const (
 
 	// The prefix class for outline buttons
 	viewOutlineButtonClassPrefix = "btn-outline"
+
+	// The template for buttons
+	templateButton = `
+		<button type="button" class="btn btn-primary text-nowrap"><slot></slot><slot name="label"></slot></button>
+	`
 )
 
 func init() {
@@ -50,13 +55,7 @@ func init() {
 // LIFECYCLE
 
 func Button(args ...any) *button {
-	caption := mvc.Placeholder()
-	view := mvc.NewViewEx(
-		new(button), ViewButton, "BUTTON",
-		nil, nil, nil, caption,
-		mvc.WithAttr("type", "button"), mvc.WithClass("btn", "btn-primary"), args,
-	).(*button)
-	view.caption = caption
+	view := mvc.NewViewExEx(new(button), ViewButton, templateButton, args).(*button)
 	return view
 }
 
@@ -105,7 +104,7 @@ func newButtonToolbarFromElement(element Element) mvc.View {
 // PUBLIC METHODS
 
 func (b *button) SetView(view mvc.View) {
-	b.ViewWithCaption = view.(mvc.ViewWithCaption)
+	b.ViewWithLabel = view.(mvc.ViewWithLabel)
 }
 
 func (b *buttongroup) SetView(view mvc.View) {
@@ -116,12 +115,9 @@ func (b *buttontoolbar) SetView(view mvc.View) {
 	b.View = view
 }
 
-func (b *button) Caption(children ...any) mvc.ViewWithCaption {
-	// Replace whatever is in the caption with the indicator badge
-	// TODO: We actualy have to replace the caption element, which is currently a placeholder
-	// and set the attribute so we can re-create the view from the element
+func (b *button) Label(children ...any) mvc.ViewWithLabel {
 	b.Root().ClassList().Add("position-relative")
-	b.caption.ReplaceWith(mvc.HTML("SPAN", mvc.WithClass("position-absolute", "top-0", "start-100", "translate-middle", "badge", "rounded-pill", "bg-danger")))
+	b.ReplaceSlot("label", mvc.HTML("SPAN", mvc.WithClass("position-absolute", "top-0", "start-100", "translate-middle", "badge", "rounded-pill", "bg-danger"), children))
 	return b
 }
 
@@ -131,7 +127,7 @@ func (b *button) Append(children ...any) mvc.View {
 		panic("Append: not supported for close button")
 	}
 	// Call superclass
-	return b.ViewWithCaption.Append(children...)
+	return b.ViewWithLabel.Append(children...)
 }
 
 func (b *buttongroup) Append(children ...any) mvc.View {

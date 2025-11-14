@@ -117,10 +117,10 @@ func (navbar *navbar) Content(children ...any) mvc.View {
 			panic(fmt.Sprintf("Content: invalid child type: %T", child))
 		}
 	}
-	return navbar.ReplaceSlot("", mvc.HTML("ul", mvc.WithClass("navbar-nav me-auto"), items))
+	return navbar.ReplaceSlot("", mvc.HTML("ul", mvc.WithClass("navbar-nav", "me-auto"), items))
 }
 
 func (navitem *navitem) Content(children ...any) mvc.View {
 	// TODO: Set href attribute on <a> tag
-	return navitem.ReplaceSlot("", mvc.HTML("a", mvc.WithAttr("href", "#"), mvc.WithClass("nav-link"), children))
+	return navitem.ReplaceSlot("", mvc.HTML("a", mvc.WithAttr("href", "#"), mvc.WithClass("nav-link", "text-nowrap"), children))
 }

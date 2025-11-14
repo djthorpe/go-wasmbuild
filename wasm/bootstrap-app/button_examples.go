@@ -2,6 +2,8 @@ package main
 
 import (
 	// Packages
+	"strconv"
+
 	bs "github.com/djthorpe/go-wasmbuild/pkg/bootstrap"
 	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
 
@@ -57,14 +59,21 @@ func Example_Buttons_003() (mvc.View, string) {
 }
 
 func Example_Buttons_004() (mvc.View, string) {
-	response := mvc.Text("99+")
+	response := mvc.Text("50")
 	return bs.Container(
-		bs.Button("Inbox", mvc.WithClass("m-3")).Caption(response),
-		response,
+		bs.Button("Inbox", mvc.WithClass("m-3")).Label(response),
 		bs.Range("unread_emails", mvc.WithClass("m-3")),
 	).AddEventListener("input", func(e Event) {
 		if v := mvc.ViewFromEvent(e); v.Name() == bs.ViewRange {
-			response.SetData(v.(mvc.ViewWithValue).Value())
+			if v, err := strconv.ParseUint(v.(mvc.ViewWithValue).Value(), 10, 64); err == nil {
+				if v == 0 {
+					response.SetData("")
+				} else if v >= 99 {
+					response.SetData("99+")
+				} else {
+					response.SetData(strconv.FormatUint(v, 10))
+				}
+			}
 		}
 	}), sourcecode()
 }

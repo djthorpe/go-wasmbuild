@@ -504,8 +504,10 @@ func (v *view) Body(content any) View {
 }
 
 func (v *view) Content(children ...any) View {
-	// Determine target element
-	target := v.body
+	target, exists := v.slot[defaultSlot]
+	if !exists {
+		target = v.body
+	}
 	if target == nil {
 		target = v.root
 	}
@@ -523,7 +525,10 @@ func (v *view) Content(children ...any) View {
 // Append appends text, Element or View children at the bottom of the view body
 // and returns the view for chaining
 func (v *view) Append(children ...any) View {
-	target := v.body
+	target, exists := v.slot[defaultSlot]
+	if !exists {
+		target = v.body
+	}
 	if target == nil {
 		target = v.root
 	}
