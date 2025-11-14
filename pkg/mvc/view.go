@@ -228,7 +228,7 @@ func elementFromTemplate(template string) (dom.Element, map[string]dom.Element) 
 
 	// There should be a single child element
 	if root.ChildElementCount() != 1 {
-		panic("elementFromTemplate: template must have a single root element" + fmt.Sprint(root.ChildElementCount()))
+		panic(fmt.Sprintf("elementFromTemplate: template must have a single root element, found %d", root.ChildElementCount()))
 	} else {
 		root = root.FirstElementChild()
 	}
