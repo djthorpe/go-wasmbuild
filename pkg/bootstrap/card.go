@@ -108,11 +108,7 @@ func (card *card) Label(children ...any) mvc.View {
 	}
 	switch child := children[0].(type) {
 	case mvc.View:
-		if child.Name() != ViewImage {
-			panic(fmt.Sprintf("card.Label: invalid child view type %q", child.Name()))
-		} else {
-			child.Root().ClassList().Add("card-img-top")
-		}
+		child.Root().ClassList().Add("card-img-top")
 		return card.ReplaceSlot("label", child)
 	default:
 		panic(fmt.Sprintf("card.Label: invalid child type %T", child))

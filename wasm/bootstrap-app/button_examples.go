@@ -62,9 +62,9 @@ func Example_Buttons_004() (mvc.View, string) {
 	response := mvc.Text("50")
 	return bs.Container(
 		bs.Button("Inbox", mvc.WithClass("m-3")).Label(response),
-		bs.Range("unread_emails", mvc.WithClass("m-3")),
+		bs.RangeInput("unread_emails", mvc.WithClass("m-3")),
 	).AddEventListener("input", func(e Event) {
-		if v := mvc.ViewFromEvent(e); v.Name() == bs.ViewRange {
+		if v := mvc.ViewFromEvent(e); v != nil {
 			if v, err := strconv.ParseUint(v.(mvc.ViewWithValue).Value(), 10, 64); err == nil {
 				if v == 0 {
 					response.SetData("")

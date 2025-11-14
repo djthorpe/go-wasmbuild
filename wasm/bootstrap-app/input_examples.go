@@ -23,26 +23,32 @@ func InputExamples() mvc.View {
 				bs.Heading(4).Content("Enter your details"),
 			).Content(
 				bs.InputGroup(mvc.WithClass("my-2")).Content(
-					bs.Input("username", bs.WithPlaceholder("Enter username"), bs.WithRequired(), bs.WithAutocomplete("user", "email")),
+					bs.Input(
+						"username", bs.WithPlaceholder("Enter username"), bs.WithRequired(), bs.WithAutocomplete("user", "email"),
+					).Label(
+						"Username",
+					),
 					"@",
-					bs.Input("domain", bs.WithPlaceholder("Enter domain here"), bs.WithRequired(), bs.WithAutocomplete("domain")),
+					bs.Input("domain", bs.WithPlaceholder("Enter domain here"), bs.WithRequired(), bs.WithAutocomplete("domain")).Label("Domain"),
 				),
-				bs.Password("password", bs.WithPlaceholder("Enter password here"), mvc.WithClass("my-2"), bs.WithRequired(), bs.WithoutAutocomplete()),
-				bs.Number(
+				bs.PasswordInput(
+					"password", bs.WithPlaceholder("Enter password here"), mvc.WithClass("my-2"), bs.WithRequired(), bs.WithoutAutocomplete(),
+				).Label(
+					"Password",
+				),
+				bs.NumberInput(
 					"number", bs.WithMinMax(-5, 5), bs.WithPlaceholder("Enter number here"), mvc.WithClass("my-2"), bs.WithRequired(), bs.WithoutAutocomplete(),
 				).Label(
 					"Number of times",
 				),
 				bs.Textarea("description", bs.WithPlaceholder("Enter description here"), mvc.WithClass("my-2")),
-				bs.InputGroup(mvc.WithClass("my-2")).Content(
-					bs.Range("range", bs.WithMinMax(-5, 5)).AddEventListener("input", func(e Event) {
-						r := mvc.ViewFromEvent(e).(mvc.ViewWithValue)
-						if r != nil {
-							rangevalue.SetData(r.Value())
-						}
-					}),
-					rangevalue,
-				),
+				bs.RangeInput("range", bs.WithMinMax(-5, 5)).Label("Enter a number between -5 and 5").AddEventListener("input", func(e Event) {
+					r := mvc.ViewFromEvent(e).(mvc.ViewWithValue)
+					if r != nil {
+						rangevalue.SetData(r.Value())
+					}
+				}),
+				rangevalue,
 			).Footer(
 				bs.Button(bs.WithColor(bs.Primary), bs.WithSubmit()).Content("Submit"),
 			),

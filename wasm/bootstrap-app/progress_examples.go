@@ -19,7 +19,7 @@ func ProgressExamples() mvc.View {
 				progress = bs.Progress()
 				return progress
 			}(),
-			bs.Range("range-input").AddEventListener("input", func(e Event) {
+			bs.RangeInput("range-input").AddEventListener("input", func(e Event) {
 				if view := mvc.ViewFromEvent(e).(mvc.ViewWithValue); view != nil {
 					progress.SetValue(view.Value())
 				}
@@ -32,7 +32,7 @@ func ProgressExamples() mvc.View {
 				striped = bs.StripedProgress()
 				return striped
 			}(),
-			bs.Range("range-input").AddEventListener("input", func(e Event) {
+			bs.RangeInput("range-input").AddEventListener("input", func(e Event) {
 				if view := mvc.ViewFromEvent(e).(mvc.ViewWithValue); view != nil {
 					striped.SetValue(view.Value())
 				}

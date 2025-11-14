@@ -26,6 +26,9 @@ type View interface {
 	// Return the view's root element
 	Root() dom.Element
 
+	// Return a slot by name, or nil if not found
+	Slot(name string) dom.Node
+
 	// Replace a slot with a view, text or element
 	ReplaceSlot(name string, root any) View
 
@@ -114,7 +117,7 @@ type view struct {
 	self View
 	name string
 	root dom.Element
-	slot map[string]dom.Element
+	slot map[string]dom.Node
 }
 
 // Ensure that view implements View interface
@@ -194,7 +197,7 @@ func NewViewExEx(self View, name string, template string, args ...any) View {
 	return v.self
 }
 
-func elementFromTemplate(template string) (dom.Element, map[string]dom.Element) {
+func elementFromTemplate(template string) (dom.Element, map[string]dom.Node) {
 	// Create the root element
 	root := elementFactory("div")
 	root.SetInnerHTML(template)
@@ -208,7 +211,7 @@ func elementFromTemplate(template string) (dom.Element, map[string]dom.Element) 
 
 	// Find the slots in the template
 	slots := root.GetElementsByTagName("slot")
-	slotmap := make(map[string]dom.Element, len(slots))
+	slotmap := make(map[string]dom.Node, len(slots))
 
 	// In the case there is no slot, use the root element as the default slot
 	if len(slots) == 0 {
@@ -248,7 +251,7 @@ func NewView(self View, name string, tagName string, args ...any) View {
 		self: self,
 		name: name,
 		root: elementFactory(tagName),
-		slot: make(map[string]dom.Element),
+		slot: make(map[string]dom.Node),
 	}
 
 	// Set the view in self
@@ -340,6 +343,14 @@ func (v *view) Root() dom.Element {
 	return v.root
 }
 
+// Return a slot element by name
+func (v *view) Slot(name string) dom.Node {
+	if name == "" {
+		name = defaultSlot
+	}
+	return v.slot[name]
+}
+
 // Replace a slot with a view, text or element
 func (v *view) ReplaceSlot(name string, root any) View {
 	// Set name for default slot
@@ -354,7 +365,9 @@ func (v *view) ReplaceSlot(name string, root any) View {
 	}
 
 	// Replace the slot content
-	slot.ReplaceWith(NodeFromAny(root))
+	node := NodeFromAny(root)
+	slot.ReplaceWith(node)
+	v.slot[name] = node
 
 	// Return self for chaining
 	return v.self
@@ -418,13 +431,6 @@ func (v *view) AddEventListener(event string, handler func(dom.Event)) View {
 	return v.self
 }
 
-func (v *view) Opts(opts ...Opt) View {
-	if err := applyOpts(v.root, opts...); err != nil {
-		panic(err)
-	}
-	return v.self
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS - ViewWithValue
 
@@ -482,7 +488,7 @@ func NodeFromAny(child any) dom.Node {
 	panic(dom.ErrInternalAppError.Withf("NodeFromAny: unsupported: %T", child))
 }
 
-func (v *view) replaceChildContent(target dom.Element, children ...any) View {
+func (v *view) replaceChildContent(target dom.Node, children ...any) View {
 	if target == nil {
 		return v.self
 	}
