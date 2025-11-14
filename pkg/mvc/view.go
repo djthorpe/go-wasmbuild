@@ -237,7 +237,7 @@ func elementFromTemplate(template string) (dom.Element, map[string]dom.Element) 
 	slots := root.GetElementsByTagName("slot")
 	slotmap := make(map[string]dom.Element, len(slots))
 
-	// In the case there there is no slot, use the root element as the default slot
+	// In the case there is no slot, use the root element as the default slot
 	if len(slots) == 0 {
 		slotmap[defaultSlot] = root
 		return root, slotmap
