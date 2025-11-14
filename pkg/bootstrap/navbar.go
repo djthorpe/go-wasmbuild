@@ -116,7 +116,6 @@ func (navbar *navbar) Content(children ...any) mvc.View {
 		default:
 			panic(fmt.Sprintf("Content: invalid child type: %T", child))
 		}
-		items = append(items, child)
 	}
 	return navbar.ReplaceSlot("", mvc.HTML("ul", mvc.WithClass("navbar-nav me-auto"), items))
 }
