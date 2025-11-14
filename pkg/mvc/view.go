@@ -3,6 +3,7 @@ package mvc
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	// Packages
 	dom "github.com/djthorpe/go-wasmbuild"
@@ -24,6 +25,9 @@ type View interface {
 
 	// Return the view's root element
 	Root() dom.Element
+
+	// Replace a slot with a view, text or element
+	ReplaceSlot(name string, root any) View
 
 	// Append a view or element to the view's body, and set the body
 	Body(any) View
@@ -64,11 +68,18 @@ type ViewWithGroupState interface {
 	Disabled() []dom.Element
 }
 
-// ViewWithCaption represents a UI component with a header and footer
+// DEPRECATED: ViewWithCaption represents a UI component with a header and footer
 type ViewWithCaption interface {
+	ViewWithLabel
+}
+
+// ViewWithLabel represents a UI component with a label, which is positioned
+// as a child node of the root element, either prepending and appending
+type ViewWithLabel interface {
 	View
 
-	// Sets the caption of the view and returns the view
+	// Sets the label of the view and returns the view
+	Label(...any) ViewWithLabel
 	Caption(...any) ViewWithCaption
 }
 
@@ -120,13 +131,14 @@ type ViewWithValue interface {
 
 // Implementation of View interface
 type view struct {
-	self    View
-	name    string
-	root    dom.Element
-	body    dom.Element
-	header  dom.Element
-	footer  dom.Element
-	caption dom.Element
+	self   View
+	name   string
+	root   dom.Element
+	body   dom.Element
+	header dom.Element
+	footer dom.Element
+	label  dom.Element
+	slot   map[string]dom.Element
 }
 
 // Ensure that view implements View interface
@@ -139,13 +151,14 @@ type ViewConstructorFunc func(dom.Element) View
 // GLOBALS
 
 const (
-	// The attribute key which identifies a wasmbuild component
-	DataComponentAttrKey = "data-wasmbuild"
+	// The attribute key which identifies an mvc component
+	DataComponentAttrKey = "data-mvc"
+	defaultSlot          = "default"
 
-	componentPartHeader  = "header"
-	componentPartBody    = "body"
-	componentPartFooter  = "footer"
-	componentPartCaption = "caption"
+	componentPartHeader = "header"
+	componentPartBody   = "body"
+	componentPartFooter = "footer"
+	componentPartLabel  = "label"
 )
 
 var (
@@ -165,13 +178,99 @@ func RegisterView(name string, constructor ViewConstructorFunc) {
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
+// Create a new view with template, applying any options to it
+func NewViewExEx(self View, name string, template string, args ...any) View {
+	if _, exists := views[name]; !exists {
+		panic(fmt.Sprintf("NewViewExEx: view not registered %q", name))
+	}
+	// Create the element from the template, and return the slots on the view
+	root, slots := elementFromTemplate(template)
+
+	// Create the view
+	v := &view{
+		self: self,
+		name: name,
+		root: root,
+		slot: slots,
+	}
+
+	// Set the view in self
+	if self_, ok := self.(ViewWithSelf); !ok {
+		panic(fmt.Sprintf("NewView: %v does not implement ViewWithSelf", name))
+	} else {
+		self_.SetView(v)
+	}
+
+	// Set the component identifier
+	v.root.SetAttribute(DataComponentAttrKey, name)
+
+	// Apply options to the view
+	opts, content := gatherOpts(args...)
+	if len(opts) > 0 {
+		if err := applyOpts(v.root, opts...); err != nil {
+			panic(err)
+		}
+	}
+
+	// Set the content in the view
+	if len(content) > 0 {
+		v.self.Content(content...)
+	}
+
+	// Return the view
+	return v.self
+}
+
+func elementFromTemplate(template string) (dom.Element, map[string]dom.Element) {
+	// Create the root element
+	root := elementFactory("div")
+	root.SetInnerHTML(template)
+
+	// There should be a single child element
+	if root.ChildElementCount() != 1 {
+		panic("elementFromTemplate: template must have a single root element" + fmt.Sprint(root.ChildElementCount()))
+	} else {
+		root = root.FirstElementChild()
+	}
+
+	// Find the slots in the template
+	slots := root.GetElementsByTagName("slot")
+	slotmap := make(map[string]dom.Element, len(slots))
+
+	// In the case there there is no slot, use the root element as the default slot
+	if len(slots) == 0 {
+		slotmap[defaultSlot] = root
+		return root, slotmap
+	}
+
+	// Otherwise enumerate the slots
+	for _, slot := range slots {
+		name := strings.TrimSpace(slot.GetAttribute("name"))
+		if name == "" {
+			name = defaultSlot
+		} else if _, exists := slotmap[name]; exists {
+			panic("elementFromTemplate: duplicate slot name " + name)
+		}
+		// Set the slot
+		slotmap[name] = slot
+	}
+
+	// Ensure a default slot exists
+	if _, exists := slotmap[defaultSlot]; !exists {
+		slotmap[defaultSlot] = root
+	}
+
+	// Return the root element and slot map
+	return root, slotmap
+}
+
 // Create a new empty view, applying any options to it
 func NewView(self View, name string, tagName string, args ...any) View {
 	return NewViewEx(self, name, tagName, nil, nil, nil, nil, args...)
 }
 
 // Create a new empty view with a header, footer and caption
-func NewViewEx(self View, name string, tagName string, header, body, footer, caption dom.Element, args ...any) View {
+func NewViewEx(self View, name string, tagName string, header, body, footer, label dom.Element, args ...any) View {
 	if _, exists := views[name]; !exists {
 		panic(fmt.Sprintf("NewView: view not registered %q", name))
 	}
@@ -180,20 +279,20 @@ func NewViewEx(self View, name string, tagName string, header, body, footer, cap
 	}
 
 	// Ensure a dedicated body exists whenever structural parts are provided so that
-	// later content operations don't trample header, footer or caption nodes.
-	if body == nil && (header != nil || footer != nil || caption != nil) {
+	// later content operations don't trample header, footer or label nodes.
+	if body == nil && (header != nil || footer != nil || label != nil) {
 		body = elementFactory("div")
 	}
 
 	// Create the view
 	v := &view{
-		self:    self,
-		name:    name,
-		root:    elementFactory(tagName),
-		header:  header,
-		body:    body,
-		footer:  footer,
-		caption: caption,
+		self:   self,
+		name:   name,
+		root:   elementFactory(tagName),
+		header: header,
+		body:   body,
+		footer: footer,
+		label:  label,
 	}
 
 	// Set the view in self
@@ -209,9 +308,9 @@ func NewViewEx(self View, name string, tagName string, header, body, footer, cap
 			panic(fmt.Sprintf("NewView: %v does not implement ViewWithHeaderFooter", name))
 		}
 	}
-	if v.caption != nil {
-		if _, ok := self.(ViewWithCaption); !ok {
-			panic(fmt.Sprintf("NewView: %v does not implement ViewWithCaption", name))
+	if v.label != nil {
+		if _, ok := self.(ViewWithLabel); !ok {
+			panic(fmt.Sprintf("NewView: %v does not implement ViewWithLabel", name))
 		}
 	}
 
@@ -234,9 +333,9 @@ func NewViewEx(self View, name string, tagName string, header, body, footer, cap
 		markComponentPart(v.footer, componentPartFooter)
 		v.root.AppendChild(v.footer)
 	}
-	if v.caption != nil {
-		v.caption.SetAttribute(DataComponentAttrKey, componentPartCaption)
-		v.root.AppendChild(v.caption)
+	if v.label != nil {
+		v.label.SetAttribute(DataComponentAttrKey, componentPartLabel)
+		v.root.AppendChild(v.label)
 	}
 
 	// Set the component identifier
@@ -295,9 +394,9 @@ func NewViewWithElement(self View, element dom.Element, opts ...Opt) View {
 		v.body = v.root
 	}
 	v.footer = findComponentPart(element, componentPartFooter)
-	v.caption = findComponentPart(element, componentPartCaption)
+	v.label = findComponentPart(element, componentPartLabel)
 
-	if v.body == v.root && (v.header != nil || v.footer != nil || v.caption != nil) {
+	if v.body == v.root && (v.header != nil || v.footer != nil || v.label != nil) {
 		panic("NewViewWithElement: element missing body component")
 	}
 
@@ -338,6 +437,26 @@ func (v *view) Root() dom.Element {
 	return v.root
 }
 
+// Replace a slot with a view, text or element
+func (v *view) ReplaceSlot(name string, root any) View {
+	// Set name for default slot
+	if name = strings.TrimSpace(name); name == "" {
+		name = defaultSlot
+	}
+
+	// Ensure slot exists
+	slot, exists := v.slot[name]
+	if !exists {
+		panic(fmt.Sprintf("ReplaceSlot: slot %q does not exist", name))
+	}
+
+	// Replace the slot content
+	slot.ReplaceWith(NodeFromAny(root))
+
+	// Return self for chaining
+	return v.self
+}
+
 func (v *view) Body(content any) View {
 	prevBody := v.body
 	node := NodeFromAny(content)
@@ -374,8 +493,8 @@ func (v *view) Body(content any) View {
 	if v.body.ParentNode() == nil {
 		if v.footer != nil && v.footer.ParentNode() != nil && v.footer.ParentNode().Equals(v.root) {
 			v.root.InsertBefore(v.body, v.footer)
-		} else if v.caption != nil && v.caption.ParentNode() != nil && v.caption.ParentNode().Equals(v.root) {
-			v.root.InsertBefore(v.body, v.caption)
+		} else if v.label != nil && v.label.ParentNode() != nil && v.label.ParentNode().Equals(v.root) {
+			v.root.InsertBefore(v.body, v.label)
 		} else {
 			v.root.AppendChild(v.body)
 		}
@@ -439,19 +558,27 @@ func (v *view) Footer(children ...any) ViewWithHeaderFooter {
 }
 
 func (v *view) Caption(children ...any) ViewWithCaption {
-	viewWithCaption, ok := v.self.(ViewWithCaption)
+	return v.Label(children...)
+}
+
+func (v *view) Label(children ...any) ViewWithLabel {
+	viewWithLabel, ok := v.self.(ViewWithLabel)
 	if !ok {
-		panic(fmt.Sprintf("view.Caption: view %T does not implement ViewWithCaption", v.self))
-	} else if v.caption == nil || v.caption.GetAttribute(DataComponentAttrKey) != componentPartCaption {
-		panic("view.Caption: caption element is missing")
+		panic(fmt.Sprintf("view.Label: view %T does not implement ViewWithLabel", v.self))
+	} else if v.label == nil || v.label.GetAttribute(DataComponentAttrKey) != componentPartLabel {
+		panic("view.Label: label element is missing")
 	}
 
 	// If the existing caption under the root is a placeholder, then replace it with the
 	// actual caption
-	caption := v.ensureCaptionElement()
-	v.replaceChildContent(caption, children...)
+	label := v.ensureLabelElement()
+	v.replaceChildContent(label, children...)
 
-	return viewWithCaption
+	return viewWithLabel
+}
+
+func (v *view) LabelElement() dom.Element {
+	return v.label
 }
 
 func (v *view) AddEventListener(event string, handler func(dom.Event)) View {
@@ -580,8 +707,8 @@ func (v *view) ensureFooterElement() dom.Element {
 	footer := elementFactory("footer")
 	markComponentPart(footer, componentPartFooter)
 
-	if v.caption != nil && v.caption.ParentNode() != nil && v.caption.ParentNode().Equals(v.root) {
-		v.root.InsertBefore(footer, v.caption)
+	if v.label != nil && v.label.ParentNode() != nil && v.label.ParentNode().Equals(v.root) {
+		v.root.InsertBefore(footer, v.label)
 	} else {
 		v.root.AppendChild(footer)
 	}
@@ -590,16 +717,16 @@ func (v *view) ensureFooterElement() dom.Element {
 	return v.footer
 }
 
-func (v *view) ensureCaptionElement() dom.Element {
-	if v.caption != nil {
-		return v.caption
+func (v *view) ensureLabelElement() dom.Element {
+	if v.label != nil {
+		return v.label
 	}
 	v.ensureBodyContainer()
-	caption := elementFactory("caption")
-	markComponentPart(caption, componentPartCaption)
-	v.root.AppendChild(caption)
-	v.caption = caption
-	return v.caption
+	label := elementFactory("label")
+	markComponentPart(label, componentPartLabel)
+	v.root.AppendChild(label)
+	v.label = label
+	return v.label
 }
 
 func (v *view) replaceChildContent(target dom.Element, children ...any) {
@@ -666,7 +793,7 @@ func findComponentPart(root dom.Element, part string) dom.Element {
 
 func isComponentPart(value string) bool {
 	switch value {
-	case componentPartHeader, componentPartBody, componentPartFooter, componentPartCaption:
+	case componentPartHeader, componentPartBody, componentPartFooter, componentPartLabel:
 		return true
 	default:
 		return false

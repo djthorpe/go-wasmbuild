@@ -4,10 +4,8 @@ import (
 	"strings"
 
 	// Packages
+	wasm "github.com/djthorpe/go-wasmbuild"
 	dom "github.com/djthorpe/go-wasmbuild/pkg/dom"
-
-	// Namespace imports
-	. "github.com/djthorpe/go-wasmbuild"
 )
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -56,7 +54,7 @@ func Router(args ...any) RouterView {
 	window := dom.GetWindow()
 
 	// Set event listener for hashchange
-	window.AddEventListener("hashchange", func(Event) {
+	window.AddEventListener("hashchange", func(wasm.Event) {
 		router.refresh(window.Location().Hash())
 	})
 
@@ -64,7 +62,7 @@ func Router(args ...any) RouterView {
 }
 
 // Create a Table from an existing element
-func newRouterFromElement(element Element) View {
+func newRouterFromElement(element wasm.Element) View {
 	if element.TagName() != "DIV" {
 		return nil
 	}

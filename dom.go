@@ -83,6 +83,8 @@ type Element interface {
 	// Selection Methods
 	GetElementsByClassName(string) []Element
 	GetElementsByTagName(string) []Element
+	QuerySelector(selector string) Element
+	QuerySelectorAll(selector string) []Element
 
 	// DOM Manipulation Methods
 	Children() []Element

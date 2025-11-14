@@ -21,15 +21,16 @@ type cardgroup struct {
 	mvc.View
 }
 
-var _ mvc.ViewWithHeaderFooter = (*card)(nil)
 var _ mvc.View = (*cardgroup)(nil)
+var _ mvc.ViewWithHeaderFooter = (*card)(nil)
+var _ mvc.ViewWithLabel = (*card)(nil)
 
 ///////////////////////////////////////////////////////////////////////////////
 // GLOBALS
 
 const (
 	ViewCard      = "mvc-bs-card"
-	ViewCardGroup = "mvc-bs-card-group"
+	ViewCardGroup = "mvc-bs-cardgroup"
 )
 
 func init() {
@@ -41,10 +42,11 @@ func init() {
 // LIFECYCLE
 
 func Card(args ...any) *card {
-	header := mvc.HTML("DIV", mvc.WithClass("card-header"))
 	body := mvc.HTML("DIV", mvc.WithClass("card-body"))
-	footer := mvc.HTML("DIV", mvc.WithClass("card-footer"))
-	return mvc.NewViewEx(new(card), ViewCard, "DIV", header, body, footer, nil, mvc.WithClass("card"), args).(*card)
+	header := mvc.Placeholder()
+	footer := mvc.Placeholder()
+	label := mvc.Placeholder()
+	return mvc.NewViewEx(new(card), ViewCard, "DIV", header, body, footer, label, mvc.WithClass("card"), args).(*card)
 }
 
 func CardGroup(args ...any) *cardgroup {
@@ -76,4 +78,32 @@ func (card *card) SetView(view mvc.View) {
 
 func (cardgroup *cardgroup) SetView(view mvc.View) {
 	cardgroup.View = view
+}
+
+func (card *card) Caption(children ...any) mvc.ViewWithCaption {
+	// DEPRECATED: use Label instead
+	return card.Label(children...)
+}
+
+func (card *card) Label(children ...any) mvc.ViewWithLabel {
+	// We only accept one image as a label for the card
+	if len(children) == 0 {
+		// Clear the content
+		return card.ViewWithHeaderFooter.(mvc.ViewWithLabel).Label()
+	}
+	if len(children) > 1 {
+		panic("card.Label: only one child element is allowed")
+	}
+	switch child := children[0].(type) {
+	case mvc.View:
+		if child.Name() != ViewImage {
+			panic(fmt.Sprintf("card.Label: invalid child view type %q", child.Name()))
+		}
+		card.ViewWithHeaderFooter.(mvc.ViewWithLabel).Label(child)
+		// TODO: Replace existing label with this child
+		fmt.Println("card.Label called", child)
+	default:
+		panic(fmt.Sprintf("card.Label: invalid child type %T", child))
+	}
+	return card
 }

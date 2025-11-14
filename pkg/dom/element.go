@@ -10,7 +10,6 @@ import (
 	"strings"
 
 	// Packages
-
 	js "github.com/djthorpe/go-wasmbuild/pkg/js"
 	html "golang.org/x/net/html"
 
@@ -512,6 +511,14 @@ func (element *element) GetElementsByTagName(tagName string) []Element {
 	var result []Element
 	element.getElementsByTagName(strings.ToUpper(tagName), &result)
 	return result
+}
+
+func (element *element) QuerySelector(selector string) Element {
+	panic("QuerySelector: not implemented for native DOM")
+}
+
+func (element *element) QuerySelectorAll(selector string) []Element {
+	panic("QuerySelectorAll: not implemented for native DOM")
 }
 
 ///////////////////////////////////////////////////////////////////////////////
