@@ -13,7 +13,7 @@ import (
 // TYPES
 
 type table struct {
-	mvc.ViewWithHeaderFooter
+	mvc.View
 }
 
 type tablerow struct {
@@ -40,6 +40,7 @@ func init() {
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
+/*
 func Table(args ...any) *table {
 	// Return the table
 	return mvc.NewViewEx(
@@ -48,6 +49,7 @@ func Table(args ...any) *table {
 		mvc.WithClass("table"), args,
 	).(*table)
 }
+*/
 
 func TableRow(args ...any) *tablerow {
 	return tableRow(ViewTableRow, args...)
@@ -78,7 +80,7 @@ func newTableRowFromElement(element Element) mvc.View {
 // PUBLIC METHODS
 
 func (table *table) SetView(view mvc.View) {
-	table.ViewWithHeaderFooter = view.(mvc.ViewWithHeaderFooter)
+	table.View = view
 }
 
 func (tablerow *tablerow) SetView(view mvc.View) {
@@ -103,17 +105,17 @@ func (tablerow *tablerow) Append(cells ...any) mvc.View {
 	return tablerow
 }
 
-func (table *table) Header(children ...any) mvc.ViewWithHeaderFooter {
+func (table *table) Header(children ...any) mvc.View {
 	// Create a header row
 	header := tableRow(ViewTableHead, children...)
-	table.ViewWithHeaderFooter.Header(header)
+	table.View.Header(header)
 	return table
 }
 
-func (table *table) Footer(children ...any) mvc.ViewWithHeaderFooter {
+func (table *table) Footer(children ...any) mvc.View {
 	// Create a header row
 	footer := tableRow(ViewTableFoot, children...)
-	table.ViewWithHeaderFooter.Footer(footer)
+	table.View.Footer(footer)
 	return table
 }
 

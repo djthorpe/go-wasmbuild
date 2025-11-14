@@ -14,7 +14,7 @@ import (
 // TYPES
 
 type card struct {
-	mvc.ViewWithHeaderFooter
+	mvc.View
 }
 
 type cardgroup struct {
@@ -22,8 +22,8 @@ type cardgroup struct {
 }
 
 var _ mvc.View = (*cardgroup)(nil)
-var _ mvc.ViewWithHeaderFooter = (*card)(nil)
-var _ mvc.ViewWithLabel = (*card)(nil)
+var _ mvc.View = (*card)(nil)
+var _ mvc.View = (*card)(nil)
 
 ///////////////////////////////////////////////////////////////////////////////
 // GLOBALS
@@ -31,6 +31,17 @@ var _ mvc.ViewWithLabel = (*card)(nil)
 const (
 	ViewCard      = "mvc-bs-card"
 	ViewCardGroup = "mvc-bs-cardgroup"
+)
+
+const (
+	templateCard = `
+		<div class="card">
+			<slot name="header"><!-- Header --></slot>
+			<slot name="label"><!-- Image --></slot>
+			<slot><!-- Body --></slot>
+			<slot name="footer"><!-- Footer --></slot>
+		</div>
+	`
 )
 
 func init() {
@@ -42,11 +53,7 @@ func init() {
 // LIFECYCLE
 
 func Card(args ...any) *card {
-	body := mvc.HTML("DIV", mvc.WithClass("card-body"))
-	header := mvc.Placeholder()
-	footer := mvc.Placeholder()
-	label := mvc.Placeholder()
-	return mvc.NewViewEx(new(card), ViewCard, "DIV", header, body, footer, label, mvc.WithClass("card"), args).(*card)
+	return mvc.NewViewExEx(new(card), ViewCard, templateCard, args).(*card)
 }
 
 func CardGroup(args ...any) *cardgroup {
@@ -73,23 +80,18 @@ func newCardGroupFromElement(element Element) mvc.View {
 // PUBLIC METHODS
 
 func (card *card) SetView(view mvc.View) {
-	card.ViewWithHeaderFooter = view.(mvc.ViewWithHeaderFooter)
+	card.View = view
 }
 
 func (cardgroup *cardgroup) SetView(view mvc.View) {
 	cardgroup.View = view
 }
 
-func (card *card) Caption(children ...any) mvc.ViewWithCaption {
-	// DEPRECATED: use Label instead
-	return card.Label(children...)
-}
-
-func (card *card) Label(children ...any) mvc.ViewWithLabel {
+func (card *card) Label(children ...any) mvc.View {
 	// We only accept one image as a label for the card
 	if len(children) == 0 {
 		// Clear the content
-		return card.ViewWithHeaderFooter.(mvc.ViewWithLabel).Label()
+		return card.View.Label()
 	}
 	if len(children) > 1 {
 		panic("card.Label: only one child element is allowed")
@@ -99,7 +101,7 @@ func (card *card) Label(children ...any) mvc.ViewWithLabel {
 		if child.Name() != ViewImage {
 			panic(fmt.Sprintf("card.Label: invalid child view type %q", child.Name()))
 		}
-		card.ViewWithHeaderFooter.(mvc.ViewWithLabel).Label(child)
+		card.View.Label(child)
 		// TODO: Replace existing label with this child
 		fmt.Println("card.Label called", child)
 	default:

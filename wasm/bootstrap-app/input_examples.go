@@ -30,7 +30,7 @@ func InputExamples() mvc.View {
 				bs.Password("password", bs.WithPlaceholder("Enter password here"), mvc.WithClass("my-2"), bs.WithRequired(), bs.WithoutAutocomplete()),
 				bs.Number(
 					"number", bs.WithMinMax(-5, 5), bs.WithPlaceholder("Enter number here"), mvc.WithClass("my-2"), bs.WithRequired(), bs.WithoutAutocomplete(),
-				).Caption(
+				).Label(
 					"Number of times",
 				),
 				bs.Textarea("description", bs.WithPlaceholder("Enter description here"), mvc.WithClass("my-2")),
@@ -43,7 +43,7 @@ func InputExamples() mvc.View {
 					}),
 					rangevalue,
 				),
-			).(mvc.ViewWithHeaderFooter).Footer(
+			).Footer(
 				bs.Button(bs.WithColor(bs.Primary), bs.WithSubmit()).Content("Submit"),
 			),
 		),

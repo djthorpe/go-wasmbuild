@@ -2,7 +2,6 @@ package bootstrap
 
 import (
 	// Packages
-
 	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
 
 	// Namespace imports
@@ -13,7 +12,7 @@ import (
 // TYPES
 
 type button struct {
-	mvc.ViewWithLabel
+	mvc.View
 }
 
 type buttongroup struct {
@@ -24,7 +23,7 @@ type buttontoolbar struct {
 	mvc.View
 }
 
-var _ mvc.ViewWithLabel = (*button)(nil)
+var _ mvc.View = (*button)(nil)
 var _ mvc.View = (*buttongroup)(nil)
 var _ mvc.View = (*buttontoolbar)(nil)
 
@@ -104,7 +103,7 @@ func newButtonToolbarFromElement(element Element) mvc.View {
 // PUBLIC METHODS
 
 func (b *button) SetView(view mvc.View) {
-	b.ViewWithLabel = view.(mvc.ViewWithLabel)
+	b.View = view
 }
 
 func (b *buttongroup) SetView(view mvc.View) {
@@ -115,7 +114,7 @@ func (b *buttontoolbar) SetView(view mvc.View) {
 	b.View = view
 }
 
-func (b *button) Label(children ...any) mvc.ViewWithLabel {
+func (b *button) Label(children ...any) mvc.View {
 	b.Root().ClassList().Add("position-relative")
 	b.ReplaceSlot("label", mvc.HTML("SPAN", mvc.WithClass("position-absolute", "top-0", "start-100", "translate-middle", "badge", "rounded-pill", "bg-danger"), children))
 	return b
@@ -127,7 +126,7 @@ func (b *button) Append(children ...any) mvc.View {
 		panic("Append: not supported for close button")
 	}
 	// Call superclass
-	return b.ViewWithLabel.Append(children...)
+	return b.View.Append(children...)
 }
 
 func (b *buttongroup) Append(children ...any) mvc.View {

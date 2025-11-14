@@ -50,7 +50,7 @@ func main() {
 		).Page(
 			"#icon", IconExamples(),
 		).Page(
-			"#modal", ModalExamples(),
+			"#modal", nil, //ModalExamples(),
 		).Page(
 			"#input", InputExamples(),
 		).Page(
@@ -60,7 +60,7 @@ func main() {
 		).Page(
 			"#navbar", NavBarExamples(),
 		).Page(
-			"#table", TableExamples(),
+			"#table", nil, //TableExamples(),
 		),
 	)
 

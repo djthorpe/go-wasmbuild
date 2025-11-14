@@ -14,7 +14,7 @@ import (
 // TYPES
 
 type modal struct {
-	mvc.ViewWithHeaderFooter
+	mvc.View
 }
 
 var _ mvc.View = (*modal)(nil)
@@ -67,7 +67,7 @@ func newModalFromElement(element Element) mvc.View {
 // PUBLIC METHODS
 
 func (modal *modal) SetView(view mvc.View) {
-	modal.ViewWithHeaderFooter = view.(mvc.ViewWithHeaderFooter)
+	modal.View = view
 }
 
 func WithModal(id string) mvc.Opt {

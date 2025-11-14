@@ -1,10 +1,9 @@
 package bootstrap
 
 import (
-
-	// Packages
 	"slices"
 
+	// Packages
 	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
 
 	// Namespace imports

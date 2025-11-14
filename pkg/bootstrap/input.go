@@ -54,7 +54,7 @@ var _ mvc.View = (*inputgroup)(nil)
 var _ mvc.ViewWithValue = (*textarea)(nil)
 var _ mvc.ViewWithValue = (*rangeinput)(nil)
 var _ mvc.ViewWithValue = (*input)(nil)
-var _ mvc.ViewWithLabel = (*input)(nil)
+var _ mvc.View = (*input)(nil)
 var _ mvc.ViewWithValue = (*selectinput)(nil)
 var _ mvc.ViewWithValue = (*inputswitch)(nil)
 
@@ -73,6 +73,15 @@ const (
 
 	// Class used to indicate inline groups
 	classInlineGroup = "mvc-bs-inlinegroup"
+)
+
+const (
+	templateInput = `
+		<div>
+			<slot name="label"><!-- Label --></slot>
+			<input class="form-control">	
+		</div>
+	`
 )
 
 func init() {
@@ -94,8 +103,7 @@ func Form(name string, args ...any) *form {
 }
 
 func Input(name string, args ...any) *input {
-	label := mvc.HTML("LABEL", mvc.WithClass("form-label"), mvc.WithAttr("for", name))
-	return mvc.NewViewEx(new(input), ViewInput, "INPUT", nil, nil, nil, label, mvc.WithAttr("id", name), mvc.WithClass("form-control"), args).(*input)
+	return mvc.NewViewExEx(new(input), ViewInput, templateInput, mvc.WithAttr("id", name), args).(*input)
 }
 
 func Password(name string, args ...any) *input {
@@ -246,14 +254,9 @@ func (input *input) Append(children ...any) mvc.View {
 	panic("Append: not supported for input")
 }
 
-func (input *input) Caption(children ...any) mvc.ViewWithCaption {
-	// Deprecated: use Label instead
-	return input.Label(children...)
-}
-
-func (input *input) Label(children ...any) mvc.ViewWithLabel {
+func (input *input) Label(children ...any) mvc.View {
 	// TODO: Create the label element
-	input.View.(mvc.ViewWithLabel).Label(children...)
+	input.View.(mvc.View).Label(children...)
 	//<label for="inputPassword5" class="form-label">Password</label>
 	return input
 }

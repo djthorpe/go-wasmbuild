@@ -1,10 +1,9 @@
 package bootstrap
 
 import (
-	// Packages
-
 	"fmt"
 
+	// Packages
 	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
 
 	// Namespace imports
@@ -15,7 +14,7 @@ import (
 // TYPES
 
 type navbar struct {
-	mvc.ViewWithLabel
+	mvc.View
 }
 
 type navitem struct {
@@ -23,7 +22,7 @@ type navitem struct {
 }
 
 var _ mvc.View = (*navbar)(nil)
-var _ mvc.ViewWithLabel = (*navbar)(nil)
+var _ mvc.View = (*navbar)(nil)
 var _ mvc.View = (*navitem)(nil)
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -91,20 +90,15 @@ func newNavItemFromElement(element Element) mvc.View {
 // PUBLIC METHODS
 
 func (navbar *navbar) SetView(view mvc.View) {
-	navbar.ViewWithLabel = view.(mvc.ViewWithLabel)
+	navbar.View = view
 }
 
 func (navitem *navitem) SetView(view mvc.View) {
 	navitem.View = view
 }
 
-func (navbar *navbar) Caption(children ...any) mvc.ViewWithCaption {
-	// DEPRECATED: use Label instead
-	return navbar.Label(children...)
-}
-
-func (navbar *navbar) Label(children ...any) mvc.ViewWithLabel {
-	return navbar.ReplaceSlot("label", mvc.HTML("A", mvc.WithAttr("href", "#"), mvc.WithClass("navbar-brand"), children)).(mvc.ViewWithLabel)
+func (navbar *navbar) Label(children ...any) mvc.View {
+	return navbar.ReplaceSlot("label", mvc.HTML("A", mvc.WithAttr("href", "#"), mvc.WithClass("navbar-brand"), children)).(mvc.View)
 }
 
 func (navbar *navbar) Content(children ...any) mvc.View {
