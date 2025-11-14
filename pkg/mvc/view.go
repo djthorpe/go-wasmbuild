@@ -569,8 +569,8 @@ func (v *view) Label(children ...any) ViewWithLabel {
 		panic("view.Label: label element is missing")
 	}
 
-	// If the existing caption under the root is a placeholder, then replace it with the
-	// actual caption
+	// If the existing label under the root is a placeholder, then replace it with the
+	// actual label
 	label := v.ensureLabelElement()
 	v.replaceChildContent(label, children...)
 
