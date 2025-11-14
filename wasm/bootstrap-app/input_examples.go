@@ -18,40 +18,43 @@ func InputExamples() mvc.View {
 	return bs.Container().Content(
 		bs.Heading(1).Content("Input Examples"),
 		bs.HRule(),
-		bs.Form("input").Content(
-			bs.Card().Header(
-				bs.Heading(4).Content("Enter your details"),
-			).Content(
-				bs.InputGroup(mvc.WithClass("my-2")).Content(
-					bs.Input(
-						"username", bs.WithPlaceholder("Enter username"), bs.WithRequired(), bs.WithAutocomplete("user", "email"),
-					).Label(
-						"Username",
-					),
-					"@",
-					bs.Input("domain", bs.WithPlaceholder("Enter domain here"), bs.WithRequired(), bs.WithAutocomplete("domain")).Label("Domain"),
+		bs.Form("input", bs.Card().Header(
+			bs.Heading(4, "Enter your details"),
+		).Content(
+			bs.InputGroup(
+				bs.Input(
+					"username", bs.WithPlaceholder("Enter username"), bs.WithRequired(), bs.WithAutocomplete("user", "email"),
 				),
-				bs.PasswordInput(
-					"password", bs.WithPlaceholder("Enter password here"), mvc.WithClass("my-2"), bs.WithRequired(), bs.WithoutAutocomplete(),
-				).Label(
-					"Password",
+				"@",
+				bs.Input(
+					"domain", bs.WithPlaceholder("Enter domain here"), bs.WithRequired(), bs.WithAutocomplete("domain"),
 				),
-				bs.NumberInput(
-					"number", bs.WithMinMax(-5, 5), bs.WithPlaceholder("Enter number here"), mvc.WithClass("my-2"), bs.WithRequired(), bs.WithoutAutocomplete(),
-				).Label(
-					"Number of times",
-				),
-				bs.Textarea("description", bs.WithPlaceholder("Enter description here"), mvc.WithClass("my-2")),
-				bs.RangeInput("range", bs.WithMinMax(-5, 5)).Label("Enter a number between -5 and 5").AddEventListener("input", func(e Event) {
-					r := mvc.ViewFromEvent(e).(mvc.ViewWithValue)
-					if r != nil {
-						rangevalue.SetData(r.Value())
-					}
-				}),
-				rangevalue,
-			).Footer(
-				bs.Button(bs.WithColor(bs.Primary), bs.WithSubmit()).Content("Submit"),
 			),
+			bs.PasswordInput(
+				"password", bs.WithPlaceholder("Enter password here"), bs.WithRequired(), bs.WithoutAutocomplete(),
+			).Label(
+				"Password",
+			),
+			bs.NumberInput(
+				"number", bs.WithMinMax(-5, 5), bs.WithPlaceholder("Enter number here"), bs.WithRequired(), bs.WithoutAutocomplete(),
+			).Label(
+				"Number of times",
+			),
+			bs.Textarea(
+				"description", bs.WithPlaceholder("Enter description here"),
+			).Label(
+				"Description",
+			),
+			bs.RangeInput("range", bs.WithMinMax(-5, 5)).Label("Enter a number between -5 and 5").AddEventListener("input", func(e Event) {
+				r := mvc.ViewFromEvent(e)
+				if r != nil {
+					rangevalue.SetData(r.Value())
+				}
+			}),
+			rangevalue,
+		).Footer(
+			bs.Button(bs.WithColor(bs.Primary), bs.WithSubmit()).Content("Submit"),
+		),
 		),
 		bs.HRule(),
 		bs.Heading(5, "Radio Group Input"),
@@ -91,7 +94,7 @@ func ExampleInputSelect() mvc.View {
 	example := func() mvc.View {
 		return bs.Form("select-input").Content(
 			bs.Select("single-select", "a", "b", "c").AddEventListener("input", func(e Event) {
-				s := mvc.ViewFromEvent(e).(mvc.ViewWithValue)
+				s := mvc.ViewFromEvent(e)
 				if s != nil {
 					response.Content("You selected: " + s.Value())
 				}
@@ -125,7 +128,7 @@ func ExampleInputMultiSelect() mvc.View {
 	example := func() mvc.View {
 		return bs.Form("multi-select-input").Content(
 			bs.MultiSelect("multi-select", "a", "b", "c").AddEventListener("input", func(e Event) {
-				s := mvc.ViewFromEvent(e).(mvc.ViewWithValue)
+				s := mvc.ViewFromEvent(e)
 				if s != nil {
 					response.Content("You selected: " + s.Value())
 				}
@@ -167,8 +170,8 @@ func ExampleInputMultiSelectOption() mvc.View {
 				bs.Option("Option B", "b"),
 				bs.Option("Option C", "c"),
 				bs.Option("Option D", "d"),
-			).SetValue("a").AddEventListener("input", func(e Event) {
-				s := mvc.ViewFromEvent(e).(mvc.ViewWithValue)
+			).Set("a").AddEventListener("input", func(e Event) {
+				s := mvc.ViewFromEvent(e)
 				if s != nil {
 					response.Content("You selected: " + s.Value())
 				}
@@ -213,7 +216,7 @@ func ExampleInputRadioGroup() mvc.View {
 				bs.Option("Option B", "b"),
 				bs.Option("Option C", "c"),
 			).AddEventListener("input", func(e Event) {
-				s := mvc.ViewFromEvent(e).(mvc.ViewWithValue)
+				s := mvc.ViewFromEvent(e)
 				fmt.Println(s)
 				if s != nil {
 					response.Content("You selected: " + s.Value())
@@ -226,7 +229,7 @@ func ExampleInputRadioGroup() mvc.View {
 				bs.Option("Option B", "b"),
 				bs.Option("Option C", "c"),
 			).AddEventListener("input", func(e Event) {
-				s := mvc.ViewFromEvent(e).(mvc.ViewWithValue)
+				s := mvc.ViewFromEvent(e)
 				fmt.Println(s)
 				if s != nil {
 					response.Content("You selected: " + s.Value())
@@ -271,7 +274,7 @@ func ExampleInputCheckboxGroup() mvc.View {
 				bs.Option("Option B", "b"),
 				bs.Option("Option C", "c"),
 			).AddEventListener("input", func(e Event) {
-				s := mvc.ViewFromEvent(e).(mvc.ViewWithValue)
+				s := mvc.ViewFromEvent(e)
 				fmt.Println(s)
 				if s != nil {
 					response.Content("You selected: " + s.Value())
@@ -284,8 +287,7 @@ func ExampleInputCheckboxGroup() mvc.View {
 				bs.Option("Option B", "b"),
 				bs.Option("Option C", "c"),
 			).AddEventListener("input", func(e Event) {
-				s := mvc.ViewFromEvent(e).(mvc.ViewWithValue)
-				fmt.Println(s)
+				s := mvc.ViewFromEvent(e)
 				if s != nil {
 					response.Content("You selected: " + s.Value())
 				}
@@ -329,7 +331,7 @@ func ExampleInputSwitchGroup() mvc.View {
 				bs.Option("Option B", "b"),
 				bs.Option("Option C", "c"),
 			).AddEventListener("input", func(e Event) {
-				s := mvc.ViewFromEvent(e).(mvc.ViewWithValue)
+				s := mvc.ViewFromEvent(e)
 				if s != nil {
 					response.Content("You selected: " + s.Value())
 				}
@@ -341,7 +343,7 @@ func ExampleInputSwitchGroup() mvc.View {
 				bs.Option("Option B", "b"),
 				bs.Option("Option C", "c"),
 			).AddEventListener("input", func(e Event) {
-				s := mvc.ViewFromEvent(e).(mvc.ViewWithValue)
+				s := mvc.ViewFromEvent(e)
 				if s != nil {
 					response.Content("You selected: " + s.Value())
 				}

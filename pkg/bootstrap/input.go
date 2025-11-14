@@ -27,16 +27,12 @@ type inputgroup struct {
 	mvc.View
 }
 
-type textarea struct {
-	mvc.View
-}
-
 type selectinput struct {
 	mvc.View
 }
 
 type inputswitch struct {
-	mvc.ViewWithValue
+	mvc.View
 }
 
 type inputoption struct {
@@ -46,10 +42,9 @@ type inputoption struct {
 
 var _ mvc.View = (*form)(nil)
 var _ mvc.View = (*inputgroup)(nil)
-var _ mvc.ViewWithValue = (*input)(nil)
-var _ mvc.ViewWithValue = (*textarea)(nil)
-var _ mvc.ViewWithValue = (*selectinput)(nil)
-var _ mvc.ViewWithValue = (*inputswitch)(nil)
+var _ mvc.View = (*input)(nil)
+var _ mvc.View = (*selectinput)(nil)
+var _ mvc.View = (*inputswitch)(nil)
 
 ///////////////////////////////////////////////////////////////////////////////
 // GLOBALS
@@ -58,7 +53,6 @@ const (
 	ViewForm          = "mvc-bs-form"
 	ViewInput         = "mvc-bs-input"
 	ViewInputGroup    = "mvc-bs-inputgroup"
-	ViewTextarea      = "mvc-bs-textarea"
 	ViewSelect        = "mvc-bs-select"
 	ViewRadioGroup    = "mvc-bs-radiogroup"
 	ViewCheckboxGroup = "mvc-bs-checkboxgroup"
@@ -80,7 +74,6 @@ func init() {
 	mvc.RegisterView(ViewForm, newFormFromElement)
 	mvc.RegisterView(ViewInput, newInputFromElement)
 	mvc.RegisterView(ViewInputGroup, newInputGroupFromElement)
-	mvc.RegisterView(ViewTextarea, newTextareaFromElement)
 	mvc.RegisterView(ViewSelect, newSelectFromElement)
 	mvc.RegisterView(ViewRadioGroup, newRadioGroupFromElement)
 	mvc.RegisterView(ViewCheckboxGroup, newCheckboxGroupFromElement)
@@ -117,8 +110,12 @@ func InputGroup(args ...any) *inputgroup {
 	return mvc.NewView(new(inputgroup), ViewInputGroup, "DIV", mvc.WithClass("input-group"), args).(*inputgroup)
 }
 
-func Textarea(name string, args ...any) *textarea {
-	return mvc.NewView(new(textarea), ViewTextarea, "TEXTAREA", mvc.WithAttr("id", name), mvc.WithClass("form-control"), args).(*textarea)
+func Textarea(name string, args ...any) *input {
+	// Make the base input view
+	view := mvc.NewViewExEx(new(input), ViewInput, templateInput).(*input)
+
+	// Replace the content body with an input element
+	return view.ReplaceSlot("", mvc.HTML("TEXTAREA", mvc.WithAttr("id", name), mvc.WithClass("form-control"), args)).(*input)
 }
 
 func Select(name string, args ...any) *selectinput {
@@ -178,13 +175,6 @@ func newInputGroupFromElement(element Element) mvc.View {
 	return mvc.NewViewWithElement(new(inputgroup), element)
 }
 
-func newTextareaFromElement(element Element) mvc.View {
-	if element.TagName() != "TEXTAREA" {
-		return nil
-	}
-	return mvc.NewViewWithElement(new(textarea), element)
-}
-
 func newSelectFromElement(element Element) mvc.View {
 	if element.TagName() != "SELECT" {
 		return nil
@@ -221,16 +211,12 @@ func (inputgroup *inputgroup) SetView(view mvc.View) {
 	inputgroup.View = view
 }
 
-func (textarea *textarea) SetView(view mvc.View) {
-	textarea.View = view
-}
-
 func (selectinput *selectinput) SetView(view mvc.View) {
 	selectinput.View = view
 }
 
 func (inputswitch *inputswitch) SetView(view mvc.View) {
-	inputswitch.ViewWithValue = view.(mvc.ViewWithValue)
+	inputswitch.View = view
 }
 
 func (input *input) Append(children ...any) mvc.View {
@@ -239,8 +225,8 @@ func (input *input) Append(children ...any) mvc.View {
 }
 
 func (input *input) Label(children ...any) mvc.View {
-	if elem := input.Slot(""); elem == nil || elem.TagName() != "INPUT" {
-		panic("Label: input body slot is not INPUT" + fmt.Sprintf("%v", input))
+	if elem := input.Slot(""); elem == nil || (elem.TagName() != "INPUT" && elem.TagName() != "TEXTAREA") {
+		panic("Label: input body slot is not INPUT or TEXTAREA" + fmt.Sprintf("%v", input))
 	} else {
 		input.ReplaceSlot("label", mvc.HTML("LABEL", mvc.WithClass("form-label"), mvc.WithAttr("for", elem.ID()), children))
 	}
@@ -307,12 +293,12 @@ func (inputswitch *inputswitch) Append(children ...any) mvc.View {
 	for i, child := range children {
 		switch child := child.(type) {
 		case string:
-			inputswitch.ViewWithValue.Append(switchFactory(i, &inputoption{
+			inputswitch.View.Append(switchFactory(i, &inputoption{
 				Name:  child,
 				Value: child,
 			}))
 		case *inputoption:
-			inputswitch.ViewWithValue.Append(switchFactory(i, child))
+			inputswitch.View.Append(switchFactory(i, child))
 		default:
 			panic("Append: unsupported child type for select input")
 		}
@@ -343,24 +329,16 @@ func (input *input) Value() string {
 	return input.Root().Value()
 }
 
-func (textarea *textarea) Value() string {
-	return textarea.Root().TextContent()
-}
-
 func (selectinput *selectinput) Value() string {
 	return selectinput.Root().Value()
 }
 
-func (input *input) SetValue(value string) mvc.ViewWithValue {
+func (input *input) Set(value string) mvc.View {
 	input.Root().SetValue(value)
 	return input
 }
 
-func (textarea *textarea) SetValue(value string) mvc.ViewWithValue {
-	panic("SetValue: not implemented for textarea") // TODO
-}
-
-func (selectinput *selectinput) SetValue(value string) mvc.ViewWithValue {
+func (selectinput *selectinput) Set(value string) mvc.View {
 	selectinput.Root().SetValue(value)
 	return selectinput
 }
@@ -371,9 +349,10 @@ func (selectinput *selectinput) SetValue(value string) mvc.ViewWithValue {
 func WithPlaceholder(placeholder string) mvc.Opt {
 	return func(o mvc.OptSet) error {
 		if o.Name() != "INPUT" && o.Name() != "TEXTAREA" {
-			if err := mvc.WithAttr("placeholder", placeholder)(o); err != nil {
-				return err
-			}
+			return ErrInternalAppError.Withf("WithPlaceholder: not supported for view type %q", o.Name())
+		}
+		if err := mvc.WithAttr("placeholder", placeholder)(o); err != nil {
+			return err
 		}
 		if err := mvc.WithAttr("aria-label", placeholder)(o); err != nil {
 			return err

@@ -65,7 +65,7 @@ func Example_Buttons_004() (mvc.View, string) {
 		bs.RangeInput("unread_emails", mvc.WithClass("m-3")),
 	).AddEventListener("input", func(e Event) {
 		if v := mvc.ViewFromEvent(e); v != nil {
-			if v, err := strconv.ParseUint(v.(mvc.ViewWithValue).Value(), 10, 64); err == nil {
+			if v, err := strconv.ParseUint(v.Value(), 10, 64); err == nil {
 				if v == 0 {
 					response.SetData("")
 				} else if v >= 99 {

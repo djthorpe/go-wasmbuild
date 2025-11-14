@@ -17,9 +17,6 @@ type View interface {
 	// Return the view name
 	Name() string
 
-	// Return the self container for the view
-	Self() View
-
 	// Return the view ID, if set
 	ID() string
 
@@ -27,9 +24,9 @@ type View interface {
 	Root() dom.Element
 
 	// Return a slot by name, or nil if not found
-	Slot(name string) dom.Node
+	Slot(name string) dom.Element
 
-	// Replace a slot with a view, text or element
+	// Replace a slot with a view or element
 	ReplaceSlot(name string, root any) View
 
 	// Set the view's content to the given text, Element or View children
@@ -53,6 +50,14 @@ type View interface {
 
 	// Add an event listener to the view's root element
 	AddEventListener(event string, handler func(dom.Event)) View
+
+	// Return the value of the view as a string. The contents of the
+	// string depends on the view type
+	Value() string
+
+	// Set the value of the view as a string. The interpretation of the
+	// string depends on the view type
+	Set(string) View
 }
 
 // ViewWithState represents a UI component with active and disabled states
@@ -97,18 +102,6 @@ type ViewWithSelf interface {
 	SetView(view View)
 }
 
-// ViewWithValue represents a UI component that can set and get a value, typically
-// for form elements
-type ViewWithValue interface {
-	View
-
-	// Return the value of the view as a string
-	Value() string
-
-	// Set the value of the view as a string
-	SetValue(string) ViewWithValue
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // PRIVATE TYPES
 
@@ -117,7 +110,7 @@ type view struct {
 	self View
 	name string
 	root dom.Element
-	slot map[string]dom.Node
+	slot map[string]dom.Element
 }
 
 // Ensure that view implements View interface
@@ -197,7 +190,7 @@ func NewViewExEx(self View, name string, template string, args ...any) View {
 	return v.self
 }
 
-func elementFromTemplate(template string) (dom.Element, map[string]dom.Node) {
+func elementFromTemplate(template string) (dom.Element, map[string]dom.Element) {
 	// Create the root element
 	root := elementFactory("div")
 	root.SetInnerHTML(template)
@@ -211,7 +204,7 @@ func elementFromTemplate(template string) (dom.Element, map[string]dom.Node) {
 
 	// Find the slots in the template
 	slots := root.GetElementsByTagName("slot")
-	slotmap := make(map[string]dom.Node, len(slots))
+	slotmap := make(map[string]dom.Element, len(slots))
 
 	// In the case there is no slot, use the root element as the default slot
 	if len(slots) == 0 {
@@ -251,7 +244,7 @@ func NewView(self View, name string, tagName string, args ...any) View {
 		self: self,
 		name: name,
 		root: elementFactory(tagName),
-		slot: make(map[string]dom.Node),
+		slot: make(map[string]dom.Element),
 	}
 
 	// Set the view in self
@@ -313,6 +306,8 @@ func NewViewWithElement(self View, element dom.Element, opts ...Opt) View {
 		}
 	}
 
+	// TODO: Set the view slots
+
 	// Return self
 	return v.self
 }
@@ -327,10 +322,6 @@ func (v *view) String() string {
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
 
-func (v *view) Self() View {
-	return v.self
-}
-
 func (v *view) Name() string {
 	return v.name
 }
@@ -343,8 +334,8 @@ func (v *view) Root() dom.Element {
 	return v.root
 }
 
-// Return a slot element by name
-func (v *view) Slot(name string) dom.Node {
+// Return a slot element by name. Returns nil if the slot does not exist
+func (v *view) Slot(name string) dom.Element {
 	if name == "" {
 		name = defaultSlot
 	}
@@ -365,9 +356,12 @@ func (v *view) ReplaceSlot(name string, root any) View {
 	}
 
 	// Replace the slot content
-	node := NodeFromAny(root)
-	slot.ReplaceWith(node)
-	v.slot[name] = node
+	if node := NodeFromAny(root); node.NodeType() != dom.ELEMENT_NODE {
+		panic(fmt.Sprintf("ReplaceSlot: unsupported node type %d", node.NodeType()))
+	} else {
+		slot.ReplaceWith(node)
+		v.slot[name] = node.(dom.Element)
+	}
 
 	// Return self for chaining
 	return v.self
@@ -438,9 +432,9 @@ func (v *view) Value() string {
 	return v.root.Value()
 }
 
-func (v *view) SetValue(value string) ViewWithValue {
+func (v *view) Set(value string) View {
 	v.root.SetValue(value)
-	return v.self.(ViewWithValue)
+	return v.self
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -488,7 +482,7 @@ func NodeFromAny(child any) dom.Node {
 	panic(dom.ErrInternalAppError.Withf("NodeFromAny: unsupported: %T", child))
 }
 
-func (v *view) replaceChildContent(target dom.Node, children ...any) View {
+func (v *view) replaceChildContent(target dom.Element, children ...any) View {
 	if target == nil {
 		return v.self
 	}
@@ -513,21 +507,4 @@ func viewFromElement(element dom.Element) (View, error) {
 	} else {
 		return view, nil
 	}
-}
-
-func findComponentPart(root dom.Element, part string) dom.Element {
-	if root == nil {
-		return nil
-	}
-	if root.HasAttribute(DataComponentAttrKey) && root.GetAttribute(DataComponentAttrKey) == part {
-		return root
-	}
-	for _, child := range root.ChildNodes() {
-		if el, ok := child.(dom.Element); ok {
-			if found := findComponentPart(el, part); found != nil {
-				return found
-			}
-		}
-	}
-	return nil
 }
