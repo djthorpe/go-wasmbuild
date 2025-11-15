@@ -89,29 +89,29 @@ func (deflist *deflist) SetView(view mvc.View) {
 	deflist.View = view
 }
 
-func (list *list) Content(children ...any) mvc.View {
-	// Wrap all children in divs with class "col"
-	for _, child := range children {
+func (list *list) Content(args ...any) mvc.View {
+	nodes := make([]any, 0, len(args))
+	for _, child := range args {
 		col := mvc.HTML("LI")
 		if list.Name() == ViewListGroup {
 			col.ClassList().Add("list-group-item")
 		}
 		col.AppendChild(mvc.NodeFromAny(child))
-		list.View.Append(col)
+		nodes = append(nodes, col)
 	}
-	return list
+	return list.View.Content(nodes...)
 }
 
-func (deflist *deflist) Content(children ...any) mvc.View {
-	// All children must be of type "inputoption"
-	for _, child := range children {
+func (deflist *deflist) Content(args ...any) mvc.View {
+	nodes := make([]any, 0, len(args))
+	for _, child := range args {
 		switch child := child.(type) {
 		case *inputoption:
-			deflist.View.Append(mvc.HTML("DT", mvc.WithClass("col-3"), mvc.WithInnerText(child.Name)))
-			deflist.View.Append(mvc.HTML("DD", mvc.WithClass("col-9"), mvc.WithInnerText(child.Value)))
+			nodes = append(nodes, mvc.HTML("DT", mvc.WithClass("col-3"), mvc.WithInnerText(child.Name)))
+			nodes = append(nodes, mvc.HTML("DD", mvc.WithClass("col-9"), mvc.WithInnerText(child.Value)))
 		default:
-			panic("DefinitionList.Append: child must be of type Option")
+			panic("Content[deflist]: child must be of type Option")
 		}
 	}
-	return deflist
+	return deflist.View.Content(nodes...)
 }

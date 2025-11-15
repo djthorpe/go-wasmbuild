@@ -146,9 +146,13 @@ func colorPrefixForView(name string) string {
 		return "progress-bar"
 	case ViewContainer:
 		return "bg"
+	case ViewOffcanvas:
+		return "bg"
 	case ViewTable, ViewTableRow:
 		return "table"
 	case ViewNavBar, ViewNavItem:
+		return "bg"
+	case ViewModal:
 		return "bg"
 	//case ViewAlert:
 	//	return "alert"

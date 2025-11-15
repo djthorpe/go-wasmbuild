@@ -232,25 +232,23 @@ func (input *input) Label(children ...any) mvc.View {
 	return input
 }
 
-func (inputgroup *inputgroup) Content(children ...any) mvc.View {
-	// Wrap all text children in span with class "input-group-text"
-	for _, child := range children {
+func (inputgroup *inputgroup) Content(args ...any) mvc.View {
+	nodes := make([]any, 0, len(args))
+	for _, child := range args {
 		switch child.(type) {
 		case string:
-			col := mvc.HTML("SPAN", mvc.WithClass("input-group-text"))
-			col.AppendChild(mvc.NodeFromAny(child))
-			inputgroup.View.Append(col)
+			// Wrap all text children in span with class "input-group-text"
+			nodes = append(nodes, mvc.HTML("SPAN", mvc.WithClass("input-group-text"), mvc.NodeFromAny(child)))
 		default:
-			inputgroup.View.Append(child)
+			nodes = append(nodes, child)
 		}
 	}
-	return inputgroup
+	return inputgroup.View.Content(nodes...)
 }
 
-func (inputswitch *inputswitch) Content(children ...any) mvc.View {
-	isInline := inputswitch.Root().ClassList().Contains(classInlineGroup)
-
+func (inputswitch *inputswitch) Content(args ...any) mvc.View {
 	// Factory function to create switch element
+	isInline := inputswitch.Root().ClassList().Contains(classInlineGroup)
 	switchFactory := func(index int, opt *inputoption) Element {
 		classes := []string{"form-check"}
 		if isInline {
@@ -288,40 +286,36 @@ func (inputswitch *inputswitch) Content(children ...any) mvc.View {
 		return div
 	}
 
-	// Wrap all text children in span with class "input-group-text"
-	for i, child := range children {
+	nodes := make([]any, 0, len(args))
+	for i, child := range args {
 		switch child := child.(type) {
 		case string:
-			inputswitch.View.Append(switchFactory(i, &inputoption{
+			nodes = append(nodes, switchFactory(i, &inputoption{
 				Name:  child,
 				Value: child,
 			}))
 		case *inputoption:
-			inputswitch.View.Append(switchFactory(i, child))
+			nodes = append(nodes, switchFactory(i, child))
 		default:
-			panic("Append: unsupported child type for select input")
+			panic("Content[inputswitch]: unsupported child type for select input")
 		}
 	}
-	return inputswitch
+	return inputswitch.View.Content(nodes...)
 }
 
-func (selectinput *selectinput) Append(children ...any) mvc.View {
-	// Wrap all text children in option elements
-	for _, child := range children {
+func (selectinput *selectinput) Content(args ...any) mvc.View {
+	nodes := make([]any, 0, len(args))
+	for _, child := range args {
 		switch child := child.(type) {
 		case string:
-			opt := mvc.HTML("OPTION")
-			opt.AppendChild(mvc.NodeFromAny(child))
-			selectinput.View.Append(opt)
+			nodes = append(nodes, mvc.HTML("OPTION", mvc.NodeFromAny(child)))
 		case *inputoption:
-			opt := mvc.HTML("OPTION", mvc.WithAttr("value", child.Value))
-			opt.AppendChild(mvc.NodeFromAny(child.Name))
-			selectinput.View.Append(opt)
+			nodes = append(nodes, mvc.HTML("OPTION", mvc.WithAttr("value", child.Value), mvc.NodeFromAny(child.Name)))
 		default:
 			panic("Append: unsupported child type for select input")
 		}
 	}
-	return selectinput
+	return selectinput.View.Content(nodes...)
 }
 
 func (input *input) Value() string {

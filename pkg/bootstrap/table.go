@@ -2,11 +2,9 @@ package bootstrap
 
 import (
 	// Packages
-
 	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
-
 	// Namespace imports
-	. "github.com/djthorpe/go-wasmbuild"
+	//. "github.com/djthorpe/go-wasmbuild"
 )
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -30,6 +28,7 @@ const (
 	ViewTableHead = "mvc-bs-tablehead"
 )
 
+/*
 func init() {
 	mvc.RegisterView(ViewTable, newTableFromElement)
 	mvc.RegisterView(ViewTableRow, newTableRowFromElement)
@@ -49,7 +48,6 @@ func Table(args ...any) *table {
 		mvc.WithClass("table"), args,
 	).(*table)
 }
-*/
 
 func TableRow(args ...any) *tablerow {
 	return tableRow(ViewTableRow, args...)
@@ -163,3 +161,4 @@ func WithoutRowHover() mvc.Opt {
 		return mvc.WithoutClass("table-hover")(o)
 	}
 }
+*/
