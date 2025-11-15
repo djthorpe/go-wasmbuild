@@ -1,10 +1,9 @@
 package bootstrap
 
 import (
-
-	// Packages
 	"slices"
 
+	// Packages
 	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
 
 	// Namespace imports
@@ -149,7 +148,7 @@ func colorPrefixForView(name string) string {
 		return "bg"
 	case ViewTable, ViewTableRow:
 		return "table"
-	case ViewNavBar:
+	case ViewNavBar, ViewNavItem:
 		return "bg"
 	//case ViewAlert:
 	//	return "alert"

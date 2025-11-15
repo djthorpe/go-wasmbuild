@@ -17,33 +17,53 @@ type View interface {
 	// Return the view name
 	Name() string
 
-	// Return the self container for the view
-	Self() View
-
 	// Return the view ID, if set
 	ID() string
 
 	// Return the view's root element
 	Root() dom.Element
 
-	// Replace a slot with a view, text or element
-	ReplaceSlot(name string, root any) View
+	// Return the view's parent view
+	Parent() View
 
-	// Append a view or element to the view's body, and set the body
-	Body(any) View
+	// Return a slot by name, or nil if not found
+	Slot(string) dom.Element
 
-	// Set the body's content to the given text, Element or View children
+	// Replace a named slot with a view or element
+	ReplaceSlot(string, any) View
+
+	// Set the view's content to the given text, Element or View children
 	// If no arguments are given, the content is cleared
-	Content(children ...any) View
+	Content(...any) View
 
-	// Append text, Element or View children at the bottom of the view body
-	Append(children ...any) View
+	// Append text, Element or View children at the bottom of the view content
+	Append(...any) View
+
+	// Set the view's label element. Panics if the view does not have a slot
+	// called "label"
+	Label(...any) View
+
+	// Set the view's header element. Panics if the view does not have a slot
+	// called "header"
+	Header(...any) View
+
+	// Set the view's footer element. Panics if the view does not have a slot
+	// called "footer"
+	Footer(...any) View
 
 	// Add an event listener to the view's root element
-	AddEventListener(event string, handler func(dom.Event)) View
+	AddEventListener(string, func(dom.Event)) View
 
-	// Set options on the view
-	Opts(opts ...Opt) View
+	// Return the value of the view as a string. The contents of the
+	// string depends on the view type
+	Value() string
+
+	// Set the value of the view as a string. The interpretation of the
+	// string depends on the view type
+	Set(string) View
+
+	// Apply class and attribute options to the view
+	Apply(...Opt) View
 }
 
 // ViewWithState represents a UI component with active and disabled states
@@ -68,32 +88,6 @@ type ViewWithGroupState interface {
 	Disabled() []dom.Element
 }
 
-// DEPRECATED: ViewWithCaption represents a UI component with a header and footer
-type ViewWithCaption interface {
-	ViewWithLabel
-}
-
-// ViewWithLabel represents a UI component with a label, which is positioned
-// as a child node of the root element, either prepending and appending
-type ViewWithLabel interface {
-	View
-
-	// Sets the label of the view and returns the view
-	Label(...any) ViewWithLabel
-	Caption(...any) ViewWithCaption
-}
-
-// ViewWithHeaderFooter represents a UI component with a header and footer
-type ViewWithHeaderFooter interface {
-	View
-
-	// Sets the header and returns the view
-	Header(...any) ViewWithHeaderFooter
-
-	// Returns the footer element
-	Footer(...any) ViewWithHeaderFooter
-}
-
 // ViewWithVisibility represents a UI component with the ability to show or hide itself
 type ViewWithVisibility interface {
 	View
@@ -114,31 +108,15 @@ type ViewWithSelf interface {
 	SetView(view View)
 }
 
-// ViewWithValue represents a UI component that can set and get a value, typically
-// for form elements
-type ViewWithValue interface {
-	View
-
-	// Return the value of the view as a string
-	Value() string
-
-	// Set the value of the view as a string
-	SetValue(string) ViewWithValue
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // PRIVATE TYPES
 
 // Implementation of View interface
 type view struct {
-	self   View
-	name   string
-	root   dom.Element
-	body   dom.Element
-	header dom.Element
-	footer dom.Element
-	label  dom.Element
-	slot   map[string]dom.Element
+	self View
+	name string
+	root dom.Element
+	slot map[string]dom.Element
 }
 
 // Ensure that view implements View interface
@@ -153,12 +131,9 @@ type ViewConstructorFunc func(dom.Element) View
 const (
 	// The attribute key which identifies an mvc component
 	DataComponentAttrKey = "data-mvc"
-	defaultSlot          = "default"
 
-	componentPartHeader = "header"
-	componentPartBody   = "body"
-	componentPartFooter = "footer"
-	componentPartLabel  = "label"
+	// The name of the default slot, when name atribute is missing
+	defaultSlot = "body"
 )
 
 var (
@@ -206,11 +181,7 @@ func NewViewExEx(self View, name string, template string, args ...any) View {
 
 	// Apply options to the view
 	opts, content := gatherOpts(args...)
-	if len(opts) > 0 {
-		if err := applyOpts(v.root, opts...); err != nil {
-			panic(err)
-		}
-	}
+	v.Apply(opts...)
 
 	// Set the content in the view
 	if len(content) > 0 {
@@ -266,33 +237,16 @@ func elementFromTemplate(template string) (dom.Element, map[string]dom.Element) 
 
 // Create a new empty view, applying any options to it
 func NewView(self View, name string, tagName string, args ...any) View {
-	return NewViewEx(self, name, tagName, nil, nil, nil, nil, args...)
-}
-
-// Create a new empty view with a header, footer and caption
-func NewViewEx(self View, name string, tagName string, header, body, footer, label dom.Element, args ...any) View {
 	if _, exists := views[name]; !exists {
 		panic(fmt.Sprintf("NewView: view not registered %q", name))
-	}
-	if isComponentPart(name) {
-		panic(fmt.Sprintf("NewView: view name %q is reserved", name))
-	}
-
-	// Ensure a dedicated body exists whenever structural parts are provided so that
-	// later content operations don't trample header, footer or label nodes.
-	if body == nil && (header != nil || footer != nil || label != nil) {
-		body = elementFactory("div")
 	}
 
 	// Create the view
 	v := &view{
-		self:   self,
-		name:   name,
-		root:   elementFactory(tagName),
-		header: header,
-		body:   body,
-		footer: footer,
-		label:  label,
+		self: self,
+		name: name,
+		root: elementFactory(tagName),
+		slot: make(map[string]dom.Element),
 	}
 
 	// Set the view in self
@@ -300,42 +254,6 @@ func NewViewEx(self View, name string, tagName string, header, body, footer, lab
 		panic(fmt.Sprintf("NewView: %v does not implement ViewWithSelf", name))
 	} else {
 		self_.SetView(v)
-	}
-
-	// Check header, footer, caption
-	if v.header != nil || v.footer != nil {
-		if _, ok := self.(ViewWithHeaderFooter); !ok {
-			panic(fmt.Sprintf("NewView: %v does not implement ViewWithHeaderFooter", name))
-		}
-	}
-	if v.label != nil {
-		if _, ok := self.(ViewWithLabel); !ok {
-			panic(fmt.Sprintf("NewView: %v does not implement ViewWithLabel", name))
-		}
-	}
-
-	// Set the header, body, footer and caption
-	if v.header != nil {
-		if v.header.IsConnected() {
-			panic("NewView: header element is already connected to the DOM")
-		}
-		markComponentPart(v.header, componentPartHeader)
-		v.root.AppendChild(v.header)
-	}
-	if v.body != nil {
-		v.body.SetAttribute(DataComponentAttrKey, componentPartBody)
-		v.root.AppendChild(v.body)
-	}
-	if v.footer != nil {
-		if v.footer.IsConnected() {
-			panic("NewView: footer element is already connected to the DOM")
-		}
-		markComponentPart(v.footer, componentPartFooter)
-		v.root.AppendChild(v.footer)
-	}
-	if v.label != nil {
-		v.label.SetAttribute(DataComponentAttrKey, componentPartLabel)
-		v.root.AppendChild(v.label)
 	}
 
 	// Set the component identifier
@@ -373,10 +291,7 @@ func NewViewWithElement(self View, element dom.Element, opts ...Opt) View {
 		root: element,
 	}
 	if v.name == "" {
-		panic("NewViewWithElement: element missing data-wasmbuild attribute")
-	}
-	if isComponentPart(v.name) {
-		panic(fmt.Sprintf("NewViewWithElement: element uses reserved component value %q", v.name))
+		panic("NewViewWithElement: element missing data-mvc attribute")
 	}
 
 	// Set the view in self
@@ -386,26 +301,14 @@ func NewViewWithElement(self View, element dom.Element, opts ...Opt) View {
 		self_.SetView(v)
 	}
 
-	// Discover structural elements from data attributes when present
-	v.header = findComponentPart(element, componentPartHeader)
-	if body := findComponentPart(element, componentPartBody); body != nil {
-		v.body = body
-	} else {
-		v.body = v.root
-	}
-	v.footer = findComponentPart(element, componentPartFooter)
-	v.label = findComponentPart(element, componentPartLabel)
-
-	if v.body == v.root && (v.header != nil || v.footer != nil || v.label != nil) {
-		panic("NewViewWithElement: element missing body component")
-	}
-
 	// Apply options to the view
 	if len(opts) > 0 {
 		if err := applyOpts(v.root, opts...); err != nil {
 			panic(err)
 		}
 	}
+
+	// TODO: Set the view slots
 
 	// Return self
 	return v.self
@@ -421,10 +324,6 @@ func (v *view) String() string {
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
 
-func (v *view) Self() View {
-	return v.self
-}
-
 func (v *view) Name() string {
 	return v.name
 }
@@ -435,6 +334,32 @@ func (v *view) ID() string {
 
 func (v *view) Root() dom.Element {
 	return v.root
+}
+
+func (v *view) Parent() View {
+	e := v.root
+	for {
+		// Work up the chain until a view is found
+		e = e.ParentElement()
+		if e == nil {
+			break
+		}
+		if view, err := viewFromElement(e); err != nil {
+			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+			break
+		} else if view != nil {
+			return view
+		}
+	}
+	return nil
+}
+
+// Return a slot element by name. Returns nil if the slot does not exist
+func (v *view) Slot(name string) dom.Element {
+	if name == "" {
+		name = defaultSlot
+	}
+	return v.slot[name]
 }
 
 // Replace a slot with a view, text or element
@@ -451,64 +376,20 @@ func (v *view) ReplaceSlot(name string, root any) View {
 	}
 
 	// Replace the slot content
-	slot.ReplaceWith(NodeFromAny(root))
+	if node := NodeFromAny(root); node.NodeType() != dom.ELEMENT_NODE {
+		panic(fmt.Sprintf("ReplaceSlot: unsupported node type %d", node.NodeType()))
+	} else {
+		slot.ReplaceWith(node)
+		v.slot[name] = node.(dom.Element)
+	}
 
 	// Return self for chaining
-	return v.self
-}
-
-func (v *view) Body(content any) View {
-	prevBody := v.body
-	node := NodeFromAny(content)
-	var newBody dom.Element
-	if element, ok := node.(dom.Element); ok {
-		newBody = element
-	} else if view, ok := node.(View); ok {
-		newBody = view.Root()
-	} else {
-		panic(fmt.Sprint("view.Body: invalid content type ", node.NodeType()))
-	}
-
-	if prevBody != nil && prevBody.Equals(newBody) {
-		return v.self
-	}
-
-	v.body = newBody
-
-	// Remove previous body attribute and detach from root if needed
-	if prevBody != nil && prevBody != v.root {
-		if prevBody.HasAttribute(DataComponentAttrKey) && isComponentPart(prevBody.GetAttribute(DataComponentAttrKey)) {
-			prevBody.RemoveAttribute(DataComponentAttrKey)
-		}
-		if parent := prevBody.ParentNode(); parent != nil && parent.Equals(v.root) {
-			v.root.RemoveChild(prevBody)
-		}
-	}
-
-	if v.body != v.root {
-		markComponentPart(v.body, componentPartBody)
-	}
-
-	// Attach the body in the correct position if not already attached
-	if v.body.ParentNode() == nil {
-		if v.footer != nil && v.footer.ParentNode() != nil && v.footer.ParentNode().Equals(v.root) {
-			v.root.InsertBefore(v.body, v.footer)
-		} else if v.label != nil && v.label.ParentNode() != nil && v.label.ParentNode().Equals(v.root) {
-			v.root.InsertBefore(v.body, v.label)
-		} else {
-			v.root.AppendChild(v.body)
-		}
-	}
-
 	return v.self
 }
 
 func (v *view) Content(children ...any) View {
 	target, exists := v.slot[defaultSlot]
 	if !exists {
-		target = v.body
-	}
-	if target == nil {
 		target = v.root
 	}
 
@@ -527,9 +408,6 @@ func (v *view) Content(children ...any) View {
 func (v *view) Append(children ...any) View {
 	target, exists := v.slot[defaultSlot]
 	if !exists {
-		target = v.body
-	}
-	if target == nil {
 		target = v.root
 	}
 	for _, child := range children {
@@ -538,63 +416,42 @@ func (v *view) Append(children ...any) View {
 	return v.self
 }
 
-func (v *view) Header(children ...any) ViewWithHeaderFooter {
-	viewWithHeader, ok := v.self.(ViewWithHeaderFooter)
-	if !ok {
-		panic(fmt.Sprintf("view.Header: view %T does not implement ViewWithHeaderFooter", v.self))
+// Apply class and attribute options to the view root element
+func (v *view) Apply(opts ...Opt) View {
+	if len(opts) > 0 {
+		if err := applyOpts(v.root, opts...); err != nil {
+			panic(err)
+		}
 	}
-
-	header := v.ensureHeaderElement()
-	v.replaceChildContent(header, children...)
-
-	return viewWithHeader
+	return v.self
 }
 
-func (v *view) Footer(children ...any) ViewWithHeaderFooter {
-	viewWithFooter, ok := v.self.(ViewWithHeaderFooter)
-	if !ok {
-		panic(fmt.Sprintf("view.Footer: view %T does not implement ViewWithHeaderFooter", v.self))
+func (v *view) Header(children ...any) View {
+	slot, exists := v.slot["header"]
+	if !exists {
+		panic("view.Header: view does not have a header slot")
 	}
-
-	footer := v.ensureFooterElement()
-	v.replaceChildContent(footer, children...)
-
-	return viewWithFooter
+	return v.replaceChildContent(slot, children...)
 }
 
-func (v *view) Caption(children ...any) ViewWithCaption {
-	return v.Label(children...)
-}
-
-func (v *view) Label(children ...any) ViewWithLabel {
-	viewWithLabel, ok := v.self.(ViewWithLabel)
-	if !ok {
-		panic(fmt.Sprintf("view.Label: view %T does not implement ViewWithLabel", v.self))
-	} else if v.label == nil || v.label.GetAttribute(DataComponentAttrKey) != componentPartLabel {
-		panic("view.Label: label element is missing")
+func (v *view) Footer(children ...any) View {
+	slot, exists := v.slot["footer"]
+	if !exists {
+		panic("view.Footer: view does not have a footer slot")
 	}
-
-	// If the existing label under the root is a placeholder, then replace it with the
-	// actual label
-	label := v.ensureLabelElement()
-	v.replaceChildContent(label, children...)
-
-	return viewWithLabel
+	return v.replaceChildContent(slot, children...)
 }
 
-func (v *view) LabelElement() dom.Element {
-	return v.label
+func (v *view) Label(children ...any) View {
+	slot, exists := v.slot["label"]
+	if !exists {
+		panic("view.Label: view does not have a label slot")
+	}
+	return v.replaceChildContent(slot, children...)
 }
 
 func (v *view) AddEventListener(event string, handler func(dom.Event)) View {
 	v.root.AddEventListener(event, handler)
-	return v.self
-}
-
-func (v *view) Opts(opts ...Opt) View {
-	if err := applyOpts(v.root, opts...); err != nil {
-		panic(err)
-	}
 	return v.self
 }
 
@@ -605,9 +462,9 @@ func (v *view) Value() string {
 	return v.root.Value()
 }
 
-func (v *view) SetValue(value string) ViewWithValue {
+func (v *view) Set(value string) View {
 	v.root.SetValue(value)
-	return v.self.(ViewWithValue)
+	return v.self
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -655,93 +512,15 @@ func NodeFromAny(child any) dom.Node {
 	panic(dom.ErrInternalAppError.Withf("NodeFromAny: unsupported: %T", child))
 }
 
-func (v *view) ensureBodyContainer() dom.Element {
-	if v.root == nil {
-		panic("view.ensureBodyContainer: missing root element")
-	}
-	if v.body == nil {
-		v.body = v.root
-	}
-	if v.body != v.root {
-		return v.body
-	}
-
-	body := elementFactory("div")
-	markComponentPart(body, componentPartBody)
-
-	for _, child := range v.root.ChildNodes() {
-		if elem, ok := child.(dom.Element); ok {
-			if elem.HasAttribute(DataComponentAttrKey) {
-				if part := elem.GetAttribute(DataComponentAttrKey); isComponentPart(part) && part != componentPartBody {
-					continue
-				}
-			}
-		}
-		body.AppendChild(child)
-	}
-
-	v.root.AppendChild(body)
-	v.body = body
-
-	return v.body
-}
-
-func (v *view) ensureHeaderElement() dom.Element {
-	if v.header != nil {
-		return v.header
-	}
-	body := v.ensureBodyContainer()
-	header := elementFactory("header")
-	markComponentPart(header, componentPartHeader)
-
-	if parent := body.ParentNode(); parent != nil && parent.Equals(v.root) {
-		v.root.InsertBefore(header, body)
-	} else {
-		v.root.AppendChild(header)
-	}
-
-	v.header = header
-	return v.header
-}
-
-func (v *view) ensureFooterElement() dom.Element {
-	if v.footer != nil {
-		return v.footer
-	}
-	v.ensureBodyContainer()
-	footer := elementFactory("footer")
-	markComponentPart(footer, componentPartFooter)
-
-	if v.label != nil && v.label.ParentNode() != nil && v.label.ParentNode().Equals(v.root) {
-		v.root.InsertBefore(footer, v.label)
-	} else {
-		v.root.AppendChild(footer)
-	}
-
-	v.footer = footer
-	return v.footer
-}
-
-func (v *view) ensureLabelElement() dom.Element {
-	if v.label != nil {
-		return v.label
-	}
-	v.ensureBodyContainer()
-	label := elementFactory("label")
-	markComponentPart(label, componentPartLabel)
-	v.root.AppendChild(label)
-	v.label = label
-	return v.label
-}
-
-func (v *view) replaceChildContent(target dom.Element, children ...any) {
+func (v *view) replaceChildContent(target dom.Element, children ...any) View {
 	if target == nil {
-		return
+		return v.self
 	}
 	target.SetInnerHTML("")
 	for _, child := range children {
 		target.AppendChild(NodeFromAny(child))
 	}
+	return v.self
 }
 
 func viewFromElement(element dom.Element) (View, error) {
@@ -749,9 +528,6 @@ func viewFromElement(element dom.Element) (View, error) {
 		return nil, nil
 	}
 	name := element.GetAttribute(DataComponentAttrKey)
-	if isComponentPart(name) {
-		return nil, nil
-	}
 	if constructor, exists := views[name]; !exists {
 		return nil, dom.ErrInternalAppError.Withf("viewFromElement: no constructor for view %q", name)
 	} else if constructor == nil {
@@ -760,47 +536,5 @@ func viewFromElement(element dom.Element) (View, error) {
 		return nil, dom.ErrInternalAppError.Withf("viewFromElement: constructor for view %q returned nil", name)
 	} else {
 		return view, nil
-	}
-}
-
-func markComponentPart(element dom.Element, part string) {
-	if element == nil {
-		return
-	}
-	if element.HasAttribute(DataComponentAttrKey) {
-		value := element.GetAttribute(DataComponentAttrKey)
-		if value == part {
-			return
-		}
-		if !isComponentPart(value) {
-			panic(fmt.Sprintf("markComponentPart: element already bound to component %q", value))
-		}
-	}
-	element.SetAttribute(DataComponentAttrKey, part)
-}
-
-func findComponentPart(root dom.Element, part string) dom.Element {
-	if root == nil {
-		return nil
-	}
-	if root.HasAttribute(DataComponentAttrKey) && root.GetAttribute(DataComponentAttrKey) == part {
-		return root
-	}
-	for _, child := range root.ChildNodes() {
-		if el, ok := child.(dom.Element); ok {
-			if found := findComponentPart(el, part); found != nil {
-				return found
-			}
-		}
-	}
-	return nil
-}
-
-func isComponentPart(value string) bool {
-	switch value {
-	case componentPartHeader, componentPartBody, componentPartFooter, componentPartLabel:
-		return true
-	default:
-		return false
 	}
 }

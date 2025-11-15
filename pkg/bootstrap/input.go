@@ -27,21 +27,12 @@ type inputgroup struct {
 	mvc.View
 }
 
-type textarea struct {
-	mvc.View
-}
-
-type rangeinput struct {
-	mvc.View
-}
-
 type selectinput struct {
 	mvc.View
 }
 
 type inputswitch struct {
-	mvc.ViewWithValue
-	inline bool
+	mvc.View
 }
 
 type inputoption struct {
@@ -51,12 +42,9 @@ type inputoption struct {
 
 var _ mvc.View = (*form)(nil)
 var _ mvc.View = (*inputgroup)(nil)
-var _ mvc.ViewWithValue = (*textarea)(nil)
-var _ mvc.ViewWithValue = (*rangeinput)(nil)
-var _ mvc.ViewWithValue = (*input)(nil)
-var _ mvc.ViewWithLabel = (*input)(nil)
-var _ mvc.ViewWithValue = (*selectinput)(nil)
-var _ mvc.ViewWithValue = (*inputswitch)(nil)
+var _ mvc.View = (*input)(nil)
+var _ mvc.View = (*selectinput)(nil)
+var _ mvc.View = (*inputswitch)(nil)
 
 ///////////////////////////////////////////////////////////////////////////////
 // GLOBALS
@@ -65,8 +53,6 @@ const (
 	ViewForm          = "mvc-bs-form"
 	ViewInput         = "mvc-bs-input"
 	ViewInputGroup    = "mvc-bs-inputgroup"
-	ViewTextarea      = "mvc-bs-textarea"
-	ViewRange         = "mvc-bs-range"
 	ViewSelect        = "mvc-bs-select"
 	ViewRadioGroup    = "mvc-bs-radiogroup"
 	ViewCheckboxGroup = "mvc-bs-checkboxgroup"
@@ -75,12 +61,19 @@ const (
 	classInlineGroup = "mvc-bs-inlinegroup"
 )
 
+const (
+	templateInput = `
+		<div>
+			<slot name="label"></slot>
+			<slot></slot>
+		</div>
+	`
+)
+
 func init() {
 	mvc.RegisterView(ViewForm, newFormFromElement)
 	mvc.RegisterView(ViewInput, newInputFromElement)
 	mvc.RegisterView(ViewInputGroup, newInputGroupFromElement)
-	mvc.RegisterView(ViewTextarea, newTextareaFromElement)
-	mvc.RegisterView(ViewRange, newRangeFromElement)
 	mvc.RegisterView(ViewSelect, newSelectFromElement)
 	mvc.RegisterView(ViewRadioGroup, newRadioGroupFromElement)
 	mvc.RegisterView(ViewCheckboxGroup, newCheckboxGroupFromElement)
@@ -94,28 +87,35 @@ func Form(name string, args ...any) *form {
 }
 
 func Input(name string, args ...any) *input {
-	label := mvc.HTML("LABEL", mvc.WithClass("form-label"), mvc.WithAttr("for", name))
-	return mvc.NewViewEx(new(input), ViewInput, "INPUT", nil, nil, nil, label, mvc.WithAttr("id", name), mvc.WithClass("form-control"), args).(*input)
+	// Make the base input view
+	view := mvc.NewViewExEx(new(input), ViewInput, templateInput).(*input)
+
+	// Replace the content body with an input element
+	return view.ReplaceSlot("", mvc.HTML("INPUT", mvc.WithAttr("id", name), mvc.WithClass("form-control"), args)).(*input)
 }
 
-func Password(name string, args ...any) *input {
+func PasswordInput(name string, args ...any) *input {
 	return Input(name, mvc.WithAttr("type", "password"), args)
 }
 
-func Number(name string, args ...any) *input {
+func NumberInput(name string, args ...any) *input {
 	return Input(name, mvc.WithAttr("type", "number"), args)
+}
+
+func RangeInput(name string, args ...any) *input {
+	return Input(name, mvc.WithAttr("type", "range"), mvc.WithClass("form-range"), mvc.WithoutClass("form-control"), args)
 }
 
 func InputGroup(args ...any) *inputgroup {
 	return mvc.NewView(new(inputgroup), ViewInputGroup, "DIV", mvc.WithClass("input-group"), args).(*inputgroup)
 }
 
-func Textarea(name string, args ...any) *textarea {
-	return mvc.NewView(new(textarea), ViewTextarea, "TEXTAREA", mvc.WithAttr("id", name), mvc.WithClass("form-control"), args).(*textarea)
-}
+func Textarea(name string, args ...any) *input {
+	// Make the base input view
+	view := mvc.NewViewExEx(new(input), ViewInput, templateInput).(*input)
 
-func Range(name string, args ...any) *rangeinput {
-	return mvc.NewView(new(rangeinput), ViewRange, "INPUT", mvc.WithAttr("id", name), mvc.WithAttr("type", "range"), mvc.WithClass("form-range"), args).(*rangeinput)
+	// Replace the content body with an input element
+	return view.ReplaceSlot("", mvc.HTML("TEXTAREA", mvc.WithAttr("id", name), mvc.WithClass("form-control"), args)).(*input)
 }
 
 func Select(name string, args ...any) *selectinput {
@@ -162,7 +162,7 @@ func newFormFromElement(element Element) mvc.View {
 }
 
 func newInputFromElement(element Element) mvc.View {
-	if element.TagName() != "INPUT" {
+	if element.TagName() != "DIV" {
 		return nil
 	}
 	return mvc.NewViewWithElement(new(input), element)
@@ -173,20 +173,6 @@ func newInputGroupFromElement(element Element) mvc.View {
 		return nil
 	}
 	return mvc.NewViewWithElement(new(inputgroup), element)
-}
-
-func newTextareaFromElement(element Element) mvc.View {
-	if element.TagName() != "TEXTAREA" {
-		return nil
-	}
-	return mvc.NewViewWithElement(new(textarea), element)
-}
-
-func newRangeFromElement(element Element) mvc.View {
-	if element.TagName() != "INPUT" {
-		return nil
-	}
-	return mvc.NewViewWithElement(new(rangeinput), element)
 }
 
 func newSelectFromElement(element Element) mvc.View {
@@ -225,20 +211,12 @@ func (inputgroup *inputgroup) SetView(view mvc.View) {
 	inputgroup.View = view
 }
 
-func (textarea *textarea) SetView(view mvc.View) {
-	textarea.View = view
-}
-
-func (rangeinput *rangeinput) SetView(view mvc.View) {
-	rangeinput.View = view
-}
-
 func (selectinput *selectinput) SetView(view mvc.View) {
 	selectinput.View = view
 }
 
 func (inputswitch *inputswitch) SetView(view mvc.View) {
-	inputswitch.ViewWithValue = view.(mvc.ViewWithValue)
+	inputswitch.View = view
 }
 
 func (input *input) Append(children ...any) mvc.View {
@@ -246,15 +224,12 @@ func (input *input) Append(children ...any) mvc.View {
 	panic("Append: not supported for input")
 }
 
-func (input *input) Caption(children ...any) mvc.ViewWithCaption {
-	// Deprecated: use Label instead
-	return input.Label(children...)
-}
-
-func (input *input) Label(children ...any) mvc.ViewWithLabel {
-	// TODO: Create the label element
-	input.View.(mvc.ViewWithLabel).Label(children...)
-	//<label for="inputPassword5" class="form-label">Password</label>
+func (input *input) Label(children ...any) mvc.View {
+	if elem := input.Slot(""); elem == nil || (elem.TagName() != "INPUT" && elem.TagName() != "TEXTAREA") {
+		panic("Label: input body slot is not INPUT or TEXTAREA" + fmt.Sprintf("%v", input))
+	} else {
+		input.ReplaceSlot("label", mvc.HTML("LABEL", mvc.WithClass("form-label"), mvc.WithAttr("for", elem.ID()), children))
+	}
 	return input
 }
 
@@ -318,12 +293,12 @@ func (inputswitch *inputswitch) Append(children ...any) mvc.View {
 	for i, child := range children {
 		switch child := child.(type) {
 		case string:
-			inputswitch.ViewWithValue.Append(switchFactory(i, &inputoption{
+			inputswitch.View.Append(switchFactory(i, &inputoption{
 				Name:  child,
 				Value: child,
 			}))
 		case *inputoption:
-			inputswitch.ViewWithValue.Append(switchFactory(i, child))
+			inputswitch.View.Append(switchFactory(i, child))
 		default:
 			panic("Append: unsupported child type for select input")
 		}
@@ -354,33 +329,16 @@ func (input *input) Value() string {
 	return input.Root().Value()
 }
 
-func (textarea *textarea) Value() string {
-	return textarea.Root().TextContent()
-}
-
-func (rangeinput *rangeinput) Value() string {
-	return rangeinput.Root().Value()
-}
-
 func (selectinput *selectinput) Value() string {
 	return selectinput.Root().Value()
 }
 
-func (input *input) SetValue(value string) mvc.ViewWithValue {
+func (input *input) Set(value string) mvc.View {
 	input.Root().SetValue(value)
 	return input
 }
 
-func (rangeinput *rangeinput) SetValue(value string) mvc.ViewWithValue {
-	rangeinput.Root().SetValue(value)
-	return rangeinput
-}
-
-func (textarea *textarea) SetValue(value string) mvc.ViewWithValue {
-	panic("SetValue: not implemented for textarea") // TODO
-}
-
-func (selectinput *selectinput) SetValue(value string) mvc.ViewWithValue {
+func (selectinput *selectinput) Set(value string) mvc.View {
 	selectinput.Root().SetValue(value)
 	return selectinput
 }
@@ -390,10 +348,11 @@ func (selectinput *selectinput) SetValue(value string) mvc.ViewWithValue {
 
 func WithPlaceholder(placeholder string) mvc.Opt {
 	return func(o mvc.OptSet) error {
-		if o.Name() == ViewInput || o.Name() == ViewTextarea {
-			if err := mvc.WithAttr("placeholder", placeholder)(o); err != nil {
-				return err
-			}
+		if o.Name() != "INPUT" && o.Name() != "TEXTAREA" {
+			return ErrInternalAppError.Withf("WithPlaceholder: not supported for view type %q", o.Name())
+		}
+		if err := mvc.WithAttr("placeholder", placeholder)(o); err != nil {
+			return err
 		}
 		if err := mvc.WithAttr("aria-label", placeholder)(o); err != nil {
 			return err
@@ -408,7 +367,7 @@ func WithRequired() mvc.Opt {
 
 func WithAutocomplete(tokens ...string) mvc.Opt {
 	return func(o mvc.OptSet) error {
-		if o.Name() != ViewInput && o.Name() != ViewTextarea {
+		if o.Name() != "INPUT" && o.Name() != "TEXTAREA" {
 			return ErrInternalAppError.Withf("WithAutocomplete: not supported for view type %q", o.Name())
 		}
 		if len(tokens) == 0 {
@@ -420,8 +379,8 @@ func WithAutocomplete(tokens ...string) mvc.Opt {
 
 func WithoutAutocomplete() mvc.Opt {
 	return func(o mvc.OptSet) error {
-		if o.Name() != ViewInput && o.Name() != ViewTextarea {
-			return ErrInternalAppError.Withf("WithAutocomplete: not supported for view type %q", o.Name())
+		if o.Name() != "INPUT" && o.Name() != "TEXTAREA" {
+			return ErrInternalAppError.Withf("WithoutAutocomplete: not supported for view type %q", o.Name())
 		}
 		return mvc.WithAttr("autocomplete", "off")(o)
 	}
@@ -429,7 +388,7 @@ func WithoutAutocomplete() mvc.Opt {
 
 func WithMinMax(min, max int) mvc.Opt {
 	return func(o mvc.OptSet) error {
-		if o.Name() != ViewInput && o.Name() != ViewRange && o.Name() != ViewProgress {
+		if o.Name() != "INPUT" && o.Name() != "TEXTAREA" && o.Name() != ViewProgress {
 			return ErrInternalAppError.Withf("WithMinMax: not supported for view type %q", o.Name())
 		}
 		if min > max {

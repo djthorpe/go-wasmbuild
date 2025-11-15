@@ -19,7 +19,7 @@ type progress struct {
 	striped bool
 }
 
-var _ mvc.ViewWithValue = (*progress)(nil)
+var _ mvc.View = (*progress)(nil)
 
 ///////////////////////////////////////////////////////////////////////////////
 // GLOBALS
@@ -63,7 +63,7 @@ func (progress *progress) Value() string {
 	return progress.Root().GetAttribute("aria-valuenow")
 }
 
-func (progress *progress) SetValue(value string) mvc.ViewWithValue {
+func (progress *progress) Set(value string) mvc.View {
 	min, max := progress.minMax()
 	val, err := strconv.ParseFloat(value, 64)
 	if err != nil {

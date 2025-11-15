@@ -2,7 +2,6 @@ package bootstrap
 
 import (
 	// Packages
-
 	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
 
 	// Namespace imports

@@ -7,12 +7,10 @@ import (
 )
 
 func ModalExamples() mvc.View {
-	return bs.Container(
-		DialogExamples(),
-		OffcanvasExamples(),
-	)
+	return bs.Container("TODO")
 }
 
+/*
 func DialogExamples() mvc.View {
 	return bs.Container().Content(
 		bs.Heading(3).Content("Modal Examples"),
@@ -53,3 +51,4 @@ func OffcanvasExamples() mvc.View {
 		),
 	)
 }
+*/
