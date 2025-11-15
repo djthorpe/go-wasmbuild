@@ -51,13 +51,3 @@ func newGridFromElement(element Element) mvc.View {
 func (grid *grid) SetView(view mvc.View) {
 	grid.View = view
 }
-
-func (grid *grid) Append(children ...any) mvc.View {
-	// Wrap all children in divs with class "col"
-	for _, child := range children {
-		col := mvc.HTML("DIV", mvc.WithClass("col"))
-		col.AppendChild(mvc.NodeFromAny(child))
-		grid.View.Append(col)
-	}
-	return grid
-}

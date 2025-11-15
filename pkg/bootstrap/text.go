@@ -24,6 +24,15 @@ const (
 	ViewText = "mvc-bs-text"
 )
 
+const (
+	templateBlockquote = `
+	<figure>
+		<blockquote class="blockquote"><slot></slot></blockquote>
+		<figcaption class="blockquote-footer"><slot name="label"></slot></figcaption>
+	</figure>
+	`
+)
+
 var (
 	textTagNames = []string{
 		"P",
@@ -73,7 +82,7 @@ func Em(args ...any) *text {
 }
 
 func Blockquote(args ...any) *text {
-	return mvc.NewView(new(text), ViewText, "BLOCKQUOTE", mvc.WithClass("blockquote"), args).(*text)
+	return mvc.NewViewExEx(new(text), ViewText, templateBlockquote, args).(*text)
 }
 
 func Code(args ...any) *text {

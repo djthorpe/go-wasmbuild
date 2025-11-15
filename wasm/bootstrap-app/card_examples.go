@@ -67,6 +67,7 @@ func Example_Cards_004() (mvc.View, string) {
 	return bs.Grid(
 		bs.Card(
 			"Some quick example text to build on the card title and make up the bulk of the card’s content.",
+			mvc.WithStyle("width: 15rem;"),
 		).Label(
 			bs.Image("favicon.png"),
 		),

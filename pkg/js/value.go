@@ -66,6 +66,11 @@ func NewMap() Value {
 	}
 }
 
+// GetProto returns js.Undefined() for the non-wasm build.
+func GetProto(path string) Value {
+	return Undefined()
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
 

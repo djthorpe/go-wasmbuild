@@ -120,21 +120,6 @@ func (b *button) Label(children ...any) mvc.View {
 	return b
 }
 
-func (b *button) Append(children ...any) mvc.View {
-	// Close buttons cannot have children
-	if b.Root().ClassList().Contains("btn-close") {
-		panic("Append: not supported for close button")
-	}
-	// Call superclass
-	return b.View.Append(children...)
-}
-
-func (b *buttongroup) Append(children ...any) mvc.View {
-	// TODO: Button groups can only include buttons
-	// Call superclass
-	return b.View.Append(children...)
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // OPTIONS
 
@@ -146,45 +131,3 @@ func WithSubmit() mvc.Opt {
 		return mvc.WithAttr("type", "submit")(o)
 	}
 }
-
-/*
-// Return true if button is disabled
-func (b *button) Disabled() bool {
-	return b.Root().HasAttribute("disabled")
-}
-
-// Return true if button is active
-func (b *button) Active() bool {
-	return b.Root().ClassList().Contains("active")
-}
-
-// Return elements which are active in the button group
-func (b *buttongroup) Active() []Element {
-	var elements []Element
-
-	// Find active elements
-	child := b.Root().FirstElementChild()
-	for child != nil {
-		if child.ClassList().Contains("active") {
-			elements = append(elements, child)
-		}
-		child = child.NextElementSibling()
-	}
-	return elements
-}
-
-// Return elements which are disabled in the button group
-func (b *buttongroup) Disabled() []Element {
-	var elements []Element
-
-	// Find disabled elements
-	child := b.Root().FirstElementChild()
-	for child != nil {
-		if child.HasAttribute("disabled") {
-			elements = append(elements, child)
-		}
-		child = child.NextElementSibling()
-	}
-	return elements
-}
-*/

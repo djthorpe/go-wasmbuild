@@ -17,7 +17,7 @@ func IconExamples() mvc.View {
 }
 
 func Example_Icon_001() (mvc.View, string) {
-	return bs.Grid().Append(
+	return bs.Container(
 		bs.Icon("alarm", mvc.WithClass("fs-1")),
 		bs.Icon("award", mvc.WithClass("fs-1")),
 		bs.Icon("bell", mvc.WithClass("fs-1")),
@@ -27,7 +27,7 @@ func Example_Icon_001() (mvc.View, string) {
 }
 
 func Example_Icon_002() (mvc.View, string) {
-	return bs.Grid().Append(
+	return bs.Container(
 		bs.Icon("heart-fill", bs.WithColor(bs.Danger), mvc.WithClass("fs-1")),
 		bs.Icon("sun-fill", bs.WithColor(bs.Warning), mvc.WithClass("fs-1")),
 		bs.Icon("moon-stars", bs.WithColor(bs.Primary), mvc.WithClass("fs-1")),
@@ -44,7 +44,7 @@ func Example_Icon_003() (mvc.View, string) {
 		}
 		return append(base, opts...)
 	}
-	return bs.Grid().Append(
+	return bs.Container(
 		bs.Button("Share ", bs.Icon("share"), withButtonClasses(bs.WithColor(bs.Primary))),
 		bs.OutlineButton("Download ", bs.Icon("cloud-arrow-down"), withButtonClasses(bs.WithColor(bs.Success))),
 		bs.Button("Next ", bs.Icon("arrow-right"), withButtonClasses(bs.WithColor(bs.Success))),

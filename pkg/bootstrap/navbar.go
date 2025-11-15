@@ -195,6 +195,8 @@ func (navbar *navbar) Content(children ...any) mvc.View {
 			items = append(items, child)
 		case *navdropdown:
 			items = append(items, child)
+		case *form:
+			items = append(items, child)
 		default:
 			panic(fmt.Sprintf("Content[navbar]: invalid child type: %T", child))
 		}
