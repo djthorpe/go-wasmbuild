@@ -106,6 +106,10 @@ func RangeInput(name string, args ...any) *input {
 	return Input(name, mvc.WithAttr("type", "range"), mvc.WithClass("form-range"), mvc.WithoutClass("form-control"), args)
 }
 
+func SearchInput(name string, args ...any) *input {
+	return Input(name, mvc.WithAttr("type", "search"), mvc.WithClass("form-control"), args)
+}
+
 func InputGroup(args ...any) *inputgroup {
 	return mvc.NewView(new(inputgroup), ViewInputGroup, "DIV", mvc.WithClass("input-group"), args).(*inputgroup)
 }
@@ -219,11 +223,6 @@ func (inputswitch *inputswitch) SetView(view mvc.View) {
 	inputswitch.View = view
 }
 
-func (input *input) Append(children ...any) mvc.View {
-	// TODO: This should be the input "value" and should only accept text
-	panic("Append: not supported for input")
-}
-
 func (input *input) Label(children ...any) mvc.View {
 	if elem := input.Slot(""); elem == nil || (elem.TagName() != "INPUT" && elem.TagName() != "TEXTAREA") {
 		panic("Label: input body slot is not INPUT or TEXTAREA" + fmt.Sprintf("%v", input))
@@ -233,7 +232,7 @@ func (input *input) Label(children ...any) mvc.View {
 	return input
 }
 
-func (inputgroup *inputgroup) Append(children ...any) mvc.View {
+func (inputgroup *inputgroup) Content(children ...any) mvc.View {
 	// Wrap all text children in span with class "input-group-text"
 	for _, child := range children {
 		switch child.(type) {
@@ -248,7 +247,7 @@ func (inputgroup *inputgroup) Append(children ...any) mvc.View {
 	return inputgroup
 }
 
-func (inputswitch *inputswitch) Append(children ...any) mvc.View {
+func (inputswitch *inputswitch) Content(children ...any) mvc.View {
 	isInline := inputswitch.Root().ClassList().Contains(classInlineGroup)
 
 	// Factory function to create switch element

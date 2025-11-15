@@ -202,6 +202,8 @@ func positionPrefixForView(name string, position Position) string {
 		} else {
 			return "fixed-"
 		}
+	case ViewText:
+		return "text-"
 	default:
 		return ""
 	}
@@ -222,6 +224,12 @@ func allPositionClassNamesForView(name string) []string {
 			Bottom.className("fixed-"),
 			Top.className("sticky-"),
 			Bottom.className("sticky-"),
+		}
+	case ViewText:
+		return []string{
+			Start.className("text-"),
+			Center.className("text-"),
+			End.className("text-"),
 		}
 	default:
 		return nil

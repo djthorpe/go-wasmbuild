@@ -3,7 +3,7 @@
 package js
 
 import (
-	"fmt"
+	"strings"
 	"syscall/js"
 )
 
@@ -61,6 +61,19 @@ func NewFunc(fn func(this Value, args []Value) any) Func {
 	return js.FuncOf(fn)
 }
 
+// GetProto returns the prototype for a given constructor path (e.g., "bootstrap.Offcanvas")
+func GetProto(path string) Value {
+	parts := strings.Split(path, ".")
+	proto := js.Global()
+	for _, part := range parts {
+		proto = proto.Get(part)
+		if proto.IsUndefined() || proto.IsNull() {
+			return js.Undefined()
+		}
+	}
+	return proto
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
 
@@ -74,7 +87,7 @@ func TypeOf(v Value) Proto {
 	for {
 		proto = ObjectProto.Call("getPrototypeOf", proto)
 		if proto.IsNull() || proto.IsUndefined() {
-			panic(fmt.Sprint("Unknown constructor"))
+			panic("Unknown constructor")
 		}
 
 		// Check if this prototype matches any known types

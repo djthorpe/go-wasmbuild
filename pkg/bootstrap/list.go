@@ -89,7 +89,7 @@ func (deflist *deflist) SetView(view mvc.View) {
 	deflist.View = view
 }
 
-func (list *list) Append(children ...any) mvc.View {
+func (list *list) Content(children ...any) mvc.View {
 	// Wrap all children in divs with class "col"
 	for _, child := range children {
 		col := mvc.HTML("LI")
@@ -102,7 +102,7 @@ func (list *list) Append(children ...any) mvc.View {
 	return list
 }
 
-func (deflist *deflist) Append(children ...any) mvc.View {
+func (deflist *deflist) Content(children ...any) mvc.View {
 	// All children must be of type "inputoption"
 	for _, child := range children {
 		switch child := child.(type) {

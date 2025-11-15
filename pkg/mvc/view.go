@@ -36,9 +36,6 @@ type View interface {
 	// If no arguments are given, the content is cleared
 	Content(...any) View
 
-	// Append text, Element or View children at the bottom of the view content
-	Append(...any) View
-
 	// Set the view's label element. Panics if the view does not have a slot
 	// called "label"
 	Label(...any) View
@@ -269,7 +266,7 @@ func NewView(self View, name string, tagName string, args ...any) View {
 
 	// Add content to the component
 	if len(content) > 0 {
-		v.self.Append(content...)
+		v.self.Content(content...)
 	}
 
 	// Return the view
@@ -387,35 +384,6 @@ func (v *view) ReplaceSlot(name string, root any) View {
 	return v.self
 }
 
-func (v *view) Content(children ...any) View {
-	target, exists := v.slot[defaultSlot]
-	if !exists {
-		target = v.root
-	}
-
-	// Clear existing content before appending new children
-	target.SetInnerHTML("")
-	if len(children) == 0 {
-		return v
-	}
-
-	// Append each child
-	return v.self.Append(children...)
-}
-
-// Append appends text, Element or View children at the bottom of the view body
-// and returns the view for chaining
-func (v *view) Append(children ...any) View {
-	target, exists := v.slot[defaultSlot]
-	if !exists {
-		target = v.root
-	}
-	for _, child := range children {
-		target.AppendChild(NodeFromAny(child))
-	}
-	return v.self
-}
-
 // Apply class and attribute options to the view root element
 func (v *view) Apply(opts ...Opt) View {
 	if len(opts) > 0 {
@@ -424,6 +392,15 @@ func (v *view) Apply(opts ...Opt) View {
 		}
 	}
 	return v.self
+}
+
+// Set content of the default slot
+func (v *view) Content(children ...any) View {
+	target, exists := v.slot[defaultSlot]
+	if !exists {
+		target = v.root
+	}
+	return v.replaceChildContent(target, children...)
 }
 
 func (v *view) Header(children ...any) View {
