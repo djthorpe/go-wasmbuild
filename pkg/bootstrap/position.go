@@ -26,6 +26,7 @@ const (
 	End
 	Center
 	Middle
+	Sticky
 	None Position = 0
 )
 
@@ -41,6 +42,9 @@ const (
 
 	// All Offcanvas positions
 	OffcanvasAll = Start | End | Top | Bottom
+
+	// All Navbar positions
+	NavbarAll = Top | Bottom
 )
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -81,7 +85,7 @@ func WithFlex(position Position) mvc.Opt {
 
 func WithPosition(position Position) mvc.Opt {
 	return func(o mvc.OptSet) error {
-		prefix := positionPrefixForView(o.Name())
+		prefix := positionPrefixForView(o.Name(), position)
 		if prefix == "" {
 			return ErrInternalAppError.Withf("WithPosition: unsupported view %q", o.Name())
 		}
@@ -92,12 +96,16 @@ func WithPosition(position Position) mvc.Opt {
 			return err
 		}
 
+		// If no position, return
+		if position == None {
+			return nil
+		}
+
 		// Add class for this position
 		className := position.className(prefix)
 		if !slices.Contains(classNames, className) {
 			return ErrInternalAppError.Withf("WithPosition: invalid position %d for view %q", position, o.Name())
 		}
-
 		return mvc.WithClass(className)(o)
 	}
 }
@@ -152,37 +160,14 @@ func WithoutBorder() mvc.Opt {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// PRIVATE FUNCTIONS
+// PUBLIC METHODS
 
-func borderPrefix() string {
-	return "border"
-}
-
-func positionPrefixForView(name string) string {
-	switch name {
-	case ViewOffcanvas:
-		return "offcanvas-"
-	default:
-		return ""
-	}
-}
-
-func allPositionClassNamesForView(name string) []string {
-	switch name {
-	case ViewOffcanvas:
-		return []string{
-			Top.className("offcanvas-"),
-			Bottom.className("offcanvas-"),
-			Start.className("offcanvas-"),
-			End.className("offcanvas-"),
-		}
-	default:
-		return nil
-	}
+func (position Position) Is(flag Position) bool {
+	return position&flag == flag
 }
 
 func (position Position) className(prefix string) string {
-	switch position {
+	switch position & (Top | Bottom | Start | End | Center | Middle) {
 	case Top:
 		return prefix + "top"
 	case Bottom:
@@ -197,5 +182,48 @@ func (position Position) className(prefix string) string {
 		return prefix + "middle"
 	default:
 		return ""
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// PRIVATE METHODS
+
+func borderPrefix() string {
+	return "border"
+}
+
+func positionPrefixForView(name string, position Position) string {
+	switch name {
+	case ViewOffcanvas:
+		return "offcanvas-"
+	case ViewNavBar:
+		if position.Is(Sticky) {
+			return "sticky-"
+		} else {
+			return "fixed-"
+		}
+	default:
+		return ""
+	}
+}
+
+func allPositionClassNamesForView(name string) []string {
+	switch name {
+	case ViewOffcanvas:
+		return []string{
+			Top.className("offcanvas-"),
+			Bottom.className("offcanvas-"),
+			Start.className("offcanvas-"),
+			End.className("offcanvas-"),
+		}
+	case ViewNavBar:
+		return []string{
+			Top.className("fixed-"),
+			Bottom.className("fixed-"),
+			Top.className("sticky-"),
+			Bottom.className("sticky-"),
+		}
+	default:
+		return nil
 	}
 }

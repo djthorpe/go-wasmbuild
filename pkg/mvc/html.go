@@ -1,8 +1,17 @@
 package mvc
 
 import (
+	"regexp"
+
 	// Packages
 	dom "github.com/djthorpe/go-wasmbuild"
+)
+
+///////////////////////////////////////////////////////////////////////////////
+// GLOBALS
+
+var (
+	reTagName = regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9:_-]*$`)
 )
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -10,7 +19,16 @@ import (
 
 // HTML returns an element with the given tag name and class/attribute options
 func HTML(tagName string, args ...any) dom.Element {
-	e := elementFactory(tagName)
+	var e dom.Element
+	if reTagName.MatchString(tagName) {
+		e = elementFactory(tagName)
+	} else {
+		e = elementFactory("DIV")
+		e.SetInnerHTML(tagName)
+		if e = e.FirstElementChild(); e == nil {
+			panic("HTML: invalid tag name" + tagName)
+		}
+	}
 
 	// Separate options and content
 	opts, content := gatherOpts(args...)

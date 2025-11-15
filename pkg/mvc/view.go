@@ -23,33 +23,36 @@ type View interface {
 	// Return the view's root element
 	Root() dom.Element
 
-	// Return a slot by name, or nil if not found
-	Slot(name string) dom.Element
+	// Return the view's parent view
+	Parent() View
 
-	// Replace a slot with a view or element
-	ReplaceSlot(name string, root any) View
+	// Return a slot by name, or nil if not found
+	Slot(string) dom.Element
+
+	// Replace a named slot with a view or element
+	ReplaceSlot(string, any) View
 
 	// Set the view's content to the given text, Element or View children
 	// If no arguments are given, the content is cleared
-	Content(children ...any) View
+	Content(...any) View
 
 	// Append text, Element or View children at the bottom of the view content
-	Append(children ...any) View
+	Append(...any) View
 
 	// Set the view's label element. Panics if the view does not have a slot
 	// called "label"
-	Label(children ...any) View
+	Label(...any) View
 
 	// Set the view's header element. Panics if the view does not have a slot
 	// called "header"
-	Header(children ...any) View
+	Header(...any) View
 
 	// Set the view's footer element. Panics if the view does not have a slot
 	// called "footer"
-	Footer(children ...any) View
+	Footer(...any) View
 
 	// Add an event listener to the view's root element
-	AddEventListener(event string, handler func(dom.Event)) View
+	AddEventListener(string, func(dom.Event)) View
 
 	// Return the value of the view as a string. The contents of the
 	// string depends on the view type
@@ -58,6 +61,9 @@ type View interface {
 	// Set the value of the view as a string. The interpretation of the
 	// string depends on the view type
 	Set(string) View
+
+	// Apply class and attribute options to the view
+	Apply(...Opt) View
 }
 
 // ViewWithState represents a UI component with active and disabled states
@@ -175,11 +181,7 @@ func NewViewExEx(self View, name string, template string, args ...any) View {
 
 	// Apply options to the view
 	opts, content := gatherOpts(args...)
-	if len(opts) > 0 {
-		if err := applyOpts(v.root, opts...); err != nil {
-			panic(err)
-		}
-	}
+	v.Apply(opts...)
 
 	// Set the content in the view
 	if len(content) > 0 {
@@ -334,6 +336,24 @@ func (v *view) Root() dom.Element {
 	return v.root
 }
 
+func (v *view) Parent() View {
+	e := v.root
+	for {
+		// Work up the chain until a view is found
+		e = e.ParentElement()
+		if e == nil {
+			break
+		}
+		if view, err := viewFromElement(e); err != nil {
+			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+			break
+		} else if view != nil {
+			return view
+		}
+	}
+	return nil
+}
+
 // Return a slot element by name. Returns nil if the slot does not exist
 func (v *view) Slot(name string) dom.Element {
 	if name == "" {
@@ -392,6 +412,16 @@ func (v *view) Append(children ...any) View {
 	}
 	for _, child := range children {
 		target.AppendChild(NodeFromAny(child))
+	}
+	return v.self
+}
+
+// Apply class and attribute options to the view root element
+func (v *view) Apply(opts ...Opt) View {
+	if len(opts) > 0 {
+		if err := applyOpts(v.root, opts...); err != nil {
+			panic(err)
+		}
 	}
 	return v.self
 }

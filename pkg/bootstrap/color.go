@@ -148,7 +148,7 @@ func colorPrefixForView(name string) string {
 		return "bg"
 	case ViewTable, ViewTableRow:
 		return "table"
-	case ViewNavBar:
+	case ViewNavBar, ViewNavItem:
 		return "bg"
 	//case ViewAlert:
 	//	return "alert"

@@ -1,18 +1,16 @@
 package main
 
 import (
-	"fmt"
-
 	// Packages
 	bs "github.com/djthorpe/go-wasmbuild/pkg/bootstrap"
 	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
-
-	// Namespace imports
-	. "github.com/djthorpe/go-wasmbuild"
 )
 
 func TableExamples() mvc.View {
-	return bs.Container(
+	return bs.Container("TODO")
+}
+
+/*
 		bs.Table(
 			bs.TableRow("Jan", "$100.00"),
 			bs.TableRow("Feb", "$200.00"),
@@ -71,3 +69,4 @@ func TableExamples() mvc.View {
 		}),
 	)
 }
+*/

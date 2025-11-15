@@ -110,6 +110,9 @@ func (card *card) Label(children ...any) mvc.View {
 	case mvc.View:
 		child.Root().ClassList().Add("card-img-top")
 		return card.ReplaceSlot("label", child)
+	case Element:
+		child.ClassList().Add("card-img-top")
+		return card.ReplaceSlot("label", child)
 	default:
 		panic(fmt.Sprintf("card.Label: invalid child type %T", child))
 	}

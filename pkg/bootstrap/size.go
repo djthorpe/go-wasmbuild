@@ -1,6 +1,7 @@
 package bootstrap
 
 import (
+	"fmt"
 	"slices"
 
 	// Packages
@@ -92,8 +93,8 @@ func (size Size) allClassNames(name string) []string {
 	// Create class names
 	classNames := make([]string, 0, 10)
 
-	// For containers, include the base class since it gets replaced by size variants
-	if name == ViewContainer {
+	// For containers and navbars, include the base class since it gets replaced by size variants
+	if name == ViewContainer || name == ViewNavBar {
 		classNames = append(classNames, prefix)
 	}
 
@@ -101,6 +102,7 @@ func (size Size) allClassNames(name string) []string {
 	for _, s := range allSizesForView(name) {
 		classNames = append(classNames, s.className(prefix))
 	}
+
 	return classNames
 }
 
@@ -116,8 +118,8 @@ func sizePrefixForView(name string) string {
 		return "form-control"
 	case ViewTable:
 		return "table"
-	//	case ViewNavbar:
-	//		return "navbar-expand"
+	case ViewNavBar:
+		return "navbar-expand"
 	default:
 		return ""
 	}
@@ -131,11 +133,8 @@ func allSizesForView(name string) []Size {
 		return allInputSizes
 	}
 	if name == ViewTable {
-		return allTableSizes
+		fmt.Println("allTableSizes:", allTableSizes)
+		return append(allTableSizes, "")
 	}
-	//if name == ViewNavbar {
-	// Include SizeDefault for navbar
-	//	return append([]Size{SizeDefault}, allSizes...)
-	//}
 	return allSizes
 }
