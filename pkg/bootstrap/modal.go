@@ -26,6 +26,20 @@ const (
 	ViewModal = "mvc-bs-modal"
 )
 
+const (
+	templateModal = `
+		<div class="modal fade" tabindex="-1">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<slot name="header"></slot>
+					<slot></slot>
+					<slot name="footer"></slot>
+				</div>
+			</div>
+		</div>
+	`
+)
+
 func init() {
 	mvc.RegisterView(ViewModal, newModalFromElement)
 }
@@ -34,25 +48,12 @@ func init() {
 // LIFECYCLE
 
 func Modal(id string, args ...any) *modal {
-	// TODO:
-	// <div class="modal fase">
-	//  <div class="modal-dialog">
-	//  <div class="modal-content">
-	//    <div class="modal-header">...</div>
-	//    <div class="modal-body">...</div>
-	//    <div class="modal-footer">...</div>
-	//  </div>
-	//  </div>
-	// </div>
-	header := mvc.HTML("DIV", mvc.WithClass("modal-header"))
-	body := mvc.HTML("DIV", mvc.WithClass("modal-dialog"))
-	footer := mvc.HTML("DIV", mvc.WithClass("modal-footer"))
-	return mvc.NewViewEx(
-		new(modal), ViewModal, "DIV",
-		header, body, footer, nil,
-		mvc.WithAttr("id", id), mvc.WithClass("modal", "fade"), mvc.WithAttr("tabindex", "-1"),
-		args,
-	).(*modal)
+	return mvc.NewViewExEx(new(modal), ViewModal, templateModal, mvc.WithAttr("id", id), mvc.WithClass("modal-dialog-scrollable"), args).(*modal)
+}
+
+func StickyModal(id string, args ...any) *modal {
+	// When modal is set to sticky. modal will not close when clicking outside of it.
+	return Modal(id, mvc.WithAttr("data-bs-backdrop", "static"), mvc.WithAttr("data-bs-keyboard", "false"), args)
 }
 
 func newModalFromElement(element Element) mvc.View {
@@ -69,6 +70,21 @@ func newModalFromElement(element Element) mvc.View {
 func (modal *modal) SetView(view mvc.View) {
 	modal.View = view
 }
+
+func (modal *modal) Header(children ...any) mvc.View {
+	return modal.View.ReplaceSlot("header", mvc.HTML("DIV", mvc.WithClass("modal-header"), children))
+}
+
+func (modal *modal) Footer(children ...any) mvc.View {
+	return modal.View.ReplaceSlot("footer", mvc.HTML("DIV", mvc.WithClass("modal-footer"), children))
+}
+
+func (modal *modal) Content(children ...any) mvc.View {
+	return modal.View.ReplaceSlot("", mvc.HTML("DIV", mvc.WithClass("modal-body"), children))
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// OPTIONS
 
 func WithModal(id string) mvc.Opt {
 	return func(opts mvc.OptSet) error {

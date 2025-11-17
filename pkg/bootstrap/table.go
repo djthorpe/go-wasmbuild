@@ -2,11 +2,8 @@ package bootstrap
 
 import (
 	// Packages
-
+	dom "github.com/djthorpe/go-wasmbuild"
 	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
-
-	// Namespace imports
-	. "github.com/djthorpe/go-wasmbuild"
 )
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -24,52 +21,44 @@ type tablerow struct {
 // GLOBALS
 
 const (
-	ViewTable     = "mvc-bs-table"
-	ViewTableRow  = "mvc-bs-tablerow"
-	ViewTableFoot = "mvc-bs-tablefoot"
-	ViewTableHead = "mvc-bs-tablehead"
+	ViewTable    = "mvc-bs-table"
+	ViewTableRow = "mvc-bs-tablerow"
+)
+
+const (
+	templateTable = `
+		<table class="table">
+			<thead><tr data-slot="header"></tr></thead>
+			<tbody data-slot="body"></tbody>
+			<tfoot><tr data-slot="footer"></tr></tfoot>
+		</table>
+	`
 )
 
 func init() {
 	mvc.RegisterView(ViewTable, newTableFromElement)
 	mvc.RegisterView(ViewTableRow, newTableRowFromElement)
-	mvc.RegisterView(ViewTableHead, newTableRowFromElement)
-	mvc.RegisterView(ViewTableFoot, newTableRowFromElement)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
-/*
 func Table(args ...any) *table {
-	// Return the table
-	return mvc.NewViewEx(
-		new(table), ViewTable, "TABLE",
-		mvc.HTML("THEAD"), mvc.HTML("TBODY"), mvc.HTML("TFOOT"), nil,
-		mvc.WithClass("table"), args,
-	).(*table)
-}
-*/
-
-func TableRow(args ...any) *tablerow {
-	return tableRow(ViewTableRow, args...)
+	return mvc.NewViewExEx(new(table), ViewTable, templateTable, args...).(*table)
 }
 
-func tableRow(name string, args ...any) *tablerow {
-	// Return the table row
-	return mvc.NewView(
-		new(tablerow), name, "TR", args,
-	).(*tablerow)
+func Row(args ...any) *tablerow {
+	return mvc.NewView(new(tablerow), ViewTableRow, "TR", args...).(*tablerow)
 }
 
-func newTableFromElement(element Element) mvc.View {
+func newTableFromElement(element dom.Element) mvc.View {
 	if element.TagName() != "TABLE" {
 		return nil
 	}
 	return mvc.NewViewWithElement(new(table), element)
 }
 
-func newTableRowFromElement(element Element) mvc.View {
+func newTableRowFromElement(element dom.Element) mvc.View {
 	if element.TagName() != "TR" {
 		return nil
 	}
@@ -87,40 +76,62 @@ func (tablerow *tablerow) SetView(view mvc.View) {
 	tablerow.View = view
 }
 
-func (tablerow *tablerow) Append(cells ...any) mvc.View {
-	// Write calls in td elements
-	for _, cell := range cells {
-		node := mvc.NodeFromAny(cell)
-		switch tablerow.Name() {
-		case ViewTableHead, ViewTableFoot:
-			th := mvc.HTML("th", mvc.WithAttr("scope", "col"))
-			th.AppendChild(node)
-			tablerow.View.Append(th)
+func (table *table) Header(args ...any) mvc.View {
+	for i, arg := range args {
+		switch arg.(type) {
+		case string, dom.Element, mvc.View:
+			args[i] = mvc.HTML("TH", arg)
 		default:
-			td := mvc.HTML("td")
-			td.AppendChild(node)
-			tablerow.View.Append(td)
+			args[i] = arg
 		}
 	}
-	return tablerow
+	return table.View.ReplaceSlot("header", mvc.HTML("TR", args...))
 }
 
-func (table *table) Header(children ...any) mvc.View {
-	// Create a header row
-	header := tableRow(ViewTableHead, children...)
-	table.View.Header(header)
-	return table
+func (table *table) Footer(args ...any) mvc.View {
+	for i, arg := range args {
+		switch arg.(type) {
+		case string, dom.Element, mvc.View:
+			args[i] = mvc.HTML("TH", arg)
+		default:
+			args[i] = arg
+		}
+	}
+	return table.View.ReplaceSlot("footer", mvc.HTML("TR", args...))
 }
 
-func (table *table) Footer(children ...any) mvc.View {
-	// Create a header row
-	footer := tableRow(ViewTableFoot, children...)
-	table.View.Footer(footer)
-	return table
+func (table *table) Content(args ...any) mvc.View {
+	for i, arg := range args {
+		switch arg := arg.(type) {
+		case mvc.View:
+			if _, ok := arg.(*tablerow); ok {
+				args[i] = arg
+			} else {
+				panic("table.Content: invalid view type")
+			}
+		default:
+			args[i] = arg
+		}
+	}
+	return table.View.ReplaceSlot("body", mvc.HTML("TBODY", args...))
+}
+
+func (tablerow *tablerow) Content(args ...any) mvc.View {
+	for i, arg := range args {
+		switch arg.(type) {
+		case string, dom.Element, mvc.View:
+			args[i] = mvc.HTML("TD", arg)
+		default:
+			args[i] = arg
+		}
+	}
+	return tablerow.View.Content(args...)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // OPTIONS
+
+/*
 
 func WithStripedRows() mvc.Opt {
 	return func(o mvc.OptSet) error {
@@ -163,3 +174,4 @@ func WithoutRowHover() mvc.Opt {
 		return mvc.WithoutClass("table-hover")(o)
 	}
 }
+*/

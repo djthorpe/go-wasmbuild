@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	// Packages
+	js "github.com/djthorpe/go-wasmbuild/pkg/js"
 	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
 
 	// Namespace imports
@@ -17,13 +18,22 @@ type offcanvas struct {
 	mvc.View
 }
 
-var _ mvc.View = (*offcanvas)(nil)
+var _ mvc.ViewWithVisibility = (*offcanvas)(nil)
 
 ///////////////////////////////////////////////////////////////////////////////
 // GLOBALS
 
 const (
 	ViewOffcanvas = "mvc-bs-offcanvas"
+)
+
+const (
+	templateOffcanvas = `
+		<div class="offcanvas offcanvas-start" tabindex="-1">
+			<slot name="header"></slot>
+			<slot></slot>
+		</div>
+	`
 )
 
 func init() {
@@ -33,13 +43,9 @@ func init() {
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
-/*
 func Offcanvas(id string, args ...any) *offcanvas {
-	header := mvc.HTML("DIV", mvc.WithClass("offcanvas-header"))
-	body := mvc.HTML("DIV", mvc.WithClass("offcanvas-body"))
-	return mvc.NewViewEx(new(offcanvas), ViewOffcanvas, "DIV", header, body, nil, nil, mvc.WithAttr("id", id), mvc.WithClass("offcanvas", "offcanvas-start"), mvc.WithAttr("tabindex", "-1"), mvc.WithAttr("aria-labelledby", id+"-label"), args).(*offcanvas)
+	return mvc.NewViewExEx(new(offcanvas), ViewOffcanvas, templateOffcanvas, mvc.WithAttr("id", id), mvc.WithAttr("aria-labelledby", id+"-label"), args).(*offcanvas)
 }
-*/
 
 func newOffcanvasFromElement(element Element) mvc.View {
 	tagName := element.TagName()
@@ -55,6 +61,48 @@ func newOffcanvasFromElement(element Element) mvc.View {
 func (offcanvas *offcanvas) SetView(view mvc.View) {
 	offcanvas.View = view
 }
+
+func (offcanvas *offcanvas) Header(children ...any) mvc.View {
+	return offcanvas.View.ReplaceSlot("header", mvc.HTML("DIV", mvc.WithClass("offcanvas-header"), children))
+}
+
+func (offcanvas *offcanvas) Content(children ...any) mvc.View {
+	return offcanvas.View.ReplaceSlot("", mvc.HTML("DIV", mvc.WithClass("offcanvas-body"), children))
+}
+
+func (offcanvas *offcanvas) Apply(opts ...mvc.Opt) mvc.View {
+	offcanvas.View.Apply(opts...)
+	// TODO: Clear inline positioning styles directly via the style object
+	return offcanvas
+}
+
+func (offcanvas *offcanvas) Show() mvc.ViewWithVisibility {
+	// TODO: Clear issues for non-wasm builds
+	if j := js.GetProto("bootstrap.Offcanvas"); j.IsUndefined() {
+		panic("bootstrap.Offcanvas is undefined")
+	} else {
+		j.New("#" + offcanvas.ID()).Call("show")
+	}
+	return offcanvas
+}
+
+func (offcanvas *offcanvas) Hide() mvc.ViewWithVisibility {
+	// TODO: Clear issues for non-wasm builds
+	if j := js.GetProto("bootstrap.Offcanvas"); j.IsUndefined() {
+		panic("bootstrap.Offcanvas is undefined")
+	} else {
+		j.New("#" + offcanvas.ID()).Call("hide")
+	}
+	return offcanvas
+}
+
+// Returns true if the view is visible
+func (offcanvas *offcanvas) Visible() bool {
+	return true
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// OPTIONS
 
 func WithOffcanvas(id string) mvc.Opt {
 	return func(opts mvc.OptSet) error {

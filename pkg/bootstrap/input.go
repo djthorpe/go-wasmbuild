@@ -106,6 +106,10 @@ func RangeInput(name string, args ...any) *input {
 	return Input(name, mvc.WithAttr("type", "range"), mvc.WithClass("form-range"), mvc.WithoutClass("form-control"), args)
 }
 
+func SearchInput(name string, args ...any) *input {
+	return Input(name, mvc.WithAttr("type", "search"), mvc.WithClass("form-control"), args)
+}
+
 func InputGroup(args ...any) *inputgroup {
 	return mvc.NewView(new(inputgroup), ViewInputGroup, "DIV", mvc.WithClass("input-group"), args).(*inputgroup)
 }
@@ -219,11 +223,6 @@ func (inputswitch *inputswitch) SetView(view mvc.View) {
 	inputswitch.View = view
 }
 
-func (input *input) Append(children ...any) mvc.View {
-	// TODO: This should be the input "value" and should only accept text
-	panic("Append: not supported for input")
-}
-
 func (input *input) Label(children ...any) mvc.View {
 	if elem := input.Slot(""); elem == nil || (elem.TagName() != "INPUT" && elem.TagName() != "TEXTAREA") {
 		panic("Label: input body slot is not INPUT or TEXTAREA" + fmt.Sprintf("%v", input))
@@ -233,25 +232,23 @@ func (input *input) Label(children ...any) mvc.View {
 	return input
 }
 
-func (inputgroup *inputgroup) Append(children ...any) mvc.View {
-	// Wrap all text children in span with class "input-group-text"
-	for _, child := range children {
+func (inputgroup *inputgroup) Content(args ...any) mvc.View {
+	nodes := make([]any, 0, len(args))
+	for _, child := range args {
 		switch child.(type) {
 		case string:
-			col := mvc.HTML("SPAN", mvc.WithClass("input-group-text"))
-			col.AppendChild(mvc.NodeFromAny(child))
-			inputgroup.View.Append(col)
+			// Wrap all text children in span with class "input-group-text"
+			nodes = append(nodes, mvc.HTML("SPAN", mvc.WithClass("input-group-text"), mvc.NodeFromAny(child)))
 		default:
-			inputgroup.View.Append(child)
+			nodes = append(nodes, child)
 		}
 	}
-	return inputgroup
+	return inputgroup.View.Content(nodes...)
 }
 
-func (inputswitch *inputswitch) Append(children ...any) mvc.View {
-	isInline := inputswitch.Root().ClassList().Contains(classInlineGroup)
-
+func (inputswitch *inputswitch) Content(args ...any) mvc.View {
 	// Factory function to create switch element
+	isInline := inputswitch.Root().ClassList().Contains(classInlineGroup)
 	switchFactory := func(index int, opt *inputoption) Element {
 		classes := []string{"form-check"}
 		if isInline {
@@ -289,44 +286,41 @@ func (inputswitch *inputswitch) Append(children ...any) mvc.View {
 		return div
 	}
 
-	// Wrap all text children in span with class "input-group-text"
-	for i, child := range children {
+	nodes := make([]any, 0, len(args))
+	for i, child := range args {
 		switch child := child.(type) {
 		case string:
-			inputswitch.View.Append(switchFactory(i, &inputoption{
+			nodes = append(nodes, switchFactory(i, &inputoption{
 				Name:  child,
 				Value: child,
 			}))
 		case *inputoption:
-			inputswitch.View.Append(switchFactory(i, child))
+			nodes = append(nodes, switchFactory(i, child))
 		default:
-			panic("Append: unsupported child type for select input")
+			panic("Content[inputswitch]: unsupported child type for select input")
 		}
 	}
-	return inputswitch
+	return inputswitch.View.Content(nodes...)
 }
 
-func (selectinput *selectinput) Append(children ...any) mvc.View {
-	// Wrap all text children in option elements
-	for _, child := range children {
+func (selectinput *selectinput) Content(args ...any) mvc.View {
+	nodes := make([]any, 0, len(args))
+	for _, child := range args {
 		switch child := child.(type) {
 		case string:
-			opt := mvc.HTML("OPTION")
-			opt.AppendChild(mvc.NodeFromAny(child))
-			selectinput.View.Append(opt)
+			nodes = append(nodes, mvc.HTML("OPTION", mvc.NodeFromAny(child)))
 		case *inputoption:
-			opt := mvc.HTML("OPTION", mvc.WithAttr("value", child.Value))
-			opt.AppendChild(mvc.NodeFromAny(child.Name))
-			selectinput.View.Append(opt)
+			nodes = append(nodes, mvc.HTML("OPTION", mvc.WithAttr("value", child.Value), mvc.NodeFromAny(child.Name)))
 		default:
 			panic("Append: unsupported child type for select input")
 		}
 	}
-	return selectinput
+	return selectinput.View.Content(nodes...)
 }
 
 func (input *input) Value() string {
-	return input.Root().Value()
+	fmt.Println("input.Value called with slot:", input.Slot(""))
+	return input.Slot("").Value()
 }
 
 func (selectinput *selectinput) Value() string {
@@ -334,13 +328,25 @@ func (selectinput *selectinput) Value() string {
 }
 
 func (input *input) Set(value string) mvc.View {
-	input.Root().SetValue(value)
+	input.Slot("").SetValue(value)
 	return input
 }
 
 func (selectinput *selectinput) Set(value string) mvc.View {
 	selectinput.Root().SetValue(value)
 	return selectinput
+}
+
+// Return the enabled values for radio or checkbox group
+func (inputswitch *inputswitch) Enabled() []string {
+	inputs := inputswitch.Root().GetElementsByTagName("input")
+	values := make([]string, 0, len(inputs))
+	for _, input := range inputs {
+		if input.Data().(bool) {
+			values = append(values, input.Value())
+		}
+	}
+	return values
 }
 
 ///////////////////////////////////////////////////////////////////////////////

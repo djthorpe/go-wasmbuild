@@ -2,6 +2,7 @@ package main
 
 import (
 	// Packages
+	"fmt"
 	"strconv"
 
 	bs "github.com/djthorpe/go-wasmbuild/pkg/bootstrap"
@@ -65,6 +66,7 @@ func Example_Buttons_004() (mvc.View, string) {
 		bs.RangeInput("unread_emails", mvc.WithClass("m-3")),
 	).AddEventListener("input", func(e Event) {
 		if v := mvc.ViewFromEvent(e); v != nil {
+			fmt.Println("Input event from view:", v)
 			if v, err := strconv.ParseUint(v.Value(), 10, 64); err == nil {
 				if v == 0 {
 					response.SetData("")

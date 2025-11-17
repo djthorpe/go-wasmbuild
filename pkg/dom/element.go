@@ -5,6 +5,7 @@ package dom
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"io"
 	"slices"
 	"strings"
@@ -523,6 +524,18 @@ func (element *element) QuerySelectorAll(selector string) []Element {
 
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS - HTMLDataElement
+
+func (element *element) Data() any {
+	return element.value
+}
+
+func (element *element) SetData(value any) {
+	if v, ok := value.(string); ok {
+		element.value = v
+	} else {
+		element.value = fmt.Sprint(value)
+	}
+}
 
 func (element *element) Value() string {
 	return element.value
