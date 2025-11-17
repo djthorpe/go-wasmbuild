@@ -2,7 +2,6 @@ package main
 
 import (
 	// Packages
-
 	dom "github.com/djthorpe/go-wasmbuild"
 	bs "github.com/djthorpe/go-wasmbuild/pkg/bootstrap"
 	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"

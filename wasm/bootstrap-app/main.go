@@ -39,33 +39,22 @@ func main() {
 		bs.VRule(),
 		bs.Link("#alert", mvc.WithClass("m-2")).Content("Alerts & Toasts"),
 
-		mvc.Router(mvc.WithClass("container-fluid", "my-2")).Page(
-			"#text", TextExamples(),
-		).Page(
-			"#border", BorderExamples(),
-		).Page(
-			"#badge", BadgeExamples(),
-		).Page(
-			"#list", ListExamples(),
-		).Page(
-			"#button", ButtonExamples(),
-		).Page(
-			"#card", CardExamples(),
-		).Page(
-			"#icon", IconExamples(),
-		).Page(
-			"#modal", ModalExamples(),
-		).Page(
-			"#input", InputExamples(),
-		).Page(
-			"#tooltips", TooltipExamples(),
-		).Page(
-			"#progress", ProgressExamples(),
-		).Page(
-			"#navbar", NavBarExamples(),
-		).Page(
-			"#table", TableExamples(),
-		),
+		mvc.Router(mvc.WithClass("container-fluid", "my-2")).
+			Page("#text", TextExamples()).
+			Page("#border", BorderExamples()).
+			Page("#badge", BadgeExamples()).
+			Page("#list", ListExamples()).
+			Page("#icon", IconExamples()).
+			Page("#button", ButtonExamples()).
+			Page("#card", CardExamples()).
+			Page("#modal", ModalExamples()).
+			Page("#input", InputExamples()).
+			Page("#tooltips", TooltipExamples()).
+			Page("#progress", ProgressExamples()).
+			Page("#navbar", NavBarExamples()).
+			Page("#nav", NavExamples()).
+			Page("#table", TableExamples()).
+			Page("#alert", AlertExamples()),
 	)
 
 	// Wait
