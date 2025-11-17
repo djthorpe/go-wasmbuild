@@ -27,13 +27,17 @@ func main() {
 		bs.VRule(),
 		bs.Link("#input", mvc.WithClass("m-2")).Content("Input"),
 		bs.VRule(),
-		bs.Link("#tooltips", mvc.WithClass("m-2")).Content("Tooltips"),
+		bs.Link("#tooltips", mvc.WithClass("m-2")).Content("Tooltips & Popovers"),
 		bs.VRule(),
 		bs.Link("#progress", mvc.WithClass("m-2")).Content("Progress Bars"),
 		bs.VRule(),
 		bs.Link("#navbar", mvc.WithClass("m-2")).Content("Navbars"),
 		bs.VRule(),
+		bs.Link("#nav", mvc.WithClass("m-2")).Content("Navigation & Pagination"),
+		bs.VRule(),
 		bs.Link("#table", mvc.WithClass("m-2")).Content("Tables"),
+		bs.VRule(),
+		bs.Link("#alert", mvc.WithClass("m-2")).Content("Alerts & Toasts"),
 
 		mvc.Router(mvc.WithClass("container-fluid", "my-2")).Page(
 			"#text", TextExamples(),

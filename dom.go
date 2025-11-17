@@ -97,7 +97,13 @@ type Element interface {
 	Remove()
 	Prepend(...Node)
 
-	// HTMLDataElement specific methods
+	// Data sets or gets the value of the element. In general this operates the same
+	// was as Value() except for specific element types like input elements.
+	// Radio or checkbox input elements will return a boolean for Data() instead of a string.
+	Data() any
+	SetData(any)
+
+	// Return the value of the element as a string, or empty string if not applicable
 	Value() string
 	SetValue(string)
 }

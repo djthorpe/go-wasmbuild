@@ -5,6 +5,7 @@ package dom
 import (
 	"bytes"
 	"io"
+	"strings"
 
 	// Packages
 
@@ -286,6 +287,42 @@ func (element *element) Remove() {
 
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS - HTMLDataElement
+
+func (element *element) Data() any {
+	// Handle special case for input elements
+	if isCheckedInputElement(element) {
+		return element.node.Value.Get("checked").Bool()
+	}
+	return element.node.Value.Get("value").String()
+}
+
+func (element *element) SetData(data any) {
+	if isCheckedInputElement(element) {
+		if boolValue, ok := data.(bool); ok {
+			element.node.Value.Set("checked", boolValue)
+			return
+		} else {
+			panic("SetData: data must be bool for checkbox or radio input elements")
+		}
+	}
+	if str, ok := data.(string); ok {
+		element.node.Value.Set("value", str)
+		return
+	} else {
+		panic("SetData: data must be string")
+	}
+}
+
+func isCheckedInputElement(element *element) bool {
+	// If this is an input of type "checkbox" or "radio", return true
+	if element.TagName() == "INPUT" {
+		inputType := strings.ToLower(element.GetAttribute("type"))
+		if inputType == "checkbox" || inputType == "radio" {
+			return true
+		}
+	}
+	return false
+}
 
 func (element *element) Value() string {
 	return element.node.Value.Get("value").String()

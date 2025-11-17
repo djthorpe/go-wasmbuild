@@ -12,7 +12,7 @@ import (
 ///////////////////////////////////////////////////////////////////////////////
 // TYPES
 
-// View represents a UI component in the interface
+// View represents a web component in the interface
 type View interface {
 	// Return the view name
 	Name() string
@@ -129,6 +129,9 @@ const (
 	// The attribute key which identifies an mvc component
 	DataComponentAttrKey = "data-mvc"
 
+	// The attribute key which identifies a slot in a component
+	DataSlotAttrKey = "data-slot"
+
 	// The name of the default slot, when name atribute is missing
 	defaultSlot = "body"
 )
@@ -201,8 +204,13 @@ func elementFromTemplate(template string) (dom.Element, map[string]dom.Element) 
 		root = root.FirstElementChild()
 	}
 
-	// Find the slots in the template
+	// Find the slots in the template by <slot> elements, or data-slot attributes
 	slots := root.GetElementsByTagName("slot")
+	if len(slots) == 0 {
+		slots = getElementsByAttribute(root, DataSlotAttrKey)
+	}
+
+	// Create the slot map
 	slotmap := make(map[string]dom.Element, len(slots))
 
 	// In the case there is no slot, use the root element as the default slot
@@ -211,12 +219,13 @@ func elementFromTemplate(template string) (dom.Element, map[string]dom.Element) 
 		return root, slotmap
 	}
 
-	// Otherwise enumerate the slots
+	// Otherwise enumerate the slots, using the 'data-slot' attribute or 'name' attribute
 	for _, slot := range slots {
-		name := strings.TrimSpace(slot.GetAttribute("name"))
+		name := slotNameFromElement(slot)
 		if name == "" {
 			name = defaultSlot
-		} else if _, exists := slotmap[name]; exists {
+		}
+		if _, exists := slotmap[name]; exists {
 			panic("elementFromTemplate: duplicate slot name " + name)
 		}
 		// Set the slot
@@ -230,6 +239,29 @@ func elementFromTemplate(template string) (dom.Element, map[string]dom.Element) 
 
 	// Return the root element and slot map
 	return root, slotmap
+}
+
+func slotNameFromElement(element dom.Element) string {
+	// Slot name is from 'name' attribute for <slot> elements, or 'data-slot' attribute otherwise
+	if element.TagName() == "SLOT" {
+		return element.GetAttribute("name")
+	} else {
+		return element.GetAttribute(DataSlotAttrKey)
+	}
+}
+
+func getElementsByAttribute(root dom.Element, attr string) []dom.Element {
+	var elements []dom.Element
+	children := root.Children()
+	for _, child := range children {
+		// Recursively search child elements
+		if child.HasAttribute(attr) {
+			elements = append(elements, child)
+		} else {
+			elements = append(elements, getElementsByAttribute(child, attr)...)
+		}
+	}
+	return elements
 }
 
 // Create a new empty view, applying any options to it
@@ -373,12 +405,14 @@ func (v *view) ReplaceSlot(name string, root any) View {
 	}
 
 	// Replace the slot content
-	if node := NodeFromAny(root); node.NodeType() != dom.ELEMENT_NODE {
-		panic(fmt.Sprintf("ReplaceSlot: unsupported node type %d", node.NodeType()))
-	} else {
-		slot.ReplaceWith(node)
-		v.slot[name] = node.(dom.Element)
+	node := NodeFromAny(root)
+	if node.NodeType() != dom.ELEMENT_NODE {
+		panic(fmt.Sprintf("ReplaceSlot: unsupported node type %v", node.NodeType()))
 	}
+
+	// Actually replace the content in the slot and set it to the new content
+	slot.ReplaceWith(node)
+	v.slot[name] = node.(dom.Element)
 
 	// Return self for chaining
 	return v.self

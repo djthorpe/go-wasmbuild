@@ -319,7 +319,8 @@ func (selectinput *selectinput) Content(args ...any) mvc.View {
 }
 
 func (input *input) Value() string {
-	return input.Root().Value()
+	fmt.Println("input.Value called with slot:", input.Slot(""))
+	return input.Slot("").Value()
 }
 
 func (selectinput *selectinput) Value() string {
@@ -327,13 +328,25 @@ func (selectinput *selectinput) Value() string {
 }
 
 func (input *input) Set(value string) mvc.View {
-	input.Root().SetValue(value)
+	input.Slot("").SetValue(value)
 	return input
 }
 
 func (selectinput *selectinput) Set(value string) mvc.View {
 	selectinput.Root().SetValue(value)
 	return selectinput
+}
+
+// Return the enabled values for radio or checkbox group
+func (inputswitch *inputswitch) Enabled() []string {
+	inputs := inputswitch.Root().GetElementsByTagName("input")
+	values := make([]string, 0, len(inputs))
+	for _, input := range inputs {
+		if input.Data().(bool) {
+			values = append(values, input.Value())
+		}
+	}
+	return values
 }
 
 ///////////////////////////////////////////////////////////////////////////////
