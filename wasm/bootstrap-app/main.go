@@ -9,36 +9,37 @@ import (
 // Application displays examples of Bootstrap components
 func main() {
 	mvc.New().Content(
-		bs.Link("#text", mvc.WithClass("m-2")).Content("Text"),
-		bs.VRule(),
-		bs.Link("#border", mvc.WithClass("m-2")).Content("Borders"),
-		bs.VRule(),
-		bs.Link("#badge", mvc.WithClass("m-2")).Content("Badges"),
-		bs.VRule(),
-		bs.Link("#list", mvc.WithClass("m-2")).Content("Lists"),
-		bs.VRule(),
-		bs.Link("#icon", mvc.WithClass("m-2")).Content("Icons"),
-		bs.VRule(),
-		bs.Link("#button", mvc.WithClass("m-2")).Content("Buttons"),
-		bs.VRule(),
-		bs.Link("#card", mvc.WithClass("m-2")).Content("Cards"),
-		bs.VRule(),
-		bs.Link("#modal", mvc.WithClass("m-2")).Content("Modal"),
-		bs.VRule(),
-		bs.Link("#input", mvc.WithClass("m-2")).Content("Input"),
-		bs.VRule(),
-		bs.Link("#tooltips", mvc.WithClass("m-2")).Content("Tooltips & Popovers"),
-		bs.VRule(),
-		bs.Link("#progress", mvc.WithClass("m-2")).Content("Progress Bars"),
-		bs.VRule(),
-		bs.Link("#navbar", mvc.WithClass("m-2")).Content("Navbars"),
-		bs.VRule(),
-		bs.Link("#nav", mvc.WithClass("m-2")).Content("Navigation & Pagination"),
-		bs.VRule(),
-		bs.Link("#table", mvc.WithClass("m-2")).Content("Tables"),
-		bs.VRule(),
-		bs.Link("#alert", mvc.WithClass("m-2")).Content("Alerts & Toasts"),
-
+		bs.NavBar("main",
+			bs.WithPosition(bs.Sticky|bs.Top), bs.WithTheme(bs.Dark), bs.WithSize(bs.Medium),
+			bs.NavDropdown(
+				bs.NavItem("#text", "Text"),
+				bs.NavItem("#list", "Lists"),
+				bs.NavItem("#badge", "Badges"),
+				bs.NavItem("#icon", "Icons"),
+			).Label("Typography"),
+			bs.NavDropdown(
+				bs.NavItem("#button", "Buttons"),
+				bs.NavItem("#modal", "Modal"),
+				bs.NavItem("#alert", "Alerts & Toasts"),
+			).Label("Interactivity"),
+			bs.NavDropdown(
+				bs.NavItem("#input", "Input"),
+			).Label("Forms & Controls"),
+			bs.NavDropdown(
+				bs.NavItem("#navbar", "Navbars"),
+				bs.NavItem("#nav", "Navigation & Pagination"),
+			).Label("Navigation"),
+			bs.NavDropdown(
+				bs.NavItem("#border", "Borders"),
+				bs.NavItem("#card", "Cards"),
+			).Label("Decoration"),
+			bs.NavDropdown(
+				bs.NavItem("#table", "Tables"),
+			).Label("Data"),
+			bs.NavItem("https://github.com/djthorpe/go-wasmbuild", bs.Icon("github", mvc.WithClass("me-1")), "GitHub"),
+		).Label(
+			bs.Icon("bootstrap-fill"),
+		),
 		mvc.Router(mvc.WithClass("container-fluid", "my-2")).
 			Page("#text", TextExamples()).
 			Page("#border", BorderExamples()).

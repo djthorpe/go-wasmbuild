@@ -29,8 +29,24 @@ type View interface {
 	// Return a slot by name, or nil if not found
 	Slot(string) dom.Element
 
-	// Replace a named slot with a view or element
+	// Replace a named slot with a node
 	ReplaceSlot(string, any) View
+
+	// Add an event listener to the view's root element
+	AddEventListener(string, func(dom.Event)) View
+
+	// Return the value of the view as a string. The contents of the
+	// string depends on the view type
+	Value() string
+
+	// Set the value of the view as a string. The interpretation of the
+	// string depends on the view type
+	Set(string) View
+
+	// Apply class and attribute options to the view
+	Apply(...Opt) View
+
+	// TODO - Deprecate these methods in favour of ReplaceSlot
 
 	// Set the view's content to the given text, Element or View children
 	// If no arguments are given, the content is cleared
@@ -47,20 +63,6 @@ type View interface {
 	// Set the view's footer element. Panics if the view does not have a slot
 	// called "footer"
 	Footer(...any) View
-
-	// Add an event listener to the view's root element
-	AddEventListener(string, func(dom.Event)) View
-
-	// Return the value of the view as a string. The contents of the
-	// string depends on the view type
-	Value() string
-
-	// Set the value of the view as a string. The interpretation of the
-	// string depends on the view type
-	Set(string) View
-
-	// Apply class and attribute options to the view
-	Apply(...Opt) View
 }
 
 // ViewWithState represents a UI component with active and disabled states
@@ -410,9 +412,16 @@ func (v *view) ReplaceSlot(name string, root any) View {
 		panic(fmt.Sprintf("ReplaceSlot: unsupported node type %v", node.NodeType()))
 	}
 
-	// Actually replace the content in the slot and set it to the new content
-	slot.ReplaceWith(node)
-	v.slot[name] = node.(dom.Element)
+	// Set the data-slot attribute on the new element
+	element, ok := node.(dom.Element)
+	if !ok {
+		panic(dom.ErrInternalAppError.Withf("ReplaceSlot: node is not an Element on slot %q of view %q", name, v.Name()).Error())
+	} else {
+		// Actually replace the content in the slot and set it to the new content
+		element.SetAttribute(DataSlotAttrKey, name)
+		slot.ReplaceWith(element)
+		v.slot[name] = element
+	}
 
 	// Return self for chaining
 	return v.self
