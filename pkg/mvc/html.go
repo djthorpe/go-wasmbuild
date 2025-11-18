@@ -19,13 +19,13 @@ var (
 
 // HTML returns an element with the given tag name and class/attribute options
 func HTML(tagName string, args ...any) dom.Element {
-	var e dom.Element
+	var root, e dom.Element
 	if reTagName.MatchString(tagName) {
-		e = elementFactory(tagName)
+		root = elementFactory(tagName)
 	} else {
-		e = elementFactory("DIV")
-		e.SetInnerHTML(tagName)
-		if e = e.FirstElementChild(); e == nil {
+		root = elementFactory("DIV")
+		root.SetInnerHTML(tagName)
+		if root = root.FirstElementChild(); root == nil {
 			panic("HTML: invalid tag name" + tagName)
 		}
 	}
@@ -33,9 +33,19 @@ func HTML(tagName string, args ...any) dom.Element {
 	// Separate options and content
 	opts, content := gatherOpts(args...)
 
-	// Apply options
-	if err := applyOpts(e, opts...); err != nil {
+	// Apply options to root element
+	if err := applyOpts(root, opts...); err != nil {
 		panic(err)
+	}
+
+	// Set the content appending element to a leaf node
+	e = root
+	for {
+		if c := e.FirstElementChild(); c == nil {
+			break
+		} else {
+			e = c
+		}
 	}
 
 	// Append content
@@ -47,7 +57,7 @@ func HTML(tagName string, args ...any) dom.Element {
 	}
 
 	// Return element
-	return e
+	return root
 }
 
 // CData returns a text node with the given text

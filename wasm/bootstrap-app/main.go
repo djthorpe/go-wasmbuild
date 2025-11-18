@@ -26,8 +26,10 @@ func main() {
 				bs.NavItem("#input", "Input"),
 			).Label("Forms & Controls"),
 			bs.NavDropdown(
-				bs.NavItem("#navbar", "Navbars"),
-				bs.NavItem("#nav", "Navigation & Pagination"),
+				bs.NavItem("#navbar", "Navbar"),
+				bs.NavItem("#nav", "Accordion"),
+				bs.NavItem("#nav", "Navigation"),
+				bs.NavItem("#nav", "Pagination"),
 			).Label("Navigation"),
 			bs.NavDropdown(
 				bs.NavItem("#border", "Borders"),
