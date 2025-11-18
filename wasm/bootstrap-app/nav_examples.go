@@ -10,10 +10,15 @@ func NavExamples() mvc.View {
 	return bs.Container(
 		mvc.WithClass("my-4"),
 		bs.Heading(2, "Navigation Examples"), bs.HRule(),
+		bs.Heading(3, "Pagination", mvc.WithClass("mt-5")), Example(Example_Pagination_001),
 		bs.Heading(3, "Accordion", mvc.WithClass("mt-5")), Example(Example_Accordion_001),
 		bs.Heading(3, "Flush Accordion", mvc.WithClass("mt-5")), Example(Example_Accordion_002),
 		bs.Heading(3, "Dark Accordion", mvc.WithClass("mt-5")), Example(Example_Accordion_003),
 	)
+}
+
+func Example_Pagination_001() (mvc.View, string) {
+	return bs.Pagination("Prev", "1", "2", "...", "3", "Next"), sourcecode()
 }
 
 func Example_Accordion_001() (mvc.View, string) {

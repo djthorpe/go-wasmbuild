@@ -92,24 +92,31 @@ func (accordion *accordion) Content(args ...any) mvc.View {
 		case *accordionitem:
 			item := fmt.Sprint(accordion.ID(), "-", i)
 			show := false
+
+			// Show the first item in the accordion
 			if i == 0 {
 				show = true
 			}
 
 			// Set header attributes
-			arg.Slot("header").SetAttribute("data-bs-target", "#"+item)
-			arg.Slot("header").SetAttribute("aria-controls", item)
-			arg.Slot("header").SetAttribute("aria-expanded", fmt.Sprint(show))
-			if !show {
-				arg.Slot("header").ClassList().Add("collapsed")
+			header := arg.Slot("header")
+			if header != nil {
+				header.SetAttribute("data-bs-target", "#"+item)
+				header.SetAttribute("aria-controls", item)
+				header.SetAttribute("aria-expanded", fmt.Sprint(show))
+				if !show {
+					header.ClassList().Add("collapsed")
+				}
 			}
 
 			// Set body attributes
 			body := arg.Slot("").ParentElement()
-			body.SetID(item)
-			body.SetAttribute("data-bs-parent", "#"+accordion.ID())
-			if show {
-				body.ClassList().Add("show")
+			if body != nil {
+				body.SetID(item)
+				body.SetAttribute("data-bs-parent", "#"+accordion.ID())
+				if show {
+					body.ClassList().Add("show")
+				}
 			}
 		default:
 			panic(ErrInternalAppError.Withf("Content[accordionitem] unexpected argument '%T'", arg))
