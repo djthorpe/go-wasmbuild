@@ -31,22 +31,26 @@ func init() {
 
 func Image(href string, args ...any) *img {
 	// Return the img
-	return mvc.NewView(
-		new(img), ViewImage, "IMG",
+	i := new(img)
+	i.View = mvc.NewView(
+		i, ViewImage, "IMG",
 		mvc.WithAttr("src", href), mvc.WithClass("img-fluid"), args,
-	).(*img)
+	)
+	return i
 }
 
 func newImgFromElement(element Element) mvc.View {
 	if element.TagName() != "IMG" {
 		return nil
 	}
-	return mvc.NewViewWithElement(new(img), element)
+	i := new(img)
+	i.View = mvc.NewViewWithElement(i, element)
+	return i
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
 
-func (img *img) SetView(view mvc.View) {
-	img.View = view
+func (img *img) Self() mvc.View {
+	return img
 }

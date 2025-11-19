@@ -41,21 +41,25 @@ func init() {
 // LIFECYCLE
 
 func Pagination(args ...any) *pagination {
-	return mvc.NewViewExEx(new(pagination), ViewPagination, templatePagination, args).(*pagination)
+	p := new(pagination)
+	p.View = mvc.NewViewExEx(p, ViewPagination, templatePagination, args)
+	return p
 }
 
 func newPaginationFromElement(element Element) mvc.View {
 	if element.TagName() != "NAV" {
 		return nil
 	}
-	return mvc.NewViewWithElement(new(pagination), element)
+	p := new(pagination)
+	p.View = mvc.NewViewWithElement(p, element)
+	return p
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
 
-func (pagination *pagination) SetView(view mvc.View) {
-	pagination.View = view
+func (pagination *pagination) Self() mvc.View {
+	return pagination
 }
 
 func (pagination *pagination) Content(args ...any) mvc.View {

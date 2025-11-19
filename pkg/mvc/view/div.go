@@ -29,12 +29,27 @@ func init() {
 // LIFECYCLE
 
 func Div(opts ...mvc.Opt) mvc.View {
-	return mvc.NewView(new(div), ViewDiv, "DIV", opts...)
+	d := new(div)
+	args := make([]any, len(opts))
+	for i, opt := range opts {
+		args[i] = opt
+	}
+	d.View = mvc.NewView(d, ViewDiv, "DIV", args...)
+	return d
 }
 
 func newDivFromElement(element dom.Element) mvc.View {
 	if element.TagName() != "DIV" {
 		return nil
 	}
-	return mvc.NewViewWithElement(new(div), element)
+	d := new(div)
+	d.View = mvc.NewViewWithElement(d, element)
+	return d
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS
+
+func (d *div) Self() mvc.View {
+	return d
 }

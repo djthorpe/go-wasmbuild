@@ -55,21 +55,27 @@ func init() {
 
 // Create a Table with a prototype row
 func Table(proto any, opts ...mvc.Opt) TableView {
-	self := mvc.NewViewEx(new(table), ViewTable, "table", mvc.HTML("thead"), mvc.HTML("tbody"), mvc.HTML("tfoot"), nil, opts...).(TableView)
+	t := new(table)
+	args := []any{mvc.HTML("thead"), mvc.HTML("tbody"), mvc.HTML("tfoot")}
+	for _, o := range opts {
+		args = append(args, o)
+	}
+	t.TableView = mvc.NewView(t, ViewTable, "table", args...).(TableView)
 	if proto != nil {
 		if proto := reflect.NewProto(proto); proto == nil {
 			panic("Table: proto must be a struct")
 		} else {
-			self.(*table).proto = proto
+			t.proto = proto
 		}
 	}
-	return self
+	return t
 }
 
 // Create a TableRowEx (children are td or th)
 func TableRowEx(name string, children ...any) mvc.View {
 	self := new(tablerow)
-	return mvc.NewView(self, name, "tr").Append(children...)
+	self.View = mvc.NewView(self, name, "tr")
+	return self.Append(children...)
 }
 
 // Create a TableRow (children are td)
@@ -82,7 +88,9 @@ func newTableFromElement(element Element) mvc.View {
 	if element.TagName() != "TABLE" {
 		return nil
 	}
-	return mvc.NewViewWithElement(new(table), element)
+	t := new(table)
+	t.TableView = mvc.NewViewWithElement(t, element).(TableView)
+	return t
 }
 
 // Create a TableRow from an existing element
@@ -90,18 +98,20 @@ func newTableRowFromElement(element Element) mvc.View {
 	if element.TagName() != "TR" {
 		return nil
 	}
-	return mvc.NewViewWithElement(new(tablerow), element)
+	t := new(tablerow)
+	t.View = mvc.NewViewWithElement(t, element)
+	return t
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
 
-func (table *table) SetView(view mvc.View) {
-	table.TableView = view.(TableView)
+func (table *table) Self() mvc.View {
+	return table
 }
 
-func (tablerow *tablerow) SetView(view mvc.View) {
-	tablerow.View = view
+func (tablerow *tablerow) Self() mvc.View {
+	return tablerow
 }
 
 // Set header content

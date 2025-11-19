@@ -49,16 +49,16 @@ func init() {
 
 // Create a Router
 func Router(args ...any) RouterView {
-	self := NewView(new(router), ViewRouter, "div", args).(RouterView)
-	router := self.(*router)
+	r := new(router)
+	r.View = NewView(r, ViewRouter, "div", args...)
 	window := dom.GetWindow()
 
 	// Set event listener for hashchange
 	window.AddEventListener("hashchange", func(wasm.Event) {
-		router.refresh(window.Location().Hash())
+		r.refresh(window.Location().Hash())
 	})
 
-	return self
+	return r
 }
 
 // Create a Table from an existing element
@@ -66,14 +66,16 @@ func newRouterFromElement(element wasm.Element) View {
 	if element.TagName() != "DIV" {
 		return nil
 	}
-	return NewViewWithElement(new(router), element)
+	r := new(router)
+	r.View = NewViewWithElement(r, element)
+	return r
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
 
-func (router *router) SetView(view View) {
-	router.View = view
+func (router *router) Self() View {
+	return router
 }
 
 func (router *router) Page(path string, view View) RouterView {

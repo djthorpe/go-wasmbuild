@@ -34,7 +34,9 @@ func init() {
 // LIFECYCLE
 
 func Grid(args ...any) *grid {
-	return mvc.NewView(new(grid), ViewGrid, "DIV", mvc.WithClass("row"), args).(*grid)
+	g := new(grid)
+	g.View = mvc.NewView(g, ViewGrid, "DIV", mvc.WithClass("row"), args)
+	return g
 }
 
 func newGridFromElement(element Element) mvc.View {
@@ -42,12 +44,14 @@ func newGridFromElement(element Element) mvc.View {
 	if tagName != "DIV" {
 		panic(fmt.Sprintf("newGridFromElement: invalid tag name %q", tagName))
 	}
-	return mvc.NewViewWithElement(new(grid), element)
+	g := new(grid)
+	g.View = mvc.NewViewWithElement(g, element)
+	return g
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
 
-func (grid *grid) SetView(view mvc.View) {
-	grid.View = view
+func (grid *grid) Self() mvc.View {
+	return grid
 }

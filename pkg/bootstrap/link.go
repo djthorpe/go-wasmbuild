@@ -35,7 +35,9 @@ func init() {
 // LIFECYCLE
 
 func Link(href string, args ...any) mvc.View {
-	return mvc.NewView(new(link), ViewLink, "A", mvc.WithAttr("href", href), args)
+	l := new(link)
+	l.View = mvc.NewView(l, ViewLink, "A", mvc.WithAttr("href", href), args)
+	return l
 }
 
 func newLinkFromElement(element Element) mvc.View {
@@ -43,12 +45,14 @@ func newLinkFromElement(element Element) mvc.View {
 	if tagName != "A" {
 		panic(fmt.Sprintf("newLinkFromElement: invalid tag name %q", tagName))
 	}
-	return mvc.NewViewWithElement(new(link), element)
+	l := new(link)
+	l.View = mvc.NewViewWithElement(l, element)
+	return l
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
 
-func (link *link) SetView(view mvc.View) {
-	link.View = view
+func (link *link) Self() mvc.View {
+	return link
 }

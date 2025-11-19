@@ -63,6 +63,11 @@ type View interface {
 	// Set the view's footer element. Panics if the view does not have a slot
 	// called "footer"
 	Footer(...any) View
+	// Return the Self object
+	Self() View
+
+	// Append children to the view
+	Append(...any) View
 }
 
 // ViewWithState represents a UI component with active and disabled states
@@ -101,11 +106,8 @@ type ViewWithVisibility interface {
 	Hide() ViewWithVisibility
 }
 
-// ViewWithSelf represents a UI component that can set its own view
-type ViewWithSelf interface {
-	View
-	SetView(view View)
-}
+// ViewWithHeaderFooter is an alias for View, as View now supports Header and Footer
+type ViewWithHeaderFooter = View
 
 ///////////////////////////////////////////////////////////////////////////////
 // PRIVATE TYPES
@@ -171,13 +173,6 @@ func NewViewExEx(self View, name string, template string, args ...any) View {
 		slot: slots,
 	}
 
-	// Set the view in self
-	if self_, ok := self.(ViewWithSelf); !ok {
-		panic(fmt.Sprintf("NewView: %v does not implement ViewWithSelf", name))
-	} else {
-		self_.SetView(v)
-	}
-
 	// Set the component identifier
 	v.root.SetAttribute(DataComponentAttrKey, name)
 
@@ -191,7 +186,35 @@ func NewViewExEx(self View, name string, template string, args ...any) View {
 	}
 
 	// Return the view
-	return v.self
+	return v
+}
+
+// Create a new view with explicit children
+func NewViewEx(self View, name string, tagName string, children ...any) View {
+	if _, exists := views[name]; !exists {
+		panic(fmt.Sprintf("NewViewEx: view not registered %q", name))
+	}
+
+	// Create the view
+	v := &view{
+		self: self,
+		name: name,
+		root: elementFactory(tagName),
+		slot: make(map[string]dom.Element),
+	}
+
+	// Set the component identifier
+	v.root.SetAttribute(DataComponentAttrKey, name)
+
+	// Add children
+	for _, child := range children {
+		if child != nil {
+			v.root.AppendChild(NodeFromAny(child))
+		}
+	}
+
+	// Return the view
+	return v
 }
 
 func elementFromTemplate(template string) (dom.Element, map[string]dom.Element) {
@@ -280,13 +303,6 @@ func NewView(self View, name string, tagName string, args ...any) View {
 		slot: make(map[string]dom.Element),
 	}
 
-	// Set the view in self
-	if self_, ok := self.(ViewWithSelf); !ok {
-		panic(fmt.Sprintf("NewView: %v does not implement ViewWithSelf", name))
-	} else {
-		self_.SetView(v)
-	}
-
 	// Set the component identifier
 	v.root.SetAttribute(DataComponentAttrKey, name)
 
@@ -304,7 +320,7 @@ func NewView(self View, name string, tagName string, args ...any) View {
 	}
 
 	// Return the view
-	return v.self
+	return v
 }
 
 // Create view from an existing element, applying any options to it
@@ -325,13 +341,6 @@ func NewViewWithElement(self View, element dom.Element, opts ...Opt) View {
 		panic("NewViewWithElement: element missing data-mvc attribute")
 	}
 
-	// Set the view in self
-	if self_, ok := self.(ViewWithSelf); !ok {
-		panic(fmt.Sprintf("NewView: %v does not implement ViewWithSelf", v.name))
-	} else {
-		self_.SetView(v)
-	}
-
 	// Apply options to the view
 	if len(opts) > 0 {
 		if err := applyOpts(v.root, opts...); err != nil {
@@ -342,7 +351,7 @@ func NewViewWithElement(self View, element dom.Element, opts ...Opt) View {
 	// TODO: Set the view slots
 
 	// Return self
-	return v.self
+	return v
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -350,6 +359,10 @@ func NewViewWithElement(self View, element dom.Element, opts ...Opt) View {
 
 func (v *view) String() string {
 	return v.Root().OuterHTML()
+}
+
+func (v *view) Self() View {
+	return v.self
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -424,7 +437,7 @@ func (v *view) ReplaceSlot(name string, root any) View {
 	}
 
 	// Return self for chaining
-	return v.self
+	return v.self.Self()
 }
 
 // Apply class and attribute options to the view root element
@@ -434,7 +447,7 @@ func (v *view) Apply(opts ...Opt) View {
 			panic(err)
 		}
 	}
-	return v.self
+	return v.self.Self()
 }
 
 // Set content of the default slot
@@ -472,7 +485,7 @@ func (v *view) Label(children ...any) View {
 
 func (v *view) AddEventListener(event string, handler func(dom.Event)) View {
 	v.root.AddEventListener(event, handler)
-	return v.self
+	return v.self.Self()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -484,7 +497,7 @@ func (v *view) Value() string {
 
 func (v *view) Set(value string) View {
 	v.root.SetValue(value)
-	return v.self
+	return v.self.Self()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -534,13 +547,13 @@ func NodeFromAny(child any) dom.Node {
 
 func (v *view) replaceChildContent(target dom.Element, children ...any) View {
 	if target == nil {
-		return v.self
+		return v.self.Self()
 	}
 	target.SetInnerHTML("")
 	for _, child := range children {
 		target.AppendChild(NodeFromAny(child))
 	}
-	return v.self
+	return v.self.Self()
 }
 
 func viewFromElement(element dom.Element) (View, error) {
@@ -557,4 +570,11 @@ func viewFromElement(element dom.Element) (View, error) {
 	} else {
 		return view, nil
 	}
+}
+
+func (v *view) Append(children ...any) View {
+	for _, child := range children {
+		v.root.AppendChild(NodeFromAny(child))
+	}
+	return v.self.Self()
 }

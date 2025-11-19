@@ -53,11 +53,15 @@ func init() {
 // LIFECYCLE
 
 func Card(args ...any) *card {
-	return mvc.NewViewExEx(new(card), ViewCard, templateCard, args).(*card)
+	c := new(card)
+	c.View = mvc.NewViewExEx(c, ViewCard, templateCard, args)
+	return c
 }
 
 func CardGroup(args ...any) *cardgroup {
-	return mvc.NewView(new(cardgroup), ViewCardGroup, "DIV", mvc.WithClass("card-group"), args).(*cardgroup)
+	c := new(cardgroup)
+	c.View = mvc.NewView(c, ViewCardGroup, "DIV", mvc.WithClass("card-group"), args)
+	return c
 }
 
 func newCardFromElement(element Element) mvc.View {
@@ -65,7 +69,9 @@ func newCardFromElement(element Element) mvc.View {
 	if tagName != "DIV" {
 		panic(fmt.Sprintf("newCardFromElement: invalid tag name %q", tagName))
 	}
-	return mvc.NewViewWithElement(new(card), element)
+	c := new(card)
+	c.View = mvc.NewViewWithElement(c, element)
+	return c
 }
 
 func newCardGroupFromElement(element Element) mvc.View {
@@ -73,18 +79,20 @@ func newCardGroupFromElement(element Element) mvc.View {
 	if tagName != "DIV" {
 		panic(fmt.Sprintf("newCardGroupFromElement: invalid tag name %q", tagName))
 	}
-	return mvc.NewViewWithElement(new(cardgroup), element)
+	c := new(cardgroup)
+	c.View = mvc.NewViewWithElement(c, element)
+	return c
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
 
-func (card *card) SetView(view mvc.View) {
-	card.View = view
+func (card *card) Self() mvc.View {
+	return card
 }
 
-func (cardgroup *cardgroup) SetView(view mvc.View) {
-	cardgroup.View = view
+func (cardgroup *cardgroup) Self() mvc.View {
+	return cardgroup
 }
 
 func (card *card) Header(children ...any) mvc.View {

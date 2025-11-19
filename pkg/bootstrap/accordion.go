@@ -51,39 +51,49 @@ func init() {
 // LIFECYCLE
 
 func Accordion(name string, args ...any) *accordion {
-	return mvc.NewView(new(accordion), ViewAccordion, "DIV", mvc.WithClass("accordion"), mvc.WithID(name), args).(*accordion)
+	a := new(accordion)
+	a.View = mvc.NewView(a, ViewAccordion, "DIV", mvc.WithClass("accordion"), mvc.WithID(name), args)
+	return a
 }
 
 func FlushAccordion(name string, args ...any) *accordion {
-	return mvc.NewView(new(accordion), ViewAccordion, "DIV", mvc.WithClass("accordion", "accordion-flush"), mvc.WithID(name), args).(*accordion)
+	a := new(accordion)
+	a.View = mvc.NewView(a, ViewAccordion, "DIV", mvc.WithClass("accordion", "accordion-flush"), mvc.WithID(name), args)
+	return a
 }
 
 func AccordionItem(args ...any) *accordionitem {
-	return mvc.NewViewExEx(new(accordionitem), ViewAccordionItem, templateAccordionItem, args).(*accordionitem)
+	a := new(accordionitem)
+	a.View = mvc.NewViewExEx(a, ViewAccordionItem, templateAccordionItem, args)
+	return a
 }
 
 func newAccordionFromElement(element Element) mvc.View {
 	if element.TagName() != "DIV" {
 		return nil
 	}
-	return mvc.NewViewWithElement(new(accordion), element)
+	a := new(accordion)
+	a.View = mvc.NewViewWithElement(a, element)
+	return a
 }
 func newAccordionItemFromElement(element Element) mvc.View {
 	if element.TagName() != "DIV" {
 		return nil
 	}
-	return mvc.NewViewWithElement(new(accordionitem), element)
+	a := new(accordionitem)
+	a.View = mvc.NewViewWithElement(a, element)
+	return a
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
 
-func (accordion *accordion) SetView(view mvc.View) {
-	accordion.View = view
+func (accordion *accordion) Self() mvc.View {
+	return accordion
 }
 
-func (accordionitem *accordionitem) SetView(view mvc.View) {
-	accordionitem.View = view
+func (accordionitem *accordionitem) Self() mvc.View {
+	return accordionitem
 }
 
 func (accordion *accordion) Content(args ...any) mvc.View {

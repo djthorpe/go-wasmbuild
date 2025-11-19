@@ -36,7 +36,9 @@ func init() {
 // LIFECYCLE
 
 func Progress(args ...any) *progress {
-	return mvc.NewView(new(progress), ViewProgress, "DIV", mvc.WithClass("progress"), WithMinMax(0, 100), args).(*progress)
+	p := new(progress)
+	p.View = mvc.NewView(p, ViewProgress, "DIV", mvc.WithClass("progress"), WithMinMax(0, 100), args)
+	return p
 }
 
 func StripedProgress(args ...any) *progress {
@@ -49,14 +51,16 @@ func newProgressFromElement(element Element) mvc.View {
 	if element.TagName() != "DIV" {
 		return nil
 	}
-	return mvc.NewViewWithElement(new(progress), element)
+	p := new(progress)
+	p.View = mvc.NewViewWithElement(p, element)
+	return p
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
 
-func (progress *progress) SetView(view mvc.View) {
-	progress.View = view
+func (progress *progress) Self() mvc.View {
+	return progress
 }
 
 func (progress *progress) Value() string {

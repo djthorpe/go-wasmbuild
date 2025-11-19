@@ -38,55 +38,71 @@ func init() {
 // LIFECYCLE
 
 func List(args ...any) mvc.View {
-	return mvc.NewView(new(list), ViewList, "OL", args...)
+	l := new(list)
+	l.View = mvc.NewView(l, ViewList, "OL", args...)
+	return l
 }
 
 func ListGroup(args ...any) mvc.View {
-	return mvc.NewView(new(list), ViewListGroup, "UL", mvc.WithClass("list-group"), args)
+	l := new(list)
+	l.View = mvc.NewView(l, ViewListGroup, "UL", mvc.WithClass("list-group"), args)
+	return l
 }
 
 func DefinitionList(args ...any) mvc.View {
-	return mvc.NewView(new(deflist), ViewDefinitionList, "DL", mvc.WithClass("row"), args)
+	d := new(deflist)
+	d.View = mvc.NewView(d, ViewDefinitionList, "DL", mvc.WithClass("row"), args)
+	return d
 }
 
 func BulletList(args ...any) mvc.View {
-	return mvc.NewView(new(list), ViewList, "UL", args...)
+	l := new(list)
+	l.View = mvc.NewView(l, ViewList, "UL", args...)
+	return l
 }
 
 func UnstyledList(args ...any) mvc.View {
-	return mvc.NewView(new(list), ViewList, "UL", mvc.WithClass("list-unstyled"), args)
+	l := new(list)
+	l.View = mvc.NewView(l, ViewList, "UL", mvc.WithClass("list-unstyled"), args)
+	return l
 }
 
 func newListFromElement(element Element) mvc.View {
 	if element.TagName() != "UL" {
 		return nil
 	}
-	return mvc.NewViewWithElement(new(list), element)
+	l := new(list)
+	l.View = mvc.NewViewWithElement(l, element)
+	return l
 }
 
 func newListGroupFromElement(element Element) mvc.View {
 	if element.TagName() != "UL" {
 		return nil
 	}
-	return mvc.NewViewWithElement(new(list), element)
+	l := new(list)
+	l.View = mvc.NewViewWithElement(l, element)
+	return l
 }
 
 func newDefinitionListFromElement(element Element) mvc.View {
 	if element.TagName() != "DL" {
 		return nil
 	}
-	return mvc.NewViewWithElement(new(deflist), element)
+	d := new(deflist)
+	d.View = mvc.NewViewWithElement(d, element)
+	return d
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
 
-func (list *list) SetView(view mvc.View) {
-	list.View = view
+func (list *list) Self() mvc.View {
+	return list
 }
 
-func (deflist *deflist) SetView(view mvc.View) {
-	deflist.View = view
+func (deflist *deflist) Self() mvc.View {
+	return deflist
 }
 
 func (list *list) Content(args ...any) mvc.View {

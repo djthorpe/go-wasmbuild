@@ -54,64 +54,81 @@ func init() {
 // LIFECYCLE
 
 func Button(args ...any) *button {
-	view := mvc.NewViewExEx(new(button), ViewButton, templateButton, args).(*button)
-	return view
+	b := new(button)
+	b.View = mvc.NewViewExEx(b, ViewButton, templateButton, args)
+	return b
 }
 
 func OutlineButton(args ...any) *button {
-	return mvc.NewView(new(button), ViewButton, "BUTTON", mvc.WithAttr("type", "button"), mvc.WithClass("btn", "btn-outline", "btn-outline-primary"), args).(*button)
+	b := new(button)
+	b.View = mvc.NewView(b, ViewButton, "BUTTON", mvc.WithAttr("type", "button"), mvc.WithClass("btn", "btn-outline", "btn-outline-primary"), args)
+	return b
 }
 
 func CloseButton(args ...any) *button {
-	return mvc.NewView(new(button), ViewButton, "BUTTON", mvc.WithAttr("type", "button"), mvc.WithClass("btn", "btn-close"), mvc.WithAriaLabel("close"), args).(*button)
+	b := new(button)
+	b.View = mvc.NewView(b, ViewButton, "BUTTON", mvc.WithAttr("type", "button"), mvc.WithClass("btn", "btn-close"), mvc.WithAriaLabel("close"), args)
+	return b
 }
 
 func ButtonToolbar(args ...any) mvc.View {
-	return mvc.NewView(new(buttontoolbar), ViewButtonToolbar, "DIV", mvc.WithAttr("role", "toolbar"), mvc.WithClass("btn-toolbar"), args)
+	b := new(buttontoolbar)
+	b.View = mvc.NewView(b, ViewButtonToolbar, "DIV", mvc.WithAttr("role", "toolbar"), mvc.WithClass("btn-toolbar"), args)
+	return b
 }
 
 func ButtonGroup(args ...any) mvc.View {
-	return mvc.NewView(new(buttongroup), ViewButtonGroup, "DIV", mvc.WithAttr("role", "group"), mvc.WithClass("btn-group"), args)
+	b := new(buttongroup)
+	b.View = mvc.NewView(b, ViewButtonGroup, "DIV", mvc.WithAttr("role", "group"), mvc.WithClass("btn-group"), args)
+	return b
 }
 
 func VButtonGroup(args ...any) mvc.View {
-	return mvc.NewView(new(buttongroup), ViewButtonGroup, "DIV", mvc.WithAttr("role", "group"), mvc.WithClass("btn-group-vertical"), args)
+	b := new(buttongroup)
+	b.View = mvc.NewView(b, ViewButtonGroup, "DIV", mvc.WithAttr("role", "group"), mvc.WithClass("btn-group-vertical"), args)
+	return b
 }
 
 func newButtonFromElement(element Element) mvc.View {
 	if element.TagName() != "BUTTON" {
 		return nil
 	}
-	return mvc.NewViewWithElement(new(button), element)
+	b := new(button)
+	b.View = mvc.NewViewWithElement(b, element)
+	return b
 }
 
 func newButtonGroupFromElement(element Element) mvc.View {
 	if element.TagName() != "DIV" {
 		return nil
 	}
-	return mvc.NewViewWithElement(new(buttongroup), element)
+	b := new(buttongroup)
+	b.View = mvc.NewViewWithElement(b, element)
+	return b
 }
 
 func newButtonToolbarFromElement(element Element) mvc.View {
 	if element.TagName() != "DIV" {
 		return nil
 	}
-	return mvc.NewViewWithElement(new(buttontoolbar), element)
+	b := new(buttontoolbar)
+	b.View = mvc.NewViewWithElement(b, element)
+	return b
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
 
-func (b *button) SetView(view mvc.View) {
-	b.View = view
+func (b *button) Self() mvc.View {
+	return b
 }
 
-func (b *buttongroup) SetView(view mvc.View) {
-	b.View = view
+func (b *buttongroup) Self() mvc.View {
+	return b
 }
 
-func (b *buttontoolbar) SetView(view mvc.View) {
-	b.View = view
+func (b *buttontoolbar) Self() mvc.View {
+	return b
 }
 
 func (b *button) Label(children ...any) mvc.View {

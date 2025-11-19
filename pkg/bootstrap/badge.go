@@ -31,10 +31,12 @@ func init() {
 
 func Badge(args ...any) *badge {
 	// Return the badge
-	return mvc.NewView(
-		new(badge), ViewBadge, "SPAN",
+	b := new(badge)
+	b.View = mvc.NewView(
+		b, ViewBadge, "SPAN",
 		mvc.WithClass("badge", "position-relative"), WithColor(Primary), args,
-	).(*badge)
+	)
+	return b
 }
 
 func PillBadge(args ...any) *badge {
@@ -45,12 +47,14 @@ func newBadgeFromElement(element Element) mvc.View {
 	if element.TagName() != "SPAN" {
 		return nil
 	}
-	return mvc.NewViewWithElement(new(badge), element)
+	b := new(badge)
+	b.View = mvc.NewViewWithElement(b, element)
+	return b
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
 
-func (badge *badge) SetView(view mvc.View) {
-	badge.View = view
+func (badge *badge) Self() mvc.View {
+	return badge
 }

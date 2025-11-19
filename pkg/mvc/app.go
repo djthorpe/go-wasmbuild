@@ -67,3 +67,10 @@ func elementFactory(tagName string) dom.Element {
 func textFactory(text string) dom.Node {
 	return doc.CreateTextNode(text)
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS
+
+func (a *app) Self() View {
+	return a
+}

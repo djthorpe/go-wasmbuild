@@ -31,23 +31,29 @@ func init() {
 // LIFECYCLE
 
 func Container(args ...any) mvc.View {
-	return mvc.NewView(new(container), ViewContainer, "DIV", mvc.WithClass("container"), args)
+	c := new(container)
+	c.View = mvc.NewView(c, ViewContainer, "DIV", mvc.WithClass("container"), args)
+	return c
 }
 
 func FluidContainer(args ...any) mvc.View {
-	return mvc.NewView(new(container), ViewContainer, "DIV", mvc.WithClass("container-fluid"), args)
+	c := new(container)
+	c.View = mvc.NewView(c, ViewContainer, "DIV", mvc.WithClass("container-fluid"), args)
+	return c
 }
 
 func newContainerFromElement(element Element) mvc.View {
 	if element.TagName() != "DIV" {
 		return nil
 	}
-	return mvc.NewViewWithElement(new(container), element)
+	c := new(container)
+	c.View = mvc.NewViewWithElement(c, element)
+	return c
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
 
-func (container *container) SetView(view mvc.View) {
-	container.View = view
+func (container *container) Self() mvc.View {
+	return container
 }

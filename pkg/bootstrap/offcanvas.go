@@ -44,7 +44,9 @@ func init() {
 // LIFECYCLE
 
 func Offcanvas(id string, args ...any) *offcanvas {
-	return mvc.NewViewExEx(new(offcanvas), ViewOffcanvas, templateOffcanvas, mvc.WithAttr("id", id), mvc.WithAttr("aria-labelledby", id+"-label"), args).(*offcanvas)
+	o := new(offcanvas)
+	o.View = mvc.NewViewExEx(o, ViewOffcanvas, templateOffcanvas, mvc.WithAttr("id", id), mvc.WithAttr("aria-labelledby", id+"-label"), args)
+	return o
 }
 
 func newOffcanvasFromElement(element Element) mvc.View {
@@ -52,14 +54,16 @@ func newOffcanvasFromElement(element Element) mvc.View {
 	if tagName != "DIV" {
 		panic(fmt.Sprintf("newOffcanvasFromElement: invalid tag name %q", tagName))
 	}
-	return mvc.NewViewWithElement(new(offcanvas), element)
+	o := new(offcanvas)
+	o.View = mvc.NewViewWithElement(o, element)
+	return o
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
 
-func (offcanvas *offcanvas) SetView(view mvc.View) {
-	offcanvas.View = view
+func (offcanvas *offcanvas) Self() mvc.View {
+	return offcanvas
 }
 
 func (offcanvas *offcanvas) Header(children ...any) mvc.View {

@@ -30,19 +30,23 @@ func init() {
 // LIFECYCLE
 
 func CodeBlock(args ...any) *codeblock {
-	return mvc.NewView(new(codeblock), ViewCodeBlock, "PRE", mvc.WithClass("codeblock"), args).(*codeblock)
+	c := new(codeblock)
+	c.View = mvc.NewView(c, ViewCodeBlock, "PRE", mvc.WithClass("codeblock"), args)
+	return c
 }
 
 func newCodeBlockFromElement(element Element) mvc.View {
 	if element.TagName() != "PRE" {
 		return nil
 	}
-	return mvc.NewViewWithElement(new(codeblock), element)
+	c := new(codeblock)
+	c.View = mvc.NewViewWithElement(c, element)
+	return c
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
 
-func (codeblock *codeblock) SetView(view mvc.View) {
-	codeblock.View = view
+func (codeblock *codeblock) Self() mvc.View {
+	return codeblock
 }

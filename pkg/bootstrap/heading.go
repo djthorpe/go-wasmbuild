@@ -52,7 +52,9 @@ func Heading(level int, args ...any) mvc.View {
 	if !exists {
 		panic(fmt.Sprintf("Heading: invalid level %d", level))
 	}
-	return mvc.NewView(new(heading), ViewHeading, tagName, args)
+	h := new(heading)
+	h.View = mvc.NewView(h, ViewHeading, tagName, args)
+	return h
 }
 
 func newHeadingFromElement(element Element) mvc.View {
@@ -60,12 +62,14 @@ func newHeadingFromElement(element Element) mvc.View {
 	if !slices.Contains(slices.Collect(maps.Values(headingLevels)), tagName) {
 		panic(fmt.Sprintf("newHeadingFromElement: invalid tag name %q", tagName))
 	}
-	return mvc.NewViewWithElement(new(heading), element)
+	h := new(heading)
+	h.View = mvc.NewViewWithElement(h, element)
+	return h
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
 
-func (h *heading) SetView(view mvc.View) {
-	h.View = view
+func (h *heading) Self() mvc.View {
+	return h
 }

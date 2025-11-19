@@ -48,7 +48,9 @@ func init() {
 // LIFECYCLE
 
 func Modal(id string, args ...any) *modal {
-	return mvc.NewViewExEx(new(modal), ViewModal, templateModal, mvc.WithAttr("id", id), mvc.WithClass("modal-dialog-scrollable"), args).(*modal)
+	m := new(modal)
+	m.View = mvc.NewViewExEx(m, ViewModal, templateModal, mvc.WithAttr("id", id), mvc.WithClass("modal-dialog-scrollable"), args)
+	return m
 }
 
 func StickyModal(id string, args ...any) *modal {
@@ -61,14 +63,16 @@ func newModalFromElement(element Element) mvc.View {
 	if tagName != "DIV" {
 		panic(fmt.Sprintf("newModalFromElement: invalid tag name %q", tagName))
 	}
-	return mvc.NewViewWithElement(new(modal), element)
+	m := new(modal)
+	m.View = mvc.NewViewWithElement(m, element)
+	return m
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
 
-func (modal *modal) SetView(view mvc.View) {
-	modal.View = view
+func (modal *modal) Self() mvc.View {
+	return modal
 }
 
 func (modal *modal) Header(children ...any) mvc.View {

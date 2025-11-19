@@ -54,51 +54,71 @@ func init() {
 // LIFECYCLE
 
 func Para(args ...any) *text {
-	return mvc.NewView(new(text), ViewText, "P", args).(*text)
+	t := new(text)
+	t.View = mvc.NewView(t, ViewText, "P", args)
+	return t
 }
 
 func LeadPara(args ...any) *text {
-	return mvc.NewView(new(text), ViewText, "P", mvc.WithClass("lead"), args).(*text)
+	t := new(text)
+	t.View = mvc.NewView(t, ViewText, "P", mvc.WithClass("lead"), args)
+	return t
 }
 
 func Deleted(args ...any) *text {
-	return mvc.NewView(new(text), ViewText, "DEL", args).(*text)
+	t := new(text)
+	t.View = mvc.NewView(t, ViewText, "DEL", args)
+	return t
 }
 
 func Highlighted(args ...any) *text {
-	return mvc.NewView(new(text), ViewText, "MARK", args).(*text)
+	t := new(text)
+	t.View = mvc.NewView(t, ViewText, "MARK", args)
+	return t
 }
 
 func Smaller(args ...any) *text {
-	return mvc.NewView(new(text), ViewText, "SMALL", args).(*text)
+	t := new(text)
+	t.View = mvc.NewView(t, ViewText, "SMALL", args)
+	return t
 }
 
 func Strong(args ...any) *text {
-	return mvc.NewView(new(text), ViewText, "STRONG", args).(*text)
+	t := new(text)
+	t.View = mvc.NewView(t, ViewText, "STRONG", args)
+	return t
 }
 
 func Em(args ...any) *text {
-	return mvc.NewView(new(text), ViewText, "EM", args).(*text)
+	t := new(text)
+	t.View = mvc.NewView(t, ViewText, "EM", args)
+	return t
 }
 
 func Blockquote(args ...any) *text {
-	return mvc.NewViewExEx(new(text), ViewText, templateBlockquote, args).(*text)
+	t := new(text)
+	t.View = mvc.NewViewExEx(t, ViewText, templateBlockquote, args)
+	return t
 }
 
 func Code(args ...any) *text {
-	return mvc.NewView(new(text), ViewText, "CODE", args).(*text)
+	t := new(text)
+	t.View = mvc.NewView(t, ViewText, "CODE", args)
+	return t
 }
 
 func newTextFromElement(element Element) mvc.View {
 	if !slices.Contains(textTagNames, element.TagName()) {
 		return nil
 	}
-	return mvc.NewViewWithElement(new(text), element)
+	t := new(text)
+	t.View = mvc.NewViewWithElement(t, element)
+	return t
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
 
-func (text *text) SetView(view mvc.View) {
-	text.View = view
+func (text *text) Self() mvc.View {
+	return text
 }

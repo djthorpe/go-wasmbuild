@@ -81,18 +81,19 @@ func init() {
 
 func NavBar(id string, args ...any) *navbar {
 	// Create the navbar
-	navbar := mvc.NewViewExEx(new(navbar), ViewNavBar, templateNavBar, args).(*navbar)
+	n := new(navbar)
+	n.View = mvc.NewViewExEx(n, ViewNavBar, templateNavBar, args)
 
 	// Replace the toggle button slot
-	navbar.ReplaceSlot("toggle-button", mvc.HTML(templateToggleButton, mvc.WithAttr("data-bs-target", "#"+id), mvc.WithAttr("aria-controls", id)))
+	n.ReplaceSlot("toggle-button", mvc.HTML(templateToggleButton, mvc.WithAttr("data-bs-target", "#"+id), mvc.WithAttr("aria-controls", id)))
 
 	// Set the target for the toggle
-	if collapse := navbar.Root().GetElementsByClassName("collapse"); len(collapse) > 0 {
+	if collapse := n.Root().GetElementsByClassName("collapse"); len(collapse) > 0 {
 		collapse[0].SetAttribute("id", id)
 	}
 
 	// Return the navbar
-	return navbar
+	return n
 }
 
 func NavItem(href string, args ...any) *navitem {
@@ -102,57 +103,68 @@ func NavItem(href string, args ...any) *navitem {
 	}
 
 	// Return the navitem
-	item := mvc.NewViewExEx(
-		new(navitem), ViewNavItem, templateNavItem, mvc.WithAttr(dataAttrNavHref, href), args,
-	).(*navitem)
+	item := new(navitem)
+	item.View = mvc.NewViewExEx(
+		item, ViewNavItem, templateNavItem, mvc.WithAttr(dataAttrNavHref, href), args,
+	)
 	return item
 }
 
 func NavDivider() *navitem {
-	return mvc.NewViewExEx(new(navitem), ViewNavItem, templateNavDivider).(*navitem)
+	item := new(navitem)
+	item.View = mvc.NewViewExEx(item, ViewNavItem, templateNavDivider)
+	return item
 }
 
 func NavDropdown(args ...any) *navdropdown {
 	// Return the navdropdown
-	return mvc.NewViewExEx(
-		new(navdropdown), ViewNavDropdown, templateNavDropdown, args,
-	).(*navdropdown)
+	d := new(navdropdown)
+	d.View = mvc.NewViewExEx(
+		d, ViewNavDropdown, templateNavDropdown, args,
+	)
+	return d
 }
 
 func newNavBarFromElement(element Element) mvc.View {
 	if element.TagName() != "NAV" {
 		return nil
 	}
-	return mvc.NewViewWithElement(new(navbar), element)
+	n := new(navbar)
+	n.View = mvc.NewViewWithElement(n, element)
+	return n
 }
 
 func newNavItemFromElement(element Element) mvc.View {
 	if element.TagName() != "LI" {
 		return nil
 	}
-	return mvc.NewViewWithElement(new(navitem), element)
+	n := new(navitem)
+	n.View = mvc.NewViewWithElement(n, element)
+	return n
 }
 
 func newNavDropdownFromElement(element Element) mvc.View {
 	if element.TagName() != "LI" {
 		return nil
 	}
-	return mvc.NewViewWithElement(new(navdropdown), element)
+	n := new(navdropdown)
+	n.View = mvc.NewViewWithElement(n, element)
+	return n
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
 
-func (navbar *navbar) SetView(view mvc.View) {
-	navbar.View = view
+func (navbar *navbar) Self() mvc.View {
+	return navbar
 }
 
-func (navitem *navitem) SetView(view mvc.View) {
-	navitem.View = view
+func (navitem *navitem) Self() mvc.View {
+	return navitem
 }
 
-func (navdropdown *navdropdown) SetView(view mvc.View) {
-	navdropdown.View = view
+func (navdropdown *navdropdown) Self() mvc.View {
+	return navdropdown
 }
 
 func (navbar *navbar) Label(children ...any) mvc.View {

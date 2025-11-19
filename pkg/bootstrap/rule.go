@@ -35,11 +35,15 @@ func init() {
 // LIFECYCLE
 
 func HRule(args ...any) mvc.View {
-	return mvc.NewView(new(rule), ViewRule, "HR", args...).(*rule)
+	r := new(rule)
+	r.View = mvc.NewView(r, ViewRule, "HR", args...)
+	return r
 }
 
 func VRule(args ...any) mvc.View {
-	return mvc.NewView(new(rule), ViewRule, "DIV", mvc.WithClass("vr"), args)
+	r := new(rule)
+	r.View = mvc.NewView(r, ViewRule, "DIV", mvc.WithClass("vr"), args)
+	return r
 }
 
 func newRuleFromElement(element Element) mvc.View {
@@ -47,14 +51,16 @@ func newRuleFromElement(element Element) mvc.View {
 	if tagName != "HR" && tagName != "DIV" {
 		panic(fmt.Sprintf("newRuleFromElement: invalid tag name %q", tagName))
 	}
-	return mvc.NewViewWithElement(new(rule), element)
+	r := new(rule)
+	r.View = mvc.NewViewWithElement(r, element)
+	return r
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
 
-func (rule *rule) SetView(view mvc.View) {
-	rule.View = view
+func (rule *rule) Self() mvc.View {
+	return rule
 }
 
 func (rule *rule) Append(children ...any) mvc.View {

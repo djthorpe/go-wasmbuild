@@ -39,6 +39,28 @@ func (p Proto) Equal(other Proto) bool {
 	return p == other
 }
 
+// IsUndefined returns true if the value is undefined
+func (v Value) IsUndefined() bool {
+	return v.t == UndefinedProto
+}
+
+// IsNull returns true if the value is null
+func (v Value) IsNull() bool {
+	return v.t == NullProto
+}
+
+// New returns a new value from the prototype
+func (v Value) New(args ...any) Value {
+	// In non-wasm, we can't really create new JS objects from prototypes easily
+	// without a JS engine. For now, return Undefined or a mock.
+	return Undefined()
+}
+
+// Call calls a method on the value
+func (v Value) Call(method string, args ...any) Value {
+	return Undefined()
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 

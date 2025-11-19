@@ -44,36 +44,44 @@ func init() {
 // LIFECYCLE
 
 func Table(args ...any) *table {
-	return mvc.NewViewExEx(new(table), ViewTable, templateTable, args...).(*table)
+	t := new(table)
+	t.View = mvc.NewViewExEx(t, ViewTable, templateTable, args...)
+	return t
 }
 
 func Row(args ...any) *tablerow {
-	return mvc.NewView(new(tablerow), ViewTableRow, "TR", args...).(*tablerow)
+	t := new(tablerow)
+	t.View = mvc.NewView(t, ViewTableRow, "TR", args...)
+	return t
 }
 
 func newTableFromElement(element dom.Element) mvc.View {
 	if element.TagName() != "TABLE" {
 		return nil
 	}
-	return mvc.NewViewWithElement(new(table), element)
+	t := new(table)
+	t.View = mvc.NewViewWithElement(t, element)
+	return t
 }
 
 func newTableRowFromElement(element dom.Element) mvc.View {
 	if element.TagName() != "TR" {
 		return nil
 	}
-	return mvc.NewViewWithElement(new(tablerow), element)
+	t := new(tablerow)
+	t.View = mvc.NewViewWithElement(t, element)
+	return t
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
 
-func (table *table) SetView(view mvc.View) {
-	table.View = view
+func (table *table) Self() mvc.View {
+	return table
 }
 
-func (tablerow *tablerow) SetView(view mvc.View) {
-	tablerow.View = view
+func (tablerow *tablerow) Self() mvc.View {
+	return tablerow
 }
 
 func (table *table) Header(args ...any) mvc.View {
