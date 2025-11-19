@@ -13,6 +13,7 @@ func PaginationExamples() mvc.View {
 		bs.Heading(2, "Pagination Examples"), bs.HRule(),
 		bs.Heading(3, "Pagination", mvc.WithClass("mt-5")), Example(Example_Pagination_001),
 		bs.Heading(3, "Events", mvc.WithClass("mt-5")), Example(Example_Pagination_002),
+		bs.Heading(3, "Icons & Theme", mvc.WithClass("mt-5")), Example(Example_Pagination_003),
 	)
 }
 
@@ -42,4 +43,15 @@ func Example_Pagination_002() (mvc.View, string) {
 				response.Content()
 			}
 		})), sourcecode()
+}
+
+func Example_Pagination_003() (mvc.View, string) {
+	return bs.Pagination(
+		bs.Icon("arrow-left"),
+		"1", "2", "3",
+		bs.PaginationItem("4", bs.WithActive(true)),
+		"5",
+		bs.Icon("arrow-right"),
+		bs.WithTheme(bs.Dark),
+	), sourcecode()
 }
