@@ -1,7 +1,6 @@
 package bootstrap
 
 import (
-	"fmt"
 
 	// Packages
 	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
@@ -15,7 +14,7 @@ import (
 
 // text are elements that represent text views
 type rule struct {
-	mvc.View
+	BootstrapView
 }
 
 var _ mvc.View = (*rule)(nil)
@@ -36,23 +35,22 @@ func init() {
 
 func HRule(args ...any) mvc.View {
 	r := new(rule)
-	r.View = mvc.NewView(r, ViewRule, "HR", args...)
+	r.BootstrapView.View = mvc.NewView(r, ViewRule, "HR", args...)
 	return r
 }
 
 func VRule(args ...any) mvc.View {
 	r := new(rule)
-	r.View = mvc.NewView(r, ViewRule, "DIV", mvc.WithClass("vr"), args)
+	r.BootstrapView.View = mvc.NewView(r, ViewRule, "DIV", mvc.WithClass("vr"), args)
 	return r
 }
 
 func newRuleFromElement(element Element) mvc.View {
-	tagName := element.TagName()
-	if tagName != "HR" && tagName != "DIV" {
-		panic(fmt.Sprintf("newRuleFromElement: invalid tag name %q", tagName))
+	if element.TagName() != "HR" && element.TagName() != "DIV" {
+		return nil
 	}
 	r := new(rule)
-	r.View = mvc.NewViewWithElement(r, element)
+	r.BootstrapView.View = mvc.NewViewWithElement(r, element)
 	return r
 }
 

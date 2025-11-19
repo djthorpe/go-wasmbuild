@@ -14,15 +14,15 @@ import (
 // TYPES
 
 type navbar struct {
-	mvc.View
+	BootstrapView
 }
 
 type navitem struct {
-	mvc.View
+	BootstrapView
 }
 
 type navdropdown struct {
-	mvc.View
+	BootstrapView
 }
 
 var _ mvc.View = (*navbar)(nil)
@@ -82,7 +82,7 @@ func init() {
 func NavBar(id string, args ...any) *navbar {
 	// Create the navbar
 	n := new(navbar)
-	n.View = mvc.NewViewExEx(n, ViewNavBar, templateNavBar, args)
+	n.BootstrapView.View = mvc.NewViewExEx(n, ViewNavBar, templateNavBar, args)
 
 	// Replace the toggle button slot
 	n.ReplaceSlot("toggle-button", mvc.HTML(templateToggleButton, mvc.WithAttr("data-bs-target", "#"+id), mvc.WithAttr("aria-controls", id)))
@@ -104,7 +104,7 @@ func NavItem(href string, args ...any) *navitem {
 
 	// Return the navitem
 	item := new(navitem)
-	item.View = mvc.NewViewExEx(
+	item.BootstrapView.View = mvc.NewViewExEx(
 		item, ViewNavItem, templateNavItem, mvc.WithAttr(dataAttrNavHref, href), args,
 	)
 	return item
@@ -112,14 +112,14 @@ func NavItem(href string, args ...any) *navitem {
 
 func NavDivider() *navitem {
 	item := new(navitem)
-	item.View = mvc.NewViewExEx(item, ViewNavItem, templateNavDivider)
+	item.BootstrapView.View = mvc.NewViewExEx(item, ViewNavItem, templateNavDivider)
 	return item
 }
 
 func NavDropdown(args ...any) *navdropdown {
 	// Return the navdropdown
 	d := new(navdropdown)
-	d.View = mvc.NewViewExEx(
+	d.BootstrapView.View = mvc.NewViewExEx(
 		d, ViewNavDropdown, templateNavDropdown, args,
 	)
 	return d
@@ -130,7 +130,7 @@ func newNavBarFromElement(element Element) mvc.View {
 		return nil
 	}
 	n := new(navbar)
-	n.View = mvc.NewViewWithElement(n, element)
+	n.BootstrapView.View = mvc.NewViewWithElement(n, element)
 	return n
 }
 
@@ -139,7 +139,7 @@ func newNavItemFromElement(element Element) mvc.View {
 		return nil
 	}
 	n := new(navitem)
-	n.View = mvc.NewViewWithElement(n, element)
+	n.BootstrapView.View = mvc.NewViewWithElement(n, element)
 	return n
 }
 
@@ -148,7 +148,7 @@ func newNavDropdownFromElement(element Element) mvc.View {
 		return nil
 	}
 	n := new(navdropdown)
-	n.View = mvc.NewViewWithElement(n, element)
+	n.BootstrapView.View = mvc.NewViewWithElement(n, element)
 	return n
 }
 

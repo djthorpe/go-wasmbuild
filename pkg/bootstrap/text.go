@@ -2,6 +2,7 @@ package bootstrap
 
 import (
 	// Package imports
+
 	"slices"
 
 	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
@@ -14,7 +15,7 @@ import (
 // TYPES
 
 type text struct {
-	mvc.View
+	BootstrapView
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -55,55 +56,55 @@ func init() {
 
 func Para(args ...any) *text {
 	t := new(text)
-	t.View = mvc.NewView(t, ViewText, "P", args)
+	t.BootstrapView.View = mvc.NewView(t, ViewText, "P", args)
 	return t
 }
 
 func LeadPara(args ...any) *text {
 	t := new(text)
-	t.View = mvc.NewView(t, ViewText, "P", mvc.WithClass("lead"), args)
+	t.BootstrapView.View = mvc.NewView(t, ViewText, "P", mvc.WithClass("lead"), args)
 	return t
 }
 
 func Deleted(args ...any) *text {
 	t := new(text)
-	t.View = mvc.NewView(t, ViewText, "DEL", args)
+	t.BootstrapView.View = mvc.NewView(t, ViewText, "DEL", args)
 	return t
 }
 
 func Highlighted(args ...any) *text {
 	t := new(text)
-	t.View = mvc.NewView(t, ViewText, "MARK", args)
+	t.BootstrapView.View = mvc.NewView(t, ViewText, "MARK", args)
 	return t
 }
 
 func Smaller(args ...any) *text {
 	t := new(text)
-	t.View = mvc.NewView(t, ViewText, "SMALL", args)
+	t.BootstrapView.View = mvc.NewView(t, ViewText, "SMALL", args)
 	return t
 }
 
 func Strong(args ...any) *text {
 	t := new(text)
-	t.View = mvc.NewView(t, ViewText, "STRONG", args)
+	t.BootstrapView.View = mvc.NewView(t, ViewText, "STRONG", args)
 	return t
 }
 
 func Em(args ...any) *text {
 	t := new(text)
-	t.View = mvc.NewView(t, ViewText, "EM", args)
+	t.BootstrapView.View = mvc.NewView(t, ViewText, "EM", args)
 	return t
 }
 
 func Blockquote(args ...any) *text {
 	t := new(text)
-	t.View = mvc.NewViewExEx(t, ViewText, templateBlockquote, args)
+	t.BootstrapView.View = mvc.NewViewExEx(t, ViewText, templateBlockquote, args)
 	return t
 }
 
 func Code(args ...any) *text {
 	t := new(text)
-	t.View = mvc.NewView(t, ViewText, "CODE", args)
+	t.BootstrapView.View = mvc.NewView(t, ViewText, "CODE", args)
 	return t
 }
 
@@ -112,7 +113,7 @@ func newTextFromElement(element Element) mvc.View {
 		return nil
 	}
 	t := new(text)
-	t.View = mvc.NewViewWithElement(t, element)
+	t.BootstrapView.View = mvc.NewViewWithElement(t, element)
 	return t
 }
 

@@ -14,11 +14,11 @@ import (
 // TYPES
 
 type accordion struct {
-	mvc.View
+	BootstrapView
 }
 
 type accordionitem struct {
-	mvc.View
+	BootstrapView
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -52,51 +52,51 @@ func init() {
 
 func Accordion(name string, args ...any) *accordion {
 	a := new(accordion)
-	a.View = mvc.NewView(a, ViewAccordion, "DIV", mvc.WithClass("accordion"), mvc.WithID(name), args)
+	a.BootstrapView.View = mvc.NewView(a, ViewAccordion, "DIV", mvc.WithClass("accordion"), mvc.WithID(name), args)
 	return a
 }
 
 func FlushAccordion(name string, args ...any) *accordion {
 	a := new(accordion)
-	a.View = mvc.NewView(a, ViewAccordion, "DIV", mvc.WithClass("accordion", "accordion-flush"), mvc.WithID(name), args)
+	a.BootstrapView.View = mvc.NewView(a, ViewAccordion, "DIV", mvc.WithClass("accordion", "accordion-flush"), mvc.WithID(name), args)
 	return a
 }
 
 func AccordionItem(args ...any) *accordionitem {
 	a := new(accordionitem)
-	a.View = mvc.NewViewExEx(a, ViewAccordionItem, templateAccordionItem, args)
+	a.BootstrapView.View = mvc.NewViewExEx(a, ViewAccordionItem, templateAccordionItem, args)
 	return a
 }
 
-func newAccordionFromElement(element Element) mvc.View {
+func newAccordionFromElement(element Element) BootstrapView {
 	if element.TagName() != "DIV" {
 		return nil
 	}
 	a := new(accordion)
-	a.View = mvc.NewViewWithElement(a, element)
+	a.BootstrapView.View = mvc.NewViewWithElement(a, element)
 	return a
 }
-func newAccordionItemFromElement(element Element) mvc.View {
+func newAccordionItemFromElement(element Element) BootstrapView {
 	if element.TagName() != "DIV" {
 		return nil
 	}
 	a := new(accordionitem)
-	a.View = mvc.NewViewWithElement(a, element)
+	a.BootstrapView.View = mvc.NewViewWithElement(a, element)
 	return a
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
 
-func (accordion *accordion) Self() mvc.View {
+func (accordion *accordion) Self() BootstrapView {
 	return accordion
 }
 
-func (accordionitem *accordionitem) Self() mvc.View {
+func (accordionitem *accordionitem) Self() BootstrapView {
 	return accordionitem
 }
 
-func (accordion *accordion) Content(args ...any) mvc.View {
+func (accordion *accordion) Content(args ...any) BootstrapView {
 	for i, arg := range args {
 		switch arg := arg.(type) {
 		case *accordionitem:
@@ -132,5 +132,5 @@ func (accordion *accordion) Content(args ...any) mvc.View {
 			panic(ErrInternalAppError.Withf("Content[accordionitem] unexpected argument '%T'", arg))
 		}
 	}
-	return accordion.View.Content(args...)
+	return accordion.ReplaceSlot("body", wrapChildren(args...))
 }

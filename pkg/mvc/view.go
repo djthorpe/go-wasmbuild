@@ -46,23 +46,6 @@ type View interface {
 	// Apply class and attribute options to the view
 	Apply(...Opt) View
 
-	// TODO - Deprecate these methods in favour of ReplaceSlot
-
-	// Set the view's content to the given text, Element or View children
-	// If no arguments are given, the content is cleared
-	Content(...any) View
-
-	// Set the view's label element. Panics if the view does not have a slot
-	// called "label"
-	Label(...any) View
-
-	// Set the view's header element. Panics if the view does not have a slot
-	// called "header"
-	Header(...any) View
-
-	// Set the view's footer element. Panics if the view does not have a slot
-	// called "footer"
-	Footer(...any) View
 	// Return the Self object
 	Self() View
 
@@ -105,9 +88,6 @@ type ViewWithVisibility interface {
 	// Hides the view and returns the view
 	Hide() ViewWithVisibility
 }
-
-// ViewWithHeaderFooter is an alias for View, as View now supports Header and Footer
-type ViewWithHeaderFooter = View
 
 ///////////////////////////////////////////////////////////////////////////////
 // PRIVATE TYPES
@@ -182,7 +162,15 @@ func NewViewExEx(self View, name string, template string, args ...any) View {
 
 	// Set the content in the view
 	if len(content) > 0 {
-		v.self.Content(content...)
+		if len(content) == 1 {
+			v.self.ReplaceSlot("body", content[0])
+		} else {
+			div := HTML("div")
+			for _, child := range content {
+				div.AppendChild(NodeFromAny(child))
+			}
+			v.self.ReplaceSlot("body", div)
+		}
 	}
 
 	// Return the view
@@ -316,7 +304,15 @@ func NewView(self View, name string, tagName string, args ...any) View {
 
 	// Add content to the component
 	if len(content) > 0 {
-		v.self.Content(content...)
+		if len(content) == 1 {
+			v.self.ReplaceSlot("body", content[0])
+		} else {
+			div := HTML("div")
+			for _, child := range content {
+				div.AppendChild(NodeFromAny(child))
+			}
+			v.self.ReplaceSlot("body", div)
+		}
 	}
 
 	// Return the view
@@ -450,39 +446,6 @@ func (v *view) Apply(opts ...Opt) View {
 	return v.self.Self()
 }
 
-// Set content of the default slot
-func (v *view) Content(children ...any) View {
-	target, exists := v.slot[defaultSlot]
-	if !exists {
-		target = v.root
-	}
-	return v.replaceChildContent(target, children...)
-}
-
-func (v *view) Header(children ...any) View {
-	slot, exists := v.slot["header"]
-	if !exists {
-		panic("view.Header: view does not have a header slot")
-	}
-	return v.replaceChildContent(slot, children...)
-}
-
-func (v *view) Footer(children ...any) View {
-	slot, exists := v.slot["footer"]
-	if !exists {
-		panic("view.Footer: view does not have a footer slot")
-	}
-	return v.replaceChildContent(slot, children...)
-}
-
-func (v *view) Label(children ...any) View {
-	slot, exists := v.slot["label"]
-	if !exists {
-		panic("view.Label: view does not have a label slot")
-	}
-	return v.replaceChildContent(slot, children...)
-}
-
 func (v *view) AddEventListener(event string, handler func(dom.Event)) View {
 	v.root.AddEventListener(event, handler)
 	return v.self.Self()
@@ -543,17 +506,6 @@ func NodeFromAny(child any) dom.Node {
 		return c.Root()
 	}
 	panic(dom.ErrInternalAppError.Withf("NodeFromAny: unsupported: %T", child))
-}
-
-func (v *view) replaceChildContent(target dom.Element, children ...any) View {
-	if target == nil {
-		return v.self.Self()
-	}
-	target.SetInnerHTML("")
-	for _, child := range children {
-		target.AppendChild(NodeFromAny(child))
-	}
-	return v.self.Self()
 }
 
 func viewFromElement(element dom.Element) (View, error) {

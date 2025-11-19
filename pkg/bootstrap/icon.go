@@ -1,7 +1,6 @@
 package bootstrap
 
 import (
-	"fmt"
 
 	// Packages
 	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
@@ -15,7 +14,7 @@ import (
 
 // text are elements that represent text views
 type icon struct {
-	mvc.View
+	BootstrapView
 }
 
 var _ mvc.View = (*icon)(nil)
@@ -36,17 +35,16 @@ func init() {
 
 func Icon(name string, args ...any) mvc.View {
 	i := new(icon)
-	i.View = mvc.NewView(i, ViewIcon, "I", mvc.WithClass("bi-"+name), args)
+	i.BootstrapView.View = mvc.NewView(i, ViewIcon, "I", mvc.WithClass("bi-"+name), args)
 	return i
 }
 
 func newIconFromElement(element Element) mvc.View {
-	tagName := element.TagName()
-	if tagName != "I" {
-		panic(fmt.Sprintf("newIconFromElement: invalid tag name %q", tagName))
+	if element.TagName() != "I" {
+		return nil
 	}
 	i := new(icon)
-	i.View = mvc.NewViewWithElement(i, element)
+	i.BootstrapView.View = mvc.NewViewWithElement(i, element)
 	return i
 }
 

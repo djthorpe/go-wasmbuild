@@ -14,7 +14,7 @@ import (
 // TYPES
 
 type pagination struct {
-	mvc.View
+	BootstrapView
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -42,7 +42,7 @@ func init() {
 
 func Pagination(args ...any) *pagination {
 	p := new(pagination)
-	p.View = mvc.NewViewExEx(p, ViewPagination, templatePagination, args)
+	p.BootstrapView.View = mvc.NewViewExEx(p, ViewPagination, templatePagination, args)
 	return p
 }
 
@@ -51,7 +51,7 @@ func newPaginationFromElement(element Element) mvc.View {
 		return nil
 	}
 	p := new(pagination)
-	p.View = mvc.NewViewWithElement(p, element)
+	p.BootstrapView.View = mvc.NewViewWithElement(p, element)
 	return p
 }
 
@@ -75,5 +75,5 @@ func (pagination *pagination) Content(args ...any) mvc.View {
 			panic(ErrInternalAppError.Withf("Content[pagination] unexpected argument '%T'", arg))
 		}
 	}
-	return pagination.View.Content(args...)
+	return pagination.ReplaceSlot("body", wrapChildren(args...))
 }

@@ -110,12 +110,12 @@ func (router *router) match(hash string) *page {
 // page exists, the first registered page (if any) becomes the default view.
 func (router *router) refresh(hash string) {
 	if page := router.match(hash); page != nil {
-		router.Content(page.view)
+		router.ReplaceSlot("body", page.view)
 		return
 	}
 	if len(router.pages) > 0 {
-		router.Content(router.pages[0].view)
+		router.ReplaceSlot("body", router.pages[0].view)
 		return
 	}
-	router.Content()
+	router.ReplaceSlot("body", HTML("div"))
 }

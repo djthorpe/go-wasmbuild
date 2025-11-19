@@ -15,7 +15,7 @@ import (
 // TYPES
 
 type offcanvas struct {
-	mvc.View
+	BootstrapView
 }
 
 var _ mvc.ViewWithVisibility = (*offcanvas)(nil)
@@ -45,17 +45,16 @@ func init() {
 
 func Offcanvas(id string, args ...any) *offcanvas {
 	o := new(offcanvas)
-	o.View = mvc.NewViewExEx(o, ViewOffcanvas, templateOffcanvas, mvc.WithAttr("id", id), mvc.WithAttr("aria-labelledby", id+"-label"), args)
+	o.BootstrapView.View = mvc.NewViewExEx(o, ViewOffcanvas, templateOffcanvas, mvc.WithAttr("id", id), mvc.WithAttr("aria-labelledby", id+"-label"), args)
 	return o
 }
 
 func newOffcanvasFromElement(element Element) mvc.View {
-	tagName := element.TagName()
-	if tagName != "DIV" {
-		panic(fmt.Sprintf("newOffcanvasFromElement: invalid tag name %q", tagName))
+	if element.TagName() != "DIV" {
+		return nil
 	}
 	o := new(offcanvas)
-	o.View = mvc.NewViewWithElement(o, element)
+	o.BootstrapView.View = mvc.NewViewWithElement(o, element)
 	return o
 }
 

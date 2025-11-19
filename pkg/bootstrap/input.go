@@ -16,23 +16,23 @@ import (
 // TYPES
 
 type form struct {
-	mvc.View
+	BootstrapView
 }
 
 type input struct {
-	mvc.View
+	BootstrapView
 }
 
 type inputgroup struct {
-	mvc.View
+	BootstrapView
 }
 
 type selectinput struct {
-	mvc.View
+	BootstrapView
 }
 
 type inputswitch struct {
-	mvc.View
+	BootstrapView
 }
 
 type inputoption struct {
@@ -84,14 +84,14 @@ func init() {
 
 func Form(name string, args ...any) *form {
 	f := new(form)
-	f.View = mvc.NewView(f, ViewForm, "FORM", mvc.WithAttr("name", name), args)
+	f.BootstrapView.View = mvc.NewView(f, ViewForm, "FORM", mvc.WithAttr("name", name), args)
 	return f
 }
 
 func Input(name string, args ...any) *input {
 	// Make the base input view
 	i := new(input)
-	i.View = mvc.NewViewExEx(i, ViewInput, templateInput)
+	i.BootstrapView.View = mvc.NewViewExEx(i, ViewInput, templateInput)
 
 	// Replace the content body with an input element
 	i.ReplaceSlot("", mvc.HTML("INPUT", mvc.WithAttr("id", name), mvc.WithClass("form-control"), args))
@@ -116,14 +116,14 @@ func SearchInput(name string, args ...any) *input {
 
 func InputGroup(args ...any) *inputgroup {
 	i := new(inputgroup)
-	i.View = mvc.NewView(i, ViewInputGroup, "DIV", mvc.WithClass("input-group"), args)
+	i.BootstrapView.View = mvc.NewView(i, ViewInputGroup, "DIV", mvc.WithClass("input-group"), args)
 	return i
 }
 
 func Textarea(name string, args ...any) *input {
 	// Make the base input view
 	i := new(input)
-	i.View = mvc.NewViewExEx(i, ViewInput, templateInput)
+	i.BootstrapView.View = mvc.NewViewExEx(i, ViewInput, templateInput)
 
 	// Replace the content body with an input element
 	i.ReplaceSlot("", mvc.HTML("TEXTAREA", mvc.WithAttr("id", name), mvc.WithClass("form-control"), args))
@@ -132,19 +132,19 @@ func Textarea(name string, args ...any) *input {
 
 func Select(name string, args ...any) *selectinput {
 	s := new(selectinput)
-	s.View = mvc.NewView(s, ViewSelect, "SELECT", mvc.WithAttr("id", name), mvc.WithClass("form-select"), args)
+	s.BootstrapView.View = mvc.NewView(s, ViewSelect, "SELECT", mvc.WithAttr("id", name), mvc.WithClass("form-select"), args)
 	return s
 }
 
 func MultiSelect(name string, args ...any) *selectinput {
 	s := new(selectinput)
-	s.View = mvc.NewView(s, ViewSelect, "SELECT", mvc.WithAttr("id", name), mvc.WithAttr("multiple", "multiple"), mvc.WithClass("form-select"), args)
+	s.BootstrapView.View = mvc.NewView(s, ViewSelect, "SELECT", mvc.WithAttr("id", name), mvc.WithAttr("multiple", "multiple"), mvc.WithClass("form-select"), args)
 	return s
 }
 
 func RadioGroup(name string, args ...any) *inputswitch {
 	i := new(inputswitch)
-	i.View = mvc.NewView(i, ViewRadioGroup, "DIV", mvc.WithAttr("id", name), args)
+	i.BootstrapView.View = mvc.NewView(i, ViewRadioGroup, "DIV", mvc.WithAttr("id", name), args)
 	return i
 }
 
@@ -154,7 +154,7 @@ func InlineRadioGroup(name string, args ...any) *inputswitch {
 
 func CheckboxGroup(name string, args ...any) *inputswitch {
 	i := new(inputswitch)
-	i.View = mvc.NewView(i, ViewCheckboxGroup, "DIV", mvc.WithAttr("id", name), args)
+	i.BootstrapView.View = mvc.NewView(i, ViewCheckboxGroup, "DIV", mvc.WithAttr("id", name), args)
 	return i
 }
 
@@ -179,7 +179,7 @@ func newFormFromElement(element Element) mvc.View {
 		return nil
 	}
 	f := new(form)
-	f.View = mvc.NewViewWithElement(f, element)
+	f.BootstrapView.View = mvc.NewViewWithElement(f, element)
 	return f
 }
 
@@ -188,7 +188,7 @@ func newInputFromElement(element Element) mvc.View {
 		return nil
 	}
 	i := new(input)
-	i.View = mvc.NewViewWithElement(i, element)
+	i.BootstrapView.View = mvc.NewViewWithElement(i, element)
 	return i
 }
 
@@ -197,7 +197,7 @@ func newInputGroupFromElement(element Element) mvc.View {
 		return nil
 	}
 	i := new(inputgroup)
-	i.View = mvc.NewViewWithElement(i, element)
+	i.BootstrapView.View = mvc.NewViewWithElement(i, element)
 	return i
 }
 
@@ -206,7 +206,7 @@ func newSelectFromElement(element Element) mvc.View {
 		return nil
 	}
 	s := new(selectinput)
-	s.View = mvc.NewViewWithElement(s, element)
+	s.BootstrapView.View = mvc.NewViewWithElement(s, element)
 	return s
 }
 
@@ -215,7 +215,7 @@ func newRadioGroupFromElement(element Element) mvc.View {
 		return nil
 	}
 	i := new(inputswitch)
-	i.View = mvc.NewViewWithElement(i, element)
+	i.BootstrapView.View = mvc.NewViewWithElement(i, element)
 	return i
 }
 
@@ -224,7 +224,7 @@ func newCheckboxGroupFromElement(element Element) mvc.View {
 		return nil
 	}
 	i := new(inputswitch)
-	i.View = mvc.NewViewWithElement(i, element)
+	i.BootstrapView.View = mvc.NewViewWithElement(i, element)
 	return i
 }
 
@@ -271,7 +271,7 @@ func (inputgroup *inputgroup) Content(args ...any) mvc.View {
 			nodes = append(nodes, child)
 		}
 	}
-	return inputgroup.View.Content(nodes...)
+	return inputgroup.ReplaceSlot("body", wrapChildren(nodes...))
 }
 
 func (inputswitch *inputswitch) Content(args ...any) mvc.View {
@@ -328,7 +328,7 @@ func (inputswitch *inputswitch) Content(args ...any) mvc.View {
 			panic("Content[inputswitch]: unsupported child type for select input")
 		}
 	}
-	return inputswitch.View.Content(nodes...)
+	return inputswitch.ReplaceSlot("body", wrapChildren(nodes...))
 }
 
 func (selectinput *selectinput) Content(args ...any) mvc.View {
@@ -343,7 +343,7 @@ func (selectinput *selectinput) Content(args ...any) mvc.View {
 			panic("Append: unsupported child type for select input")
 		}
 	}
-	return selectinput.View.Content(nodes...)
+	return selectinput.ReplaceSlot("body", wrapChildren(nodes...))
 }
 
 func (input *input) Value() string {

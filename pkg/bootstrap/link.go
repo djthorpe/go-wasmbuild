@@ -15,7 +15,7 @@ import (
 
 // text are elements that represent text views
 type link struct {
-	mvc.View
+	BootstrapView
 }
 
 var _ mvc.View = (*link)(nil)
@@ -36,17 +36,16 @@ func init() {
 
 func Link(href string, args ...any) mvc.View {
 	l := new(link)
-	l.View = mvc.NewView(l, ViewLink, "A", mvc.WithAttr("href", href), args)
+	l.BootstrapView.View = mvc.NewView(l, ViewLink, "A", mvc.WithAttr("href", href), args)
 	return l
 }
 
 func newLinkFromElement(element Element) mvc.View {
-	tagName := element.TagName()
-	if tagName != "A" {
-		panic(fmt.Sprintf("newLinkFromElement: invalid tag name %q", tagName))
+	if element.TagName() != "A" {
+		panic(fmt.Sprintf("newLinkFromElement: invalid tag name %q", element.TagName()))
 	}
 	l := new(link)
-	l.View = mvc.NewViewWithElement(l, element)
+	l.BootstrapView.View = mvc.NewViewWithElement(l, element)
 	return l
 }
 

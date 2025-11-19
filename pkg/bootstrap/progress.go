@@ -15,7 +15,7 @@ import (
 // TYPES
 
 type progress struct {
-	mvc.View
+	BootstrapView
 	striped bool
 }
 
@@ -37,7 +37,7 @@ func init() {
 
 func Progress(args ...any) *progress {
 	p := new(progress)
-	p.View = mvc.NewView(p, ViewProgress, "DIV", mvc.WithClass("progress"), WithMinMax(0, 100), args)
+	p.BootstrapView.View = mvc.NewView(p, ViewProgress, "DIV", mvc.WithClass("progress"), WithMinMax(0, 100), args)
 	return p
 }
 
@@ -52,7 +52,7 @@ func newProgressFromElement(element Element) mvc.View {
 		return nil
 	}
 	p := new(progress)
-	p.View = mvc.NewViewWithElement(p, element)
+	p.BootstrapView.View = mvc.NewViewWithElement(p, element)
 	return p
 }
 

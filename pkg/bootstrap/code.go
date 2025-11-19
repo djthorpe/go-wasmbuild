@@ -12,7 +12,7 @@ import (
 // TYPES
 
 type codeblock struct {
-	mvc.View
+	BootstrapView
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -31,7 +31,7 @@ func init() {
 
 func CodeBlock(args ...any) *codeblock {
 	c := new(codeblock)
-	c.View = mvc.NewView(c, ViewCodeBlock, "PRE", mvc.WithClass("codeblock"), args)
+	c.BootstrapView.View = mvc.NewView(c, ViewCodeBlock, "PRE", mvc.WithClass("codeblock"), args)
 	return c
 }
 
@@ -40,7 +40,7 @@ func newCodeBlockFromElement(element Element) mvc.View {
 		return nil
 	}
 	c := new(codeblock)
-	c.View = mvc.NewViewWithElement(c, element)
+	c.BootstrapView.View = mvc.NewViewWithElement(c, element)
 	return c
 }
 

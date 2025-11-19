@@ -14,7 +14,7 @@ import (
 // TYPES
 
 type modal struct {
-	mvc.View
+	BootstrapView
 }
 
 var _ mvc.View = (*modal)(nil)
@@ -49,7 +49,7 @@ func init() {
 
 func Modal(id string, args ...any) *modal {
 	m := new(modal)
-	m.View = mvc.NewViewExEx(m, ViewModal, templateModal, mvc.WithAttr("id", id), mvc.WithClass("modal-dialog-scrollable"), args)
+	m.BootstrapView.View = mvc.NewViewExEx(m, ViewModal, templateModal, mvc.WithAttr("id", id), mvc.WithClass("modal-dialog-scrollable"), args)
 	return m
 }
 
@@ -59,12 +59,11 @@ func StickyModal(id string, args ...any) *modal {
 }
 
 func newModalFromElement(element Element) mvc.View {
-	tagName := element.TagName()
-	if tagName != "DIV" {
-		panic(fmt.Sprintf("newModalFromElement: invalid tag name %q", tagName))
+	if element.TagName() != "DIV" {
+		return nil
 	}
 	m := new(modal)
-	m.View = mvc.NewViewWithElement(m, element)
+	m.BootstrapView.View = mvc.NewViewWithElement(m, element)
 	return m
 }
 

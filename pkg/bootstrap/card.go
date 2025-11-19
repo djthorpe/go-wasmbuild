@@ -14,11 +14,11 @@ import (
 // TYPES
 
 type card struct {
-	mvc.View
+	BootstrapView
 }
 
 type cardgroup struct {
-	mvc.View
+	BootstrapView
 }
 
 var _ mvc.View = (*cardgroup)(nil)
@@ -54,33 +54,31 @@ func init() {
 
 func Card(args ...any) *card {
 	c := new(card)
-	c.View = mvc.NewViewExEx(c, ViewCard, templateCard, args)
+	c.BootstrapView.View = mvc.NewViewExEx(c, ViewCard, templateCard, args)
 	return c
 }
 
 func CardGroup(args ...any) *cardgroup {
 	c := new(cardgroup)
-	c.View = mvc.NewView(c, ViewCardGroup, "DIV", mvc.WithClass("card-group"), args)
+	c.BootstrapView.View = mvc.NewView(c, ViewCardGroup, "DIV", mvc.WithClass("card-group"), args)
 	return c
 }
 
 func newCardFromElement(element Element) mvc.View {
-	tagName := element.TagName()
-	if tagName != "DIV" {
-		panic(fmt.Sprintf("newCardFromElement: invalid tag name %q", tagName))
+	if element.TagName() != "DIV" {
+		return nil
 	}
 	c := new(card)
-	c.View = mvc.NewViewWithElement(c, element)
+	c.BootstrapView.View = mvc.NewViewWithElement(c, element)
 	return c
 }
 
 func newCardGroupFromElement(element Element) mvc.View {
-	tagName := element.TagName()
-	if tagName != "DIV" {
-		panic(fmt.Sprintf("newCardGroupFromElement: invalid tag name %q", tagName))
+	if element.TagName() != "DIV" {
+		return nil
 	}
 	c := new(cardgroup)
-	c.View = mvc.NewViewWithElement(c, element)
+	c.BootstrapView.View = mvc.NewViewWithElement(c, element)
 	return c
 }
 
@@ -109,12 +107,14 @@ func (card *card) Content(children ...any) mvc.View {
 
 func (card *card) Label(children ...any) mvc.View {
 	if len(children) == 0 {
-		return card.View.Label()
+		return card.ReplaceSlot("label", mvc.HTML("div"))
 	}
 	if len(children) > 1 {
 		panic("card.Label: only one child element is allowed")
 	}
 	switch child := children[0].(type) {
+	case string:
+		return card.ReplaceSlot("label", mvc.HTML("h5", mvc.WithClass("card-title"), mvc.WithInnerText(child)))
 	case mvc.View:
 		child.Root().ClassList().Add("card-img-top")
 		return card.ReplaceSlot("label", child)

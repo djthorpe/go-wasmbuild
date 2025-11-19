@@ -1,7 +1,6 @@
 package bootstrap
 
 import (
-	"fmt"
 
 	// Packages
 	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
@@ -14,7 +13,7 @@ import (
 // TYPES
 
 type grid struct {
-	mvc.View
+	BootstrapView
 }
 
 var _ mvc.View = (*grid)(nil)
@@ -35,17 +34,16 @@ func init() {
 
 func Grid(args ...any) *grid {
 	g := new(grid)
-	g.View = mvc.NewView(g, ViewGrid, "DIV", mvc.WithClass("row"), args)
+	g.BootstrapView.View = mvc.NewView(g, ViewGrid, "DIV", mvc.WithClass("row"), args)
 	return g
 }
 
 func newGridFromElement(element Element) mvc.View {
-	tagName := element.TagName()
-	if tagName != "DIV" {
-		panic(fmt.Sprintf("newGridFromElement: invalid tag name %q", tagName))
+	if element.TagName() != "DIV" {
+		return nil
 	}
 	g := new(grid)
-	g.View = mvc.NewViewWithElement(g, element)
+	g.BootstrapView.View = mvc.NewViewWithElement(g, element)
 	return g
 }
 

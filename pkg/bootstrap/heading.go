@@ -17,7 +17,7 @@ import (
 
 // heading represents a heading element, e.g. H1, H2, etc.
 type heading struct {
-	mvc.View
+	BootstrapView
 }
 
 var _ mvc.View = (*heading)(nil)
@@ -53,7 +53,7 @@ func Heading(level int, args ...any) mvc.View {
 		panic(fmt.Sprintf("Heading: invalid level %d", level))
 	}
 	h := new(heading)
-	h.View = mvc.NewView(h, ViewHeading, tagName, args)
+	h.BootstrapView.View = mvc.NewView(h, ViewHeading, tagName, args)
 	return h
 }
 
@@ -63,7 +63,7 @@ func newHeadingFromElement(element Element) mvc.View {
 		panic(fmt.Sprintf("newHeadingFromElement: invalid tag name %q", tagName))
 	}
 	h := new(heading)
-	h.View = mvc.NewViewWithElement(h, element)
+	h.BootstrapView.View = mvc.NewViewWithElement(h, element)
 	return h
 }
 

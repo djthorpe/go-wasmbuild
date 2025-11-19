@@ -12,7 +12,7 @@ import (
 // TYPES
 
 type badge struct {
-	mvc.View
+	BootstrapView
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -32,7 +32,7 @@ func init() {
 func Badge(args ...any) *badge {
 	// Return the badge
 	b := new(badge)
-	b.View = mvc.NewView(
+	b.BootstrapView.View = mvc.NewView(
 		b, ViewBadge, "SPAN",
 		mvc.WithClass("badge", "position-relative"), WithColor(Primary), args,
 	)
@@ -48,7 +48,7 @@ func newBadgeFromElement(element Element) mvc.View {
 		return nil
 	}
 	b := new(badge)
-	b.View = mvc.NewViewWithElement(b, element)
+	b.BootstrapView.View = mvc.NewViewWithElement(b, element)
 	return b
 }
 

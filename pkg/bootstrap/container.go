@@ -13,7 +13,7 @@ import (
 
 // containers are elements to wrap any content
 type container struct {
-	mvc.View
+	BootstrapView
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -32,13 +32,13 @@ func init() {
 
 func Container(args ...any) mvc.View {
 	c := new(container)
-	c.View = mvc.NewView(c, ViewContainer, "DIV", mvc.WithClass("container"), args)
+	c.BootstrapView.View = mvc.NewView(c, ViewContainer, "DIV", mvc.WithClass("container"), args)
 	return c
 }
 
 func FluidContainer(args ...any) mvc.View {
 	c := new(container)
-	c.View = mvc.NewView(c, ViewContainer, "DIV", mvc.WithClass("container-fluid"), args)
+	c.BootstrapView.View = mvc.NewView(c, ViewContainer, "DIV", mvc.WithClass("container-fluid"), args)
 	return c
 }
 
@@ -47,7 +47,7 @@ func newContainerFromElement(element Element) mvc.View {
 		return nil
 	}
 	c := new(container)
-	c.View = mvc.NewViewWithElement(c, element)
+	c.BootstrapView.View = mvc.NewViewWithElement(c, element)
 	return c
 }
 

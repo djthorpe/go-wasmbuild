@@ -12,11 +12,11 @@ import (
 // TYPES
 
 type list struct {
-	mvc.View
+	BootstrapView
 }
 
 type deflist struct {
-	mvc.View
+	BootstrapView
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -39,31 +39,31 @@ func init() {
 
 func List(args ...any) mvc.View {
 	l := new(list)
-	l.View = mvc.NewView(l, ViewList, "OL", args...)
+	l.BootstrapView.View = mvc.NewView(l, ViewList, "OL", args...)
 	return l
 }
 
 func ListGroup(args ...any) mvc.View {
 	l := new(list)
-	l.View = mvc.NewView(l, ViewListGroup, "UL", mvc.WithClass("list-group"), args)
+	l.BootstrapView.View = mvc.NewView(l, ViewListGroup, "UL", mvc.WithClass("list-group"), args)
 	return l
 }
 
 func DefinitionList(args ...any) mvc.View {
 	d := new(deflist)
-	d.View = mvc.NewView(d, ViewDefinitionList, "DL", mvc.WithClass("row"), args)
+	d.BootstrapView.View = mvc.NewView(d, ViewDefinitionList, "DL", mvc.WithClass("row"), args)
 	return d
 }
 
 func BulletList(args ...any) mvc.View {
 	l := new(list)
-	l.View = mvc.NewView(l, ViewList, "UL", args...)
+	l.BootstrapView.View = mvc.NewView(l, ViewList, "UL", args...)
 	return l
 }
 
 func UnstyledList(args ...any) mvc.View {
 	l := new(list)
-	l.View = mvc.NewView(l, ViewList, "UL", mvc.WithClass("list-unstyled"), args)
+	l.BootstrapView.View = mvc.NewView(l, ViewList, "UL", mvc.WithClass("list-unstyled"), args)
 	return l
 }
 
@@ -72,7 +72,7 @@ func newListFromElement(element Element) mvc.View {
 		return nil
 	}
 	l := new(list)
-	l.View = mvc.NewViewWithElement(l, element)
+	l.BootstrapView.View = mvc.NewViewWithElement(l, element)
 	return l
 }
 
@@ -81,7 +81,7 @@ func newListGroupFromElement(element Element) mvc.View {
 		return nil
 	}
 	l := new(list)
-	l.View = mvc.NewViewWithElement(l, element)
+	l.BootstrapView.View = mvc.NewViewWithElement(l, element)
 	return l
 }
 
@@ -90,7 +90,7 @@ func newDefinitionListFromElement(element Element) mvc.View {
 		return nil
 	}
 	d := new(deflist)
-	d.View = mvc.NewViewWithElement(d, element)
+	d.BootstrapView.View = mvc.NewViewWithElement(d, element)
 	return d
 }
 
@@ -115,7 +115,14 @@ func (list *list) Content(args ...any) mvc.View {
 		col.AppendChild(mvc.NodeFromAny(child))
 		nodes = append(nodes, col)
 	}
-	return list.View.Content(nodes...)
+	if len(nodes) == 1 {
+		return list.ReplaceSlot("body", nodes[0])
+	}
+	div := mvc.HTML("div")
+	for _, node := range nodes {
+		div.AppendChild(mvc.NodeFromAny(node))
+	}
+	return list.ReplaceSlot("body", div)
 }
 
 func (deflist *deflist) Content(args ...any) mvc.View {
@@ -129,5 +136,12 @@ func (deflist *deflist) Content(args ...any) mvc.View {
 			panic("Content[deflist]: child must be of type Option")
 		}
 	}
-	return deflist.View.Content(nodes...)
+	if len(nodes) == 1 {
+		return deflist.ReplaceSlot("body", nodes[0])
+	}
+	div := mvc.HTML("div")
+	for _, node := range nodes {
+		div.AppendChild(mvc.NodeFromAny(node))
+	}
+	return deflist.ReplaceSlot("body", div)
 }

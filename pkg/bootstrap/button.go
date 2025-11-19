@@ -12,15 +12,15 @@ import (
 // TYPES
 
 type button struct {
-	mvc.View
+	BootstrapView
 }
 
 type buttongroup struct {
-	mvc.View
+	BootstrapView
 }
 
 type buttontoolbar struct {
-	mvc.View
+	BootstrapView
 }
 
 var _ mvc.View = (*button)(nil)
@@ -55,7 +55,7 @@ func init() {
 
 func Button(args ...any) *button {
 	b := new(button)
-	b.View = mvc.NewViewExEx(b, ViewButton, templateButton, args)
+	b.BootstrapView.View = mvc.NewViewExEx(b, ViewButton, templateButton, args)
 	return b
 }
 
@@ -73,7 +73,8 @@ func CloseButton(args ...any) *button {
 
 func ButtonToolbar(args ...any) mvc.View {
 	b := new(buttontoolbar)
-	b.View = mvc.NewView(b, ViewButtonToolbar, "DIV", mvc.WithAttr("role", "toolbar"), mvc.WithClass("btn-toolbar"), args)
+	allArgs := append([]any{mvc.WithAttr("role", "toolbar"), mvc.WithClass("btn-toolbar")}, args...)
+	b.BootstrapView.View = mvc.NewView(b, ViewButtonToolbar, "div", allArgs...)
 	return b
 }
 
@@ -94,7 +95,7 @@ func newButtonFromElement(element Element) mvc.View {
 		return nil
 	}
 	b := new(button)
-	b.View = mvc.NewViewWithElement(b, element)
+	b.BootstrapView.View = mvc.NewViewWithElement(b, element)
 	return b
 }
 
@@ -103,7 +104,7 @@ func newButtonGroupFromElement(element Element) mvc.View {
 		return nil
 	}
 	b := new(buttongroup)
-	b.View = mvc.NewViewWithElement(b, element)
+	b.BootstrapView.View = mvc.NewViewWithElement(b, element)
 	return b
 }
 
@@ -112,7 +113,7 @@ func newButtonToolbarFromElement(element Element) mvc.View {
 		return nil
 	}
 	b := new(buttontoolbar)
-	b.View = mvc.NewViewWithElement(b, element)
+	b.BootstrapView.View = mvc.NewViewWithElement(b, element)
 	return b
 }
 

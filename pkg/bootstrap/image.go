@@ -12,7 +12,7 @@ import (
 // TYPES
 
 type img struct {
-	mvc.View
+	BootstrapView
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -32,7 +32,7 @@ func init() {
 func Image(href string, args ...any) *img {
 	// Return the img
 	i := new(img)
-	i.View = mvc.NewView(
+	i.BootstrapView.View = mvc.NewView(
 		i, ViewImage, "IMG",
 		mvc.WithAttr("src", href), mvc.WithClass("img-fluid"), args,
 	)
@@ -44,7 +44,7 @@ func newImgFromElement(element Element) mvc.View {
 		return nil
 	}
 	i := new(img)
-	i.View = mvc.NewViewWithElement(i, element)
+	i.BootstrapView.View = mvc.NewViewWithElement(i, element)
 	return i
 }
 

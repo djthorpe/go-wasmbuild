@@ -10,11 +10,11 @@ import (
 // TYPES
 
 type table struct {
-	mvc.View
+	BootstrapView
 }
 
 type tablerow struct {
-	mvc.View
+	BootstrapView
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -45,13 +45,13 @@ func init() {
 
 func Table(args ...any) *table {
 	t := new(table)
-	t.View = mvc.NewViewExEx(t, ViewTable, templateTable, args...)
+	t.BootstrapView.View = mvc.NewViewExEx(t, ViewTable, templateTable, args...)
 	return t
 }
 
 func Row(args ...any) *tablerow {
 	t := new(tablerow)
-	t.View = mvc.NewView(t, ViewTableRow, "TR", args...)
+	t.BootstrapView.View = mvc.NewView(t, ViewTableRow, "TR", args...)
 	return t
 }
 
@@ -60,7 +60,7 @@ func newTableFromElement(element dom.Element) mvc.View {
 		return nil
 	}
 	t := new(table)
-	t.View = mvc.NewViewWithElement(t, element)
+	t.BootstrapView.View = mvc.NewViewWithElement(t, element)
 	return t
 }
 
@@ -69,7 +69,7 @@ func newTableRowFromElement(element dom.Element) mvc.View {
 		return nil
 	}
 	t := new(tablerow)
-	t.View = mvc.NewViewWithElement(t, element)
+	t.BootstrapView.View = mvc.NewViewWithElement(t, element)
 	return t
 }
 
@@ -133,7 +133,7 @@ func (tablerow *tablerow) Content(args ...any) mvc.View {
 			args[i] = arg
 		}
 	}
-	return tablerow.View.Content(args...)
+	return tablerow.ReplaceSlot("body", wrapChildren(args...))
 }
 
 ///////////////////////////////////////////////////////////////////////////////
