@@ -13,14 +13,21 @@ import (
 // WithDisabled adds a disabled attribute to a view
 func WithDisabled(disabled bool) mvc.Opt {
 	return func(o mvc.OptSet) error {
-		//  && o.Name() != ViewNavItem
-		if o.Name() != ViewButton {
+		switch o.Name() {
+		case ViewButton:
+			if disabled {
+				return mvc.WithAttr("disabled", "disabled")(o)
+			} else {
+				return mvc.WithoutAttr("disabled")(o)
+			}
+		case ViewPaginationItem:
+			if disabled {
+				return mvc.WithClass("disabled")(o)
+			} else {
+				return mvc.WithoutClass("disabled")(o)
+			}
+		default:
 			return fmt.Errorf("WithDisabled: invalid view type %q", o.Name())
-		}
-		if disabled {
-			return mvc.WithAttr("disabled", "disabled")(o)
-		} else {
-			return mvc.WithoutAttr("disabled")(o)
 		}
 	}
 }
@@ -28,14 +35,15 @@ func WithDisabled(disabled bool) mvc.Opt {
 // WithActive adds an active attribute to a view
 func WithActive(active bool) mvc.Opt {
 	return func(o mvc.OptSet) error {
-		//  && o.Name() != ViewNavItem
-		if o.Name() != ViewButton {
+		switch o.Name() {
+		case ViewButton, ViewPaginationItem:
+			if active {
+				return mvc.WithClass("active")(o)
+			} else {
+				return mvc.WithoutClass("active")(o)
+			}
+		default:
 			return fmt.Errorf("WithActive: invalid view type %q", o.Name())
-		}
-		if active {
-			return mvc.WithClass("active")(o)
-		} else {
-			return mvc.WithoutClass("active")(o)
 		}
 	}
 }

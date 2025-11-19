@@ -132,6 +132,8 @@ func colorPrefixForView(name string) string {
 		return "text-bg"
 	case ViewCard:
 		return "text-bg"
+	case ViewToast:
+		return "text-bg"
 	case ViewLink:
 		return "link"
 	case ViewButton:

@@ -17,11 +17,16 @@ type pagination struct {
 	mvc.View
 }
 
+type paginationitem struct {
+	mvc.View
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // GLOBALS
 
 const (
-	ViewPagination = "mvc-bs-pagination"
+	ViewPagination     = "mvc-bs-pagination"
+	ViewPaginationItem = "mvc-bs-paginationitem"
 )
 
 const (
@@ -29,12 +34,13 @@ const (
 		<nav><ul class="pagination" data-slot></ul></nav>	
 	`
 	templatePaginationItem = `
-		<li class="page-item"><a class="page-link" href="#"></a></li>
+		<li class="page-item"><a class="page-link" role="button" data-slot></a></li>
 	`
 )
 
 func init() {
 	mvc.RegisterView(ViewPagination, newPaginationFromElement)
+	mvc.RegisterView(ViewPaginationItem, newPaginationItemFromElement)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -44,11 +50,22 @@ func Pagination(args ...any) *pagination {
 	return mvc.NewViewExEx(new(pagination), ViewPagination, templatePagination, args).(*pagination)
 }
 
+func PaginationItem(args ...any) *paginationitem {
+	return mvc.NewViewExEx(new(paginationitem), ViewPaginationItem, templatePaginationItem, args).(*paginationitem)
+}
+
 func newPaginationFromElement(element Element) mvc.View {
 	if element.TagName() != "NAV" {
 		return nil
 	}
 	return mvc.NewViewWithElement(new(pagination), element)
+}
+
+func newPaginationItemFromElement(element Element) mvc.View {
+	if element.TagName() != "LI" {
+		return nil
+	}
+	return mvc.NewViewWithElement(new(paginationitem), element)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -58,15 +75,21 @@ func (pagination *pagination) SetView(view mvc.View) {
 	pagination.View = view
 }
 
+func (paginationitem *paginationitem) SetView(view mvc.View) {
+	paginationitem.View = view
+}
+
 func (pagination *pagination) Content(args ...any) mvc.View {
 	for i, arg := range args {
 		switch arg := arg.(type) {
 		case string:
-			args[i] = mvc.HTML(templatePaginationItem, arg)
+			args[i] = PaginationItem(arg)
 		case dom.Element:
-			args[i] = mvc.HTML(templatePaginationItem, arg)
+			args[i] = PaginationItem(arg)
+		case *paginationitem:
+			// No-op
 		case mvc.View:
-			args[i] = mvc.HTML(templatePaginationItem, arg)
+			args[i] = PaginationItem(arg)
 		default:
 			panic(ErrInternalAppError.Withf("Content[pagination] unexpected argument '%T'", arg))
 		}

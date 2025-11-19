@@ -20,7 +20,8 @@ func main() {
 			bs.NavDropdown(
 				bs.NavItem("#button", "Buttons"),
 				bs.NavItem("#modal", "Modal"),
-				bs.NavItem("#alert", "Alerts & Toasts"),
+				bs.NavItem("#alert", "Alerts"),
+				bs.NavItem("#toast", "Toasts"),
 			).Label("Interactivity"),
 			bs.NavDropdown(
 				bs.NavItem("#input", "Input"),
@@ -29,7 +30,7 @@ func main() {
 				bs.NavItem("#navbar", "Navbar"),
 				bs.NavItem("#nav", "Accordion"),
 				bs.NavItem("#nav", "Navigation"),
-				bs.NavItem("#nav", "Pagination"),
+				bs.NavItem("#pagination", "Pagination"),
 			).Label("Navigation"),
 			bs.NavDropdown(
 				bs.NavItem("#border", "Borders"),
@@ -56,10 +57,11 @@ func main() {
 			Page("#progress", ProgressExamples()).
 			Page("#navbar", NavBarExamples()).
 			Page("#nav", NavExamples()).
+			Page("#pagination", PaginationExamples()).
 			Page("#table", TableExamples()).
-			Page("#alert", AlertExamples()),
+			Page("#alert", AlertExamples()).
+			Page("#toast", ToastExamples()),
 	)
-
 	// Wait
 	select {}
 }
