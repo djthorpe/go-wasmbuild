@@ -33,7 +33,7 @@ func init() {
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
-func Icon(name string, args ...any) mvc.View {
+func Icon(name string, args ...any) *icon {
 	i := new(icon)
 	i.BootstrapView.View = mvc.NewView(i, ViewIcon, "I", mvc.WithClass("bi-"+name), args)
 	return i

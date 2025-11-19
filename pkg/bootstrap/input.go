@@ -251,7 +251,7 @@ func (inputswitch *inputswitch) Self() mvc.View {
 	return inputswitch
 }
 
-func (input *input) Label(children ...any) mvc.View {
+func (input *input) Label(children ...any) *input {
 	if elem := input.Slot(""); elem == nil || (elem.TagName() != "INPUT" && elem.TagName() != "TEXTAREA") {
 		panic("Label: input body slot is not INPUT or TEXTAREA" + fmt.Sprintf("%v", input))
 	} else {
@@ -260,7 +260,7 @@ func (input *input) Label(children ...any) mvc.View {
 	return input
 }
 
-func (inputgroup *inputgroup) Content(args ...any) mvc.View {
+func (inputgroup *inputgroup) Content(args ...any) *inputgroup {
 	nodes := make([]any, 0, len(args))
 	for _, child := range args {
 		switch child.(type) {
@@ -271,10 +271,11 @@ func (inputgroup *inputgroup) Content(args ...any) mvc.View {
 			nodes = append(nodes, child)
 		}
 	}
-	return inputgroup.ReplaceSlot("body", wrapChildren(nodes...))
+	inputgroup.ReplaceSlot("body", wrapChildren(nodes...))
+	return inputgroup
 }
 
-func (inputswitch *inputswitch) Content(args ...any) mvc.View {
+func (inputswitch *inputswitch) Content(args ...any) *inputswitch {
 	// Factory function to create switch element
 	isInline := inputswitch.Root().ClassList().Contains(classInlineGroup)
 	switchFactory := func(index int, opt *inputoption) Element {
@@ -328,10 +329,11 @@ func (inputswitch *inputswitch) Content(args ...any) mvc.View {
 			panic("Content[inputswitch]: unsupported child type for select input")
 		}
 	}
-	return inputswitch.ReplaceSlot("body", wrapChildren(nodes...))
+	inputswitch.ReplaceSlot("body", wrapChildren(nodes...))
+	return inputswitch
 }
 
-func (selectinput *selectinput) Content(args ...any) mvc.View {
+func (selectinput *selectinput) Content(args ...any) *selectinput {
 	nodes := make([]any, 0, len(args))
 	for _, child := range args {
 		switch child := child.(type) {
@@ -343,7 +345,8 @@ func (selectinput *selectinput) Content(args ...any) mvc.View {
 			panic("Append: unsupported child type for select input")
 		}
 	}
-	return selectinput.ReplaceSlot("body", wrapChildren(nodes...))
+	selectinput.ReplaceSlot("body", wrapChildren(nodes...))
+	return selectinput
 }
 
 func (input *input) Value() string {

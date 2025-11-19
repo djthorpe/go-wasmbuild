@@ -84,7 +84,7 @@ const exampleInputSelectCode = `bs.Select(
 ).AddEventListener("input", func(e Event) {
   s := mvc.ViewFromEvent(e).(mvc.ViewWithValue)
   if s != nil {
-    response.Content("You selected: " + s.Value())
+	bs.SetContent(response, "You selected: "+s.Value())
   }
 })`
 
@@ -96,7 +96,7 @@ func ExampleInputSelect() mvc.View {
 			bs.Select("single-select", "a", "b", "c").AddEventListener("input", func(e Event) {
 				s := mvc.ViewFromEvent(e)
 				if s != nil {
-					response.Content("You selected: " + s.Value())
+					bs.SetContent(response, "You selected: "+s.Value())
 				}
 			}),
 			response,
@@ -118,7 +118,7 @@ const exampleInputMultiSelectCode = `bs.MultiSelect(
 ).AddEventListener("input", func(e Event) {
   s := mvc.ViewFromEvent(e).(mvc.ViewWithValue)
   if s != nil {
-    response.Content("You selected: " + s.Value())
+	bs.SetContent(response, "You selected: "+s.Value())
   }
 })`
 
@@ -130,7 +130,7 @@ func ExampleInputMultiSelect() mvc.View {
 			bs.MultiSelect("multi-select", "a", "b", "c").AddEventListener("input", func(e Event) {
 				s := mvc.ViewFromEvent(e)
 				if s != nil {
-					response.Content("You selected: " + s.Value())
+					bs.SetContent(response, "You selected: "+s.Value())
 				}
 			}),
 			response,
@@ -155,7 +155,7 @@ const exampleInputMultiSelectOptionCode = `bs.MultiSelect(
 ).SetValue("a").AddEventListener("input", func(e Event) {
 	s := mvc.ViewFromEvent(e).(mvc.ViewWithValue)
 	if s != nil {
-		response.Content("You selected: " + s.Value())
+		bs.SetContent(response, "You selected: "+s.Value())
 	}
 }),
 `
@@ -173,7 +173,7 @@ func ExampleInputMultiSelectOption() mvc.View {
 			).Set("a").AddEventListener("input", func(e Event) {
 				s := mvc.ViewFromEvent(e)
 				if s != nil {
-					response.Content("You selected: " + s.Value())
+					bs.SetContent(response, "You selected: "+s.Value())
 				}
 			}),
 			response,
@@ -199,7 +199,7 @@ bs.RadioGroup(
 ).AddEventListener("input", func(e Event) {
 	s := mvc.ViewFromEvent(e).(mvc.ViewWithValue)
 	if s != nil {
-		response.Content("You selected: " + s.Value())
+		bs.SetContent(response, "You selected: "+s.Value())
 	}
 })
 `
@@ -219,7 +219,7 @@ func ExampleInputRadioGroup() mvc.View {
 				s := mvc.ViewFromEvent(e)
 				fmt.Println(s)
 				if s != nil {
-					response.Content("You selected: " + s.Value())
+					bs.SetContent(response, "You selected: "+s.Value())
 				}
 			}),
 			bs.Para("...or inline version with ", bs.Code("InlineRadioGroup"), ":", mvc.WithClass("mt-3")),
@@ -232,7 +232,7 @@ func ExampleInputRadioGroup() mvc.View {
 				s := mvc.ViewFromEvent(e)
 				fmt.Println(s)
 				if s != nil {
-					response.Content("You selected: " + s.Value())
+					bs.SetContent(response, "You selected: "+s.Value())
 				}
 			}),
 			response,
@@ -258,7 +258,7 @@ bs.CheckboxGroup(
 ).AddEventListener("input", func(e Event) {
 	s := mvc.ViewFromEvent(e).(mvc.ViewWithValue)
 	if s != nil {
-		response.Content("You selected: " + s.Value())
+		bs.SetContent(response, "You selected: "+s.Value())
 	}
 })
 `
@@ -277,7 +277,7 @@ func ExampleInputCheckboxGroup() mvc.View {
 				s := mvc.ViewFromEvent(e)
 				fmt.Println(s)
 				if s != nil {
-					response.Content("You selected: " + s.Value())
+					bs.SetContent(response, "You selected: "+s.Value())
 				}
 			}),
 			bs.Para("...or inline version with ", bs.Code("InlineCheckboxGroup"), ":", mvc.WithClass("mt-3")),
@@ -289,7 +289,7 @@ func ExampleInputCheckboxGroup() mvc.View {
 			).AddEventListener("input", func(e Event) {
 				s := mvc.ViewFromEvent(e)
 				if s != nil {
-					response.Content("You selected: " + s.Value())
+					bs.SetContent(response, "You selected: "+s.Value())
 				}
 			}),
 			response,
@@ -315,7 +315,7 @@ bs.SwitchGroup(
 ).AddEventListener("input", func(e Event) {
 	s := mvc.ViewFromEvent(e).(mvc.ViewWithValue)
 	if s != nil {
-		response.Content("You selected: " + s.Value())
+		bs.SetContent(response, "You selected: "+s.Value())
 	}
 })
 `
@@ -333,7 +333,7 @@ func ExampleInputSwitchGroup() mvc.View {
 			).AddEventListener("input", func(e Event) {
 				s := mvc.ViewFromEvent(e)
 				if s != nil {
-					response.Content("You selected: " + s.Value())
+					bs.SetContent(response, "You selected: "+s.Value())
 				}
 			}),
 			bs.Para("...or inline version with ", bs.Code("InlineSwitchGroup"), ":", mvc.WithClass("mt-3")),
@@ -345,7 +345,7 @@ func ExampleInputSwitchGroup() mvc.View {
 			).AddEventListener("input", func(e Event) {
 				s := mvc.ViewFromEvent(e)
 				if s != nil {
-					response.Content("You selected: " + s.Value())
+					bs.SetContent(response, "You selected: "+s.Value())
 				}
 			}),
 			response,

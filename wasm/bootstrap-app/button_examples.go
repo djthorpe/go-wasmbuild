@@ -54,7 +54,7 @@ func Example_Buttons_003() (mvc.View, string) {
 		response,
 	).AddEventListener("click", func(e Event) {
 		if v := mvc.ViewFromEvent(e); v.Name() == bs.ViewButton {
-			response.Content("Close button clicked!")
+			bs.SetContent(response, "Close button clicked!")
 		}
 	}), sourcecode()
 }
@@ -105,7 +105,7 @@ func Example_Buttons_007() (mvc.View, string) {
 			bs.Button("Right"),
 		).AddEventListener("click", func(e Event) {
 			if view := mvc.ViewFromEvent(e); view != nil {
-				view.Content("Clicked!")
+				bs.SetContent(view, "Clicked!")
 			}
 		}),
 	), sourcecode()
@@ -120,7 +120,7 @@ func Example_Buttons_008() (mvc.View, string) {
 			bs.Button(bs.WithColor(bs.Success), "Right"),
 		).AddEventListener("click", func(e Event) {
 			if view := mvc.ViewFromEvent(e); view != nil {
-				view.Content("Clicked!")
+				bs.SetContent(view, "Clicked!")
 			}
 		}),
 		bs.ButtonGroup(mvc.WithClass("m-2"),
@@ -129,7 +129,7 @@ func Example_Buttons_008() (mvc.View, string) {
 			bs.OutlineButton(bs.WithColor(bs.Success), "Right"),
 		).AddEventListener("click", func(e Event) {
 			if view := mvc.ViewFromEvent(e); view != nil {
-				view.Content("Clicked!")
+				bs.SetContent(view, "Clicked!")
 			}
 		}),
 	), sourcecode()
@@ -144,7 +144,7 @@ func Example_Buttons_009() (mvc.View, string) {
 			bs.Button(bs.WithColor(bs.Success), "Right"),
 		).AddEventListener("click", func(e Event) {
 			if view := mvc.ViewFromEvent(e); view != nil {
-				view.Content("Clicked!")
+				bs.SetContent(view, "Clicked!")
 			}
 		}),
 		bs.ButtonGroup(mvc.WithClass("m-2"), bs.WithSize(bs.Large),
@@ -153,7 +153,7 @@ func Example_Buttons_009() (mvc.View, string) {
 			bs.OutlineButton(bs.WithColor(bs.Success), "Right"),
 		).AddEventListener("click", func(e Event) {
 			if view := mvc.ViewFromEvent(e); view != nil {
-				view.Content("Clicked!")
+				bs.SetContent(view, "Clicked!")
 			}
 		}),
 	), sourcecode()
@@ -168,7 +168,7 @@ func Example_Buttons_010() (mvc.View, string) {
 			bs.Button(bs.WithColor(bs.Success), "Right"),
 		).AddEventListener("click", func(e Event) {
 			if view := mvc.ViewFromEvent(e); view != nil {
-				view.Content("Clicked!")
+				bs.SetContent(view, "Clicked!")
 			}
 		}),
 	), sourcecode()
@@ -212,7 +212,7 @@ func Example_Buttons_011() (mvc.View, string) {
 			),
 		).AddEventListener("click", func(e Event) {
 			if view := mvc.ViewFromEvent(e); view != nil {
-				response.Content("Button '" + view.Name() + "' clicked!")
+				bs.SetContent(response, "Button '"+view.Name()+"' clicked!")
 			}
 		}),
 	), sourcecode()

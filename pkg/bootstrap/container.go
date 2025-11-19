@@ -30,13 +30,13 @@ func init() {
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
-func Container(args ...any) mvc.View {
+func Container(args ...any) *container {
 	c := new(container)
 	c.BootstrapView.View = mvc.NewView(c, ViewContainer, "DIV", mvc.WithClass("container"), args)
 	return c
 }
 
-func FluidContainer(args ...any) mvc.View {
+func FluidContainer(args ...any) *container {
 	c := new(container)
 	c.BootstrapView.View = mvc.NewView(c, ViewContainer, "DIV", mvc.WithClass("container-fluid"), args)
 	return c

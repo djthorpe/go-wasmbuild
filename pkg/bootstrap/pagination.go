@@ -62,7 +62,7 @@ func (pagination *pagination) Self() mvc.View {
 	return pagination
 }
 
-func (pagination *pagination) Content(args ...any) mvc.View {
+func (pagination *pagination) Content(args ...any) *pagination {
 	for i, arg := range args {
 		switch arg := arg.(type) {
 		case string:
@@ -75,5 +75,6 @@ func (pagination *pagination) Content(args ...any) mvc.View {
 			panic(ErrInternalAppError.Withf("Content[pagination] unexpected argument '%T'", arg))
 		}
 	}
-	return pagination.ReplaceSlot("body", wrapChildren(args...))
+	pagination.ReplaceSlot("body", wrapChildren(args...))
+	return pagination
 }

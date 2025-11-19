@@ -65,12 +65,14 @@ func (offcanvas *offcanvas) Self() mvc.View {
 	return offcanvas
 }
 
-func (offcanvas *offcanvas) Header(children ...any) mvc.View {
-	return offcanvas.View.ReplaceSlot("header", mvc.HTML("DIV", mvc.WithClass("offcanvas-header"), children))
+func (offcanvas *offcanvas) Header(children ...any) *offcanvas {
+	offcanvas.View.ReplaceSlot("header", mvc.HTML("DIV", mvc.WithClass("offcanvas-header"), children))
+	return offcanvas
 }
 
-func (offcanvas *offcanvas) Content(children ...any) mvc.View {
-	return offcanvas.View.ReplaceSlot("", mvc.HTML("DIV", mvc.WithClass("offcanvas-body"), children))
+func (offcanvas *offcanvas) Content(children ...any) *offcanvas {
+	offcanvas.View.ReplaceSlot("", mvc.HTML("DIV", mvc.WithClass("offcanvas-body"), children))
+	return offcanvas
 }
 
 func (offcanvas *offcanvas) Apply(opts ...mvc.Opt) mvc.View {

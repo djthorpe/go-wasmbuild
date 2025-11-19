@@ -84,7 +84,7 @@ func (tablerow *tablerow) Self() mvc.View {
 	return tablerow
 }
 
-func (table *table) Header(args ...any) mvc.View {
+func (table *table) Header(args ...any) *table {
 	for i, arg := range args {
 		switch arg.(type) {
 		case string, dom.Element, mvc.View:
@@ -93,10 +93,11 @@ func (table *table) Header(args ...any) mvc.View {
 			args[i] = arg
 		}
 	}
-	return table.View.ReplaceSlot("header", mvc.HTML("TR", args...))
+	table.View.ReplaceSlot("header", mvc.HTML("TR", args...))
+	return table
 }
 
-func (table *table) Footer(args ...any) mvc.View {
+func (table *table) Footer(args ...any) *table {
 	for i, arg := range args {
 		switch arg.(type) {
 		case string, dom.Element, mvc.View:
@@ -105,10 +106,11 @@ func (table *table) Footer(args ...any) mvc.View {
 			args[i] = arg
 		}
 	}
-	return table.View.ReplaceSlot("footer", mvc.HTML("TR", args...))
+	table.View.ReplaceSlot("footer", mvc.HTML("TR", args...))
+	return table
 }
 
-func (table *table) Content(args ...any) mvc.View {
+func (table *table) Content(args ...any) *table {
 	for i, arg := range args {
 		switch arg := arg.(type) {
 		case mvc.View:
@@ -121,10 +123,11 @@ func (table *table) Content(args ...any) mvc.View {
 			args[i] = arg
 		}
 	}
-	return table.View.ReplaceSlot("body", mvc.HTML("TBODY", args...))
+	table.View.ReplaceSlot("body", mvc.HTML("TBODY", args...))
+	return table
 }
 
-func (tablerow *tablerow) Content(args ...any) mvc.View {
+func (tablerow *tablerow) Content(args ...any) *tablerow {
 	for i, arg := range args {
 		switch arg.(type) {
 		case string, dom.Element, mvc.View:
@@ -133,7 +136,8 @@ func (tablerow *tablerow) Content(args ...any) mvc.View {
 			args[i] = arg
 		}
 	}
-	return tablerow.ReplaceSlot("body", wrapChildren(args...))
+	tablerow.ReplaceSlot("body", wrapChildren(args...))
+	return tablerow
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -71,20 +71,20 @@ func CloseButton(args ...any) *button {
 	return b
 }
 
-func ButtonToolbar(args ...any) mvc.View {
+func ButtonToolbar(args ...any) *buttontoolbar {
 	b := new(buttontoolbar)
 	allArgs := append([]any{mvc.WithAttr("role", "toolbar"), mvc.WithClass("btn-toolbar")}, args...)
 	b.BootstrapView.View = mvc.NewView(b, ViewButtonToolbar, "div", allArgs...)
 	return b
 }
 
-func ButtonGroup(args ...any) mvc.View {
+func ButtonGroup(args ...any) *buttongroup {
 	b := new(buttongroup)
 	b.View = mvc.NewView(b, ViewButtonGroup, "DIV", mvc.WithAttr("role", "group"), mvc.WithClass("btn-group"), args)
 	return b
 }
 
-func VButtonGroup(args ...any) mvc.View {
+func VButtonGroup(args ...any) *buttongroup {
 	b := new(buttongroup)
 	b.View = mvc.NewView(b, ViewButtonGroup, "DIV", mvc.WithAttr("role", "group"), mvc.WithClass("btn-group-vertical"), args)
 	return b
@@ -132,7 +132,7 @@ func (b *buttontoolbar) Self() mvc.View {
 	return b
 }
 
-func (b *button) Label(children ...any) mvc.View {
+func (b *button) Label(children ...any) *button {
 	b.Root().ClassList().Add("position-relative")
 	b.ReplaceSlot("label", mvc.HTML("SPAN", mvc.WithClass("position-absolute", "top-0", "start-100", "translate-middle", "badge", "rounded-pill", "bg-danger"), children))
 	return b

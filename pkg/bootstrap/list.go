@@ -37,31 +37,31 @@ func init() {
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
-func List(args ...any) mvc.View {
+func List(args ...any) *list {
 	l := new(list)
 	l.BootstrapView.View = mvc.NewView(l, ViewList, "OL", args...)
 	return l
 }
 
-func ListGroup(args ...any) mvc.View {
+func ListGroup(args ...any) *list {
 	l := new(list)
 	l.BootstrapView.View = mvc.NewView(l, ViewListGroup, "UL", mvc.WithClass("list-group"), args)
 	return l
 }
 
-func DefinitionList(args ...any) mvc.View {
+func DefinitionList(args ...any) *deflist {
 	d := new(deflist)
 	d.BootstrapView.View = mvc.NewView(d, ViewDefinitionList, "DL", mvc.WithClass("row"), args)
 	return d
 }
 
-func BulletList(args ...any) mvc.View {
+func BulletList(args ...any) *list {
 	l := new(list)
 	l.BootstrapView.View = mvc.NewView(l, ViewList, "UL", args...)
 	return l
 }
 
-func UnstyledList(args ...any) mvc.View {
+func UnstyledList(args ...any) *list {
 	l := new(list)
 	l.BootstrapView.View = mvc.NewView(l, ViewList, "UL", mvc.WithClass("list-unstyled"), args)
 	return l
@@ -105,7 +105,7 @@ func (deflist *deflist) Self() mvc.View {
 	return deflist
 }
 
-func (list *list) Content(args ...any) mvc.View {
+func (list *list) Content(args ...any) *list {
 	nodes := make([]any, 0, len(args))
 	for _, child := range args {
 		col := mvc.HTML("LI")
@@ -116,16 +116,18 @@ func (list *list) Content(args ...any) mvc.View {
 		nodes = append(nodes, col)
 	}
 	if len(nodes) == 1 {
-		return list.ReplaceSlot("body", nodes[0])
+		list.ReplaceSlot("body", nodes[0])
+		return list
 	}
 	div := mvc.HTML("div")
 	for _, node := range nodes {
 		div.AppendChild(mvc.NodeFromAny(node))
 	}
-	return list.ReplaceSlot("body", div)
+	list.ReplaceSlot("body", div)
+	return list
 }
 
-func (deflist *deflist) Content(args ...any) mvc.View {
+func (deflist *deflist) Content(args ...any) *deflist {
 	nodes := make([]any, 0, len(args))
 	for _, child := range args {
 		switch child := child.(type) {
@@ -137,11 +139,13 @@ func (deflist *deflist) Content(args ...any) mvc.View {
 		}
 	}
 	if len(nodes) == 1 {
-		return deflist.ReplaceSlot("body", nodes[0])
+		deflist.ReplaceSlot("body", nodes[0])
+		return deflist
 	}
 	div := mvc.HTML("div")
 	for _, node := range nodes {
 		div.AppendChild(mvc.NodeFromAny(node))
 	}
-	return deflist.ReplaceSlot("body", div)
+	deflist.ReplaceSlot("body", div)
+	return deflist
 }

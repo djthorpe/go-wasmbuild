@@ -74,16 +74,19 @@ func (modal *modal) Self() mvc.View {
 	return modal
 }
 
-func (modal *modal) Header(children ...any) mvc.View {
-	return modal.View.ReplaceSlot("header", mvc.HTML("DIV", mvc.WithClass("modal-header"), children))
+func (modal *modal) Header(children ...any) *modal {
+	modal.View.ReplaceSlot("header", mvc.HTML("DIV", mvc.WithClass("modal-header"), children))
+	return modal
 }
 
-func (modal *modal) Footer(children ...any) mvc.View {
-	return modal.View.ReplaceSlot("footer", mvc.HTML("DIV", mvc.WithClass("modal-footer"), children))
+func (modal *modal) Footer(children ...any) *modal {
+	modal.View.ReplaceSlot("footer", mvc.HTML("DIV", mvc.WithClass("modal-footer"), children))
+	return modal
 }
 
-func (modal *modal) Content(children ...any) mvc.View {
-	return modal.View.ReplaceSlot("", mvc.HTML("DIV", mvc.WithClass("modal-body"), children))
+func (modal *modal) Content(children ...any) *modal {
+	modal.View.ReplaceSlot("", mvc.HTML("DIV", mvc.WithClass("modal-body"), children))
+	return modal
 }
 
 ///////////////////////////////////////////////////////////////////////////////

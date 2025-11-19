@@ -33,13 +33,13 @@ func init() {
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
-func HRule(args ...any) mvc.View {
+func HRule(args ...any) *rule {
 	r := new(rule)
 	r.BootstrapView.View = mvc.NewView(r, ViewRule, "HR", args...)
 	return r
 }
 
-func VRule(args ...any) mvc.View {
+func VRule(args ...any) *rule {
 	r := new(rule)
 	r.BootstrapView.View = mvc.NewView(r, ViewRule, "DIV", mvc.WithClass("vr"), args)
 	return r

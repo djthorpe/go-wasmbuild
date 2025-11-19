@@ -36,7 +36,7 @@ func Example_Offcanvas_002() (mvc.View, string) {
 	).Header(
 		bs.Heading(5, "Offcanvas"),
 		bs.CloseButton(mvc.WithAttr("data-bs-dismiss", "offcanvas")),
-	).(mvc.ViewWithVisibility)
+	)
 	return bs.Container(
 		offcanvas,
 		bs.ButtonGroup(

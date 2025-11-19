@@ -47,7 +47,7 @@ func init() {
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
-func Heading(level int, args ...any) mvc.View {
+func Heading(level int, args ...any) *heading {
 	tagName, exists := headingLevels[level]
 	if !exists {
 		panic(fmt.Sprintf("Heading: invalid level %d", level))

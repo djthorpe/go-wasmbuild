@@ -8,7 +8,7 @@ import (
 
 // Application displays examples of Bootstrap components
 func main() {
-	mvc.New().Content(
+	mvc.New().Append(
 		bs.NavBar("main",
 			bs.WithPosition(bs.Sticky|bs.Top), bs.WithTheme(bs.Dark), bs.WithSize(bs.Medium),
 			bs.NavDropdown(

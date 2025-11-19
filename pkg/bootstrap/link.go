@@ -34,7 +34,7 @@ func init() {
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
-func Link(href string, args ...any) mvc.View {
+func Link(href string, args ...any) *link {
 	l := new(link)
 	l.BootstrapView.View = mvc.NewView(l, ViewLink, "A", mvc.WithAttr("href", href), args)
 	return l

@@ -93,34 +93,41 @@ func (cardgroup *cardgroup) Self() mvc.View {
 	return cardgroup
 }
 
-func (card *card) Header(children ...any) mvc.View {
-	return card.ReplaceSlot("header", mvc.HTML("div", mvc.WithClass("card-header"), children))
+func (card *card) Header(children ...any) *card {
+	card.ReplaceSlot("header", mvc.HTML("div", mvc.WithClass("card-header"), children))
+	return card
 }
 
-func (card *card) Footer(children ...any) mvc.View {
-	return card.ReplaceSlot("footer", mvc.HTML("div", mvc.WithClass("card-footer"), children))
+func (card *card) Footer(children ...any) *card {
+	card.ReplaceSlot("footer", mvc.HTML("div", mvc.WithClass("card-footer"), children))
+	return card
 }
 
-func (card *card) Content(children ...any) mvc.View {
-	return card.ReplaceSlot("", mvc.HTML("div", mvc.WithClass("card-body"), children))
+func (card *card) Content(children ...any) *card {
+	card.ReplaceSlot("", mvc.HTML("div", mvc.WithClass("card-body"), children))
+	return card
 }
 
-func (card *card) Label(children ...any) mvc.View {
+func (card *card) Label(children ...any) *card {
 	if len(children) == 0 {
-		return card.ReplaceSlot("label", mvc.HTML("div"))
+		card.ReplaceSlot("label", mvc.HTML("div"))
+		return card
 	}
 	if len(children) > 1 {
 		panic("card.Label: only one child element is allowed")
 	}
 	switch child := children[0].(type) {
 	case string:
-		return card.ReplaceSlot("label", mvc.HTML("h5", mvc.WithClass("card-title"), mvc.WithInnerText(child)))
+		card.ReplaceSlot("label", mvc.HTML("h5", mvc.WithClass("card-title"), mvc.WithInnerText(child)))
+		return card
 	case mvc.View:
 		child.Root().ClassList().Add("card-img-top")
-		return card.ReplaceSlot("label", child)
+		card.ReplaceSlot("label", child)
+		return card
 	case Element:
 		child.ClassList().Add("card-img-top")
-		return card.ReplaceSlot("label", child)
+		card.ReplaceSlot("label", child)
+		return card
 	default:
 		panic(fmt.Sprintf("card.Label: invalid child type %T", child))
 	}

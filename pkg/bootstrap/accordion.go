@@ -68,7 +68,7 @@ func AccordionItem(args ...any) *accordionitem {
 	return a
 }
 
-func newAccordionFromElement(element Element) BootstrapView {
+func newAccordionFromElement(element Element) mvc.View {
 	if element.TagName() != "DIV" {
 		return nil
 	}
@@ -76,7 +76,7 @@ func newAccordionFromElement(element Element) BootstrapView {
 	a.BootstrapView.View = mvc.NewViewWithElement(a, element)
 	return a
 }
-func newAccordionItemFromElement(element Element) BootstrapView {
+func newAccordionItemFromElement(element Element) mvc.View {
 	if element.TagName() != "DIV" {
 		return nil
 	}
@@ -88,15 +88,15 @@ func newAccordionItemFromElement(element Element) BootstrapView {
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
 
-func (accordion *accordion) Self() BootstrapView {
+func (accordion *accordion) Self() mvc.View {
 	return accordion
 }
 
-func (accordionitem *accordionitem) Self() BootstrapView {
+func (accordionitem *accordionitem) Self() mvc.View {
 	return accordionitem
 }
 
-func (accordion *accordion) Content(args ...any) BootstrapView {
+func (accordion *accordion) Content(args ...any) *accordion {
 	for i, arg := range args {
 		switch arg := arg.(type) {
 		case *accordionitem:
@@ -132,5 +132,6 @@ func (accordion *accordion) Content(args ...any) BootstrapView {
 			panic(ErrInternalAppError.Withf("Content[accordionitem] unexpected argument '%T'", arg))
 		}
 	}
-	return accordion.ReplaceSlot("body", wrapChildren(args...))
+	accordion.ReplaceSlot("body", wrapChildren(args...))
+	return accordion
 }

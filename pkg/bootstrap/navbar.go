@@ -167,8 +167,9 @@ func (navdropdown *navdropdown) Self() mvc.View {
 	return navdropdown
 }
 
-func (navbar *navbar) Label(children ...any) mvc.View {
-	return navbar.ReplaceSlot("label", mvc.HTML("A", mvc.WithAttr("href", "#"), mvc.WithClass("navbar-brand"), children))
+func (navbar *navbar) Label(children ...any) *navbar {
+	navbar.ReplaceSlot("label", mvc.HTML("A", mvc.WithAttr("href", "#"), mvc.WithClass("navbar-brand"), children))
+	return navbar
 }
 
 func (navbar *navbar) Apply(opts ...mvc.Opt) mvc.View {
@@ -199,7 +200,7 @@ func (navbar *navbar) Apply(opts ...mvc.Opt) mvc.View {
 	return navbar
 }
 
-func (navbar *navbar) Content(children ...any) mvc.View {
+func (navbar *navbar) Content(children ...any) *navbar {
 	items := []any{}
 	for _, child := range children {
 		switch child := child.(type) {
@@ -213,10 +214,11 @@ func (navbar *navbar) Content(children ...any) mvc.View {
 			panic(fmt.Sprintf("Content[navbar]: invalid child type: %T", child))
 		}
 	}
-	return navbar.ReplaceSlot("", mvc.HTML("ul", mvc.WithClass("navbar-nav"), items))
+	navbar.ReplaceSlot("", mvc.HTML("ul", mvc.WithClass("navbar-nav"), items))
+	return navbar
 }
 
-func (navdropdown *navdropdown) Content(children ...any) mvc.View {
+func (navdropdown *navdropdown) Content(children ...any) *navdropdown {
 	items := []any{}
 	for _, child := range children {
 		switch child := child.(type) {
@@ -226,13 +228,15 @@ func (navdropdown *navdropdown) Content(children ...any) mvc.View {
 			panic(fmt.Sprintf("Content[navdropdown]: invalid child type: %T", child))
 		}
 	}
-	return navdropdown.ReplaceSlot("", mvc.HTML("ul", mvc.WithClass("dropdown-menu"), items))
+	navdropdown.ReplaceSlot("", mvc.HTML("ul", mvc.WithClass("dropdown-menu"), items))
+	return navdropdown
 }
 
-func (navitem *navitem) Content(children ...any) mvc.View {
+func (navitem *navitem) Content(children ...any) *navitem {
 	href := navitem.Root().GetAttribute(dataAttrNavHref)
 	if href == "" {
 		href = "#"
 	}
-	return navitem.ReplaceSlot("", mvc.HTML("a", mvc.WithAttr("href", href), mvc.WithClass("nav-link", "text-nowrap"), children))
+	navitem.ReplaceSlot("", mvc.HTML("a", mvc.WithAttr("href", href), mvc.WithClass("nav-link", "text-nowrap"), children))
+	return navitem
 }
