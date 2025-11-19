@@ -10,7 +10,7 @@ func BorderExamples() mvc.View {
 		mvc.WithClass("my-4"),
 		bs.Heading(2, "Border Examples"),
 		bs.HRule(),
-		Example(Example_Borders_001),
+		bs.Heading(3, "Border Utilities", mvc.WithClass("mt-5")), Example(Example_Borders_001),
 	)
 }
 

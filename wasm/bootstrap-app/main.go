@@ -8,56 +8,38 @@ import (
 
 // Application displays examples of Bootstrap components
 func main() {
-	mvc.New().Append(
-		bs.NavBar("main",
-			bs.WithPosition(bs.Sticky|bs.Top), bs.WithTheme(bs.Dark), bs.WithSize(bs.Medium),
-			bs.NavDropdown(
-				bs.NavItem("#text", "Text"),
-				bs.NavItem("#list", "Lists"),
-				bs.NavItem("#badge", "Badges"),
-				bs.NavItem("#icon", "Icons"),
-			).Label("Typography"),
-			bs.NavDropdown(
-				bs.NavItem("#button", "Buttons"),
-				bs.NavItem("#modal", "Modal"),
-				bs.NavItem("#alert", "Alerts & Toasts"),
-			).Label("Interactivity"),
-			bs.NavDropdown(
-				bs.NavItem("#input", "Input"),
-			).Label("Forms & Controls"),
-			bs.NavDropdown(
-				bs.NavItem("#navbar", "Navbar"),
-				bs.NavItem("#nav", "Accordion"),
-				bs.NavItem("#nav", "Navigation"),
-				bs.NavItem("#nav", "Pagination"),
-			).Label("Navigation"),
-			bs.NavDropdown(
-				bs.NavItem("#border", "Borders"),
-				bs.NavItem("#card", "Cards"),
-			).Label("Decoration"),
-			bs.NavDropdown(
-				bs.NavItem("#table", "Tables"),
-			).Label("Data"),
-			bs.NavItem("https://github.com/djthorpe/go-wasmbuild", bs.Icon("github", mvc.WithClass("me-1")), "GitHub"),
-		).Label(
-			bs.Icon("bootstrap-fill"),
-		),
-		mvc.Router(mvc.WithClass("container-fluid", "my-2")).
-			Page("#text", TextExamples()).
-			Page("#border", BorderExamples()).
-			Page("#badge", BadgeExamples()).
-			Page("#list", ListExamples()).
-			Page("#icon", IconExamples()).
-			Page("#button", ButtonExamples()).
-			Page("#card", CardExamples()).
-			Page("#modal", ModalExamples()).
-			Page("#input", InputExamples()).
-			Page("#tooltips", TooltipExamples()).
-			Page("#progress", ProgressExamples()).
-			Page("#navbar", NavBarExamples()).
-			Page("#nav", NavExamples()).
-			Page("#table", TableExamples()).
-			Page("#alert", AlertExamples()),
+	app := mvc.New()
+	router := mvc.Router(mvc.WithClass("container-fluid", "my-2"))
+	var navItems []mvc.View
+	for _, group := range exampleGroups {
+		var items []mvc.View
+		for _, page := range group.pages {
+			router = router.Page(page.id, page.build())
+			items = append(items, bs.NavItem(page.id, page.label))
+		}
+		if len(items) == 0 {
+			continue
+		}
+		dropdownChildren := make([]any, len(items))
+		for i, item := range items {
+			dropdownChildren[i] = item
+		}
+		navItems = append(navItems, bs.NavDropdown(dropdownChildren...).Label(group.label))
+	}
+
+	navArgs := []any{
+		bs.WithPosition(bs.Sticky | bs.Top),
+		bs.WithTheme(bs.Dark),
+		bs.WithSize(bs.Medium),
+	}
+	for _, item := range navItems {
+		navArgs = append(navArgs, item)
+	}
+	navArgs = append(navArgs, bs.NavItem("https://github.com/djthorpe/go-wasmbuild", bs.Icon("github", mvc.WithClass("me-1")), "GitHub"))
+
+	app.Append(
+		bs.NavBar("main", navArgs...).Label(bs.Icon("bootstrap-fill")),
+		router,
 	)
 
 	// Wait

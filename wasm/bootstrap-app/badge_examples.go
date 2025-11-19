@@ -10,7 +10,7 @@ func BadgeExamples() mvc.View {
 		mvc.WithClass("my-4"),
 		bs.Heading(2, "Badge Examples"),
 		bs.HRule(),
-		Example(Example_BadgeHeader_001),
+		bs.Heading(3, "Badges In Headings", mvc.WithClass("mt-5")), Example(Example_BadgeHeader_001),
 	)
 }
 
