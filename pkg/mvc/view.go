@@ -35,6 +35,9 @@ type View interface {
 	// Add an event listener to the view's root element
 	AddEventListener(string, func(dom.Event)) View
 
+	// Remove an event listener from the view's root element
+	RemoveEventListener(string) View
+
 	// Return the value of the view as a string. The contents of the
 	// string depends on the view type
 	Value() string
@@ -141,15 +144,20 @@ const (
 var (
 	// All the registered views
 	views = make(map[string]ViewConstructorFunc, 50)
+
+	// All the registered events
+	events = make(map[string][]string, 50)
 )
 
 // RegisterView registers a view constructor function for a given name,
-// so that the view can be created on-demand
-func RegisterView(name string, constructor ViewConstructorFunc) {
+// so that the view can be created on-demand, and zero or more event types that
+// a controller which attaches to this view should listen for.
+func RegisterView(name string, constructor ViewConstructorFunc, eventtypes ...string) {
 	if _, exists := views[name]; exists {
 		panic("View already registered: " + name)
 	}
 	views[name] = constructor
+	events[name] = eventtypes
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -472,6 +480,11 @@ func (v *view) Label(children ...any) View {
 
 func (v *view) AddEventListener(event string, handler func(dom.Event)) View {
 	v.root.AddEventListener(event, handler)
+	return v.self
+}
+
+func (v *view) RemoveEventListener(event string) View {
+	v.root.RemoveEventListener(event)
 	return v.self
 }
 

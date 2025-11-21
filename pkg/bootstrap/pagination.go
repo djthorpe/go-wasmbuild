@@ -39,7 +39,10 @@ const (
 )
 
 func init() {
-	mvc.RegisterView(ViewPagination, newPaginationFromElement)
+	// Pagination listens for "click" events
+	mvc.RegisterView(ViewPagination, func(element Element) mvc.View {
+		return mvc.NewViewWithElement(new(pagination), element)
+	}, "click")
 	mvc.RegisterView(ViewPaginationItem, newPaginationItemFromElement)
 }
 
