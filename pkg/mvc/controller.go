@@ -53,9 +53,10 @@ func (c *controller) Attach(views ...View) {
 
 		// Add event listeners for this view
 		for _, event := range events[view.Name()] {
-			view.AddEventListener(event, func(evt dom.Event) {
+			e := event // capture loop variable
+			view.AddEventListener(e, func(evt dom.Event) {
 				if view := ViewFromEvent(evt); view != nil {
-					c.Self().EventListener(event, view)
+					c.Self().EventListener(e, view)
 				}
 			})
 		}
