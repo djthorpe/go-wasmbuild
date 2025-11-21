@@ -41,7 +41,9 @@ const (
 )
 
 func init() {
-	RegisterView(ViewRouter, newRouterFromElement)
+	RegisterView(ViewRouter, func(element wasm.Element) View {
+		return NewViewWithElement(new(router), element)
+	})
 }
 
 ///////////////////////////////////////////////////////////////////////////////
