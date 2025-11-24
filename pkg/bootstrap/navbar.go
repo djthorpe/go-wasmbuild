@@ -5,10 +5,8 @@ import (
 	"strings"
 
 	// Packages
+	dom "github.com/djthorpe/go-wasmbuild"
 	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
-
-	// Namespace imports
-	. "github.com/djthorpe/go-wasmbuild"
 )
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -68,21 +66,31 @@ const (
 )
 
 func init() {
-	// Register views
+	// NavBar
 	// For the navigation bar, a controller to which the view is attached may respond to the following events:
 	// click - Fires when a dropdown or item is clicked
 	// hide.bs.dropdown	- Fires immediately when the hide instance method has been called.
 	// hidden.bs.dropdown - Fired when the dropdown has finished being hidden from the user and CSS transitions have completed.
 	// show.bs.dropdown - Fires immediately when the show instance method is called.
 	// shown.bs.dropdown - Fired when the dropdown has been made visible to the user and CSS transitions have completed.
-	mvc.RegisterView(ViewNavBar, func(element Element) mvc.View {
-		return mvc.NewViewWithElement(new(navbar), element)
+	mvc.RegisterView(ViewNavBar, func(element dom.Element) mvc.View {
+		return mvc.NewViewWithElement(new(navbar), element, func(self, child mvc.View) {
+			self.(*navbar).View = child
+		})
 	}, "click", "show.bs.dropdown", "hide.bs.dropdown", "shown.bs.dropdown", "hidden.bs.dropdown")
-	mvc.RegisterView(ViewNavItem, func(element Element) mvc.View {
-		return mvc.NewViewWithElement(new(navitem), element)
+
+	// NavItem
+	mvc.RegisterView(ViewNavItem, func(element dom.Element) mvc.View {
+		return mvc.NewViewWithElement(new(navitem), element, func(self, child mvc.View) {
+			self.(*navitem).View = child
+		})
 	})
-	mvc.RegisterView(ViewNavDropdown, func(element Element) mvc.View {
-		return mvc.NewViewWithElement(new(navdropdown), element)
+
+	// NavDropdown
+	mvc.RegisterView(ViewNavDropdown, func(element dom.Element) mvc.View {
+		return mvc.NewViewWithElement(new(navdropdown), element, func(self, child mvc.View) {
+			self.(*navdropdown).View = child
+		})
 	})
 }
 
@@ -130,7 +138,7 @@ func NavDropdown(args ...any) *navdropdown {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// PUBLIC METHODS
+// PUBLIC METHODS - NAVBAR
 
 func (navbar *navbar) Label(children ...any) mvc.View {
 	return navbar.ReplaceSlot("label", mvc.HTML("A", mvc.WithAttr("href", "#"), mvc.WithClass("navbar-brand"), children))
@@ -180,6 +188,9 @@ func (navbar *navbar) Content(children ...any) mvc.View {
 	return navbar.ReplaceSlot(mvc.ContentSlot, mvc.HTML("UL", mvc.WithClass("navbar-nav"), items))
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS - NAVDROPDOWN
+
 func (navdropdown *navdropdown) Content(children ...any) mvc.View {
 	items := []any{}
 	for _, child := range children {
@@ -194,14 +205,17 @@ func (navdropdown *navdropdown) Content(children ...any) mvc.View {
 	return navdropdown.ReplaceSlot(mvc.ContentSlot, replace)
 }
 
+func (navdropdown *navdropdown) Label(children ...any) mvc.View {
+	return navdropdown.ReplaceSlot("label", mvc.HTML("span", children...))
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS - NAVITEM
+
 func (navitem *navitem) Content(children ...any) mvc.View {
 	href := strings.TrimSpace(navitem.Root().GetAttribute(dataAttrNavHref))
 	if href == "" {
 		href = "#"
 	}
 	return navitem.ReplaceSlot(mvc.ContentSlot, mvc.HTML("A", mvc.WithAttr("href", href), mvc.WithClass("nav-link", "text-nowrap"), children))
-}
-
-func (navdropdown *navdropdown) Label(children ...any) mvc.View {
-	return navdropdown.ReplaceSlot("label", mvc.HTML("span", children...))
 }

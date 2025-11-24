@@ -20,6 +20,7 @@ var _ mvc.Controller = (*navbar_controller)(nil)
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
+// Create a new NavbarController and attach it to a NavBar view
 func NavbarController(view mvc.View) *navbar_controller {
 	if view == nil || view.Name() != bs.ViewNavBar {
 		panic("Invalid view for NavbarController")
@@ -43,5 +44,20 @@ func (c *navbar_controller) Detach(views ...mvc.View) {
 }
 
 func (c *navbar_controller) EventListener(event string, view mvc.View) {
-	fmt.Println("NavbarController: Event", event, "from view", view)
+	// Accept events from the navbar dropdown and navbar item
+	if view == nil {
+		return
+	}
+	for {
+		if view == nil {
+			break
+		}
+		if view.Name() == bs.ViewNavDropdown || view.Name() == bs.ViewNavItem {
+			break
+		}
+		view = view.Parent()
+	}
+	if view != nil {
+		fmt.Println("NavbarController: Event", event, "from view", view.Name(), "=>", view.ID())
+	}
 }

@@ -107,7 +107,7 @@ func RegisterView(name string, constructor ViewConstructorFunc, eventtypes ...st
 // Create a new empty view, applying any options to it
 func NewView(self View, name string, template string, fn func(View, View), args ...any) View {
 	if _, exists := views[name]; !exists {
-		panic(fmt.Sprintf("NewView: view not registered %q", name))
+		panic(fmt.Sprintf("NewView[%s]: view not registered", name))
 	}
 
 	var root dom.Element
@@ -149,7 +149,7 @@ func NewView(self View, name string, template string, fn func(View, View), args 
 }
 
 // Create view from an existing element, applying any options to it
-func NewViewWithElement(self View, element dom.Element, opts ...Opt) View {
+func NewViewWithElement(self View, element dom.Element, fn func(View, View), opts ...Opt) View {
 	if element == nil {
 		panic("NewViewWithElement: missing element")
 	} else if self == nil {
@@ -174,6 +174,12 @@ func NewViewWithElement(self View, element dom.Element, opts ...Opt) View {
 	}
 
 	// TODO: Set the view slots
+
+	// Call the initialization function to establish the relationship between
+	// the view and its child view
+	if fn != nil {
+		fn(v.Self(), v)
+	}
 
 	// Return self
 	return v.Self()
@@ -211,7 +217,7 @@ func (v *view) Parent() View {
 			break
 		}
 		if view, err := viewFromElement(e); err != nil {
-			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+			fmt.Fprintf(os.Stderr, "Parent[%s]: %v\n", v.Name(), err)
 			break
 		} else if view != nil {
 			return view
@@ -322,12 +328,12 @@ func ViewFromEvent(e dom.Event) View {
 	if e == nil {
 		return nil
 	}
+	// Work up the chain until a view is found
 	switch element := e.Target().(type) {
 	case dom.Element:
-		// Work up the chain until a view is found
 		for {
 			if view, err := viewFromElement(element); err != nil {
-				fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+				fmt.Fprintf(os.Stderr, "ViewFromEvent: %v\n", err)
 				return nil
 			} else if view != nil {
 				return view

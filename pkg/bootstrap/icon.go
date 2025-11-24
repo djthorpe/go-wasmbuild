@@ -20,7 +20,9 @@ var _ mvc.View = (*icon)(nil)
 
 func init() {
 	mvc.RegisterView(ViewIcon, func(element dom.Element) mvc.View {
-		return mvc.NewViewWithElement(new(icon), element)
+		return mvc.NewViewWithElement(new(icon), element, func(self, child mvc.View) {
+			self.(*icon).View = child
+		})
 	})
 }
 

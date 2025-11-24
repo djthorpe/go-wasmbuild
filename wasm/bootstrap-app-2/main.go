@@ -29,6 +29,7 @@ func navbar() mvc.View {
 			bs.NavItem("#button", "Buttons"),
 			bs.NavItem("#modal", "Modal"),
 			bs.NavItem("#alert", "Alerts"),
+			bs.NavDivider(),
 			bs.NavItem("#toast", "Toasts"),
 		).Label("Interactivity"),
 		bs.NavDropdown(

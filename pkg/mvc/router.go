@@ -42,7 +42,9 @@ const (
 
 func init() {
 	RegisterView(ViewRouter, func(element wasm.Element) View {
-		return NewViewWithElement(new(router), element)
+		return NewViewWithElement(new(router), element, func(self, child View) {
+			self.(*router).View = child
+		})
 	})
 }
 
@@ -61,14 +63,6 @@ func Router(args ...any) RouterView {
 	})
 
 	return self
-}
-
-// Create a Table from an existing element
-func newRouterFromElement(element wasm.Element) View {
-	if element.TagName() != "DIV" {
-		return nil
-	}
-	return NewViewWithElement(new(router), element)
 }
 
 ///////////////////////////////////////////////////////////////////////////////

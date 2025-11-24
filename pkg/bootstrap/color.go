@@ -4,10 +4,8 @@ import (
 	"slices"
 
 	// Packages
+	dom "github.com/djthorpe/go-wasmbuild"
 	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
-
-	// Namespace imports
-	. "github.com/djthorpe/go-wasmbuild"
 )
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -75,7 +73,7 @@ func WithColor(color Color) mvc.Opt {
 	return func(o mvc.OptSet) error {
 		prefix := colorPrefixForView(o.Name())
 		if prefix == "" {
-			return ErrInternalAppError.Withf("WithColor: unsupported view %q", o.Name())
+			return dom.ErrInternalAppError.Withf("WithColor: unsupported view %q", o.Name())
 		}
 
 		if o.Name() == ViewButton {
@@ -102,7 +100,7 @@ func WithColor(color Color) mvc.Opt {
 func WithTheme(color Color) mvc.Opt {
 	return func(o mvc.OptSet) error {
 		if !slices.Contains(themeColors, color) {
-			return ErrInternalAppError.Withf("WithThemeColor: invalid theme %q", color)
+			return dom.ErrInternalAppError.Withf("WithThemeColor: invalid theme %q", color)
 		}
 		return mvc.WithAttr("data-bs-theme", string(color))(o)
 	}
