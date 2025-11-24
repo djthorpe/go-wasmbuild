@@ -51,7 +51,7 @@ func init() {
 
 // Create a Router
 func Router(args ...any) RouterView {
-	self := NewView(new(router), ViewRouter, "div", args).(RouterView)
+	self := NewView(new(router), ViewRouter, "div", nil, args).(RouterView)
 	router := self.(*router)
 	window := dom.GetWindow()
 
@@ -73,10 +73,6 @@ func newRouterFromElement(element wasm.Element) View {
 
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
-
-func (router *router) SetView(view View) {
-	router.View = view
-}
 
 func (router *router) Page(path string, view View) RouterView {
 	if path != "" && !strings.HasPrefix(path, "#") {
@@ -110,12 +106,11 @@ func (router *router) match(hash string) *page {
 // page exists, the first registered page (if any) becomes the default view.
 func (router *router) refresh(hash string) {
 	if page := router.match(hash); page != nil {
-		router.Content(page.view)
+		router.ReplaceSlotChildren(ContentSlot, page.view)
 		return
 	}
 	if len(router.pages) > 0 {
-		router.Content(router.pages[0].view)
+		router.ReplaceSlotChildren(ContentSlot, router.pages[0].view)
 		return
 	}
-	router.Content()
 }

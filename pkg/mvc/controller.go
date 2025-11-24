@@ -13,6 +13,9 @@ import (
 
 // A controller reacts to events from one or more views
 type Controller interface {
+	// Return all the views
+	Views() []View
+
 	// Attach one or more views to this controller
 	Attach(...View)
 
@@ -33,15 +36,22 @@ var _ Controller = (*controller)(nil)
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
-func NewController(self Controller, view ...View) *controller {
+func NewController(self Controller, fn func(self, child Controller), view ...View) *controller {
 	this := new(controller)
 	this.self = self
 	this.Attach(view...)
+	if fn != nil {
+		fn(self, this)
+	}
 	return this
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS - CONTROLLER
+
+func (c *controller) Views() []View {
+	return c.views
+}
 
 func (c *controller) Attach(views ...View) {
 	// Attach all views to the controller

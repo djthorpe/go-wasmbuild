@@ -19,10 +19,6 @@ type container struct {
 ///////////////////////////////////////////////////////////////////////////////
 // GLOBALS
 
-const (
-	ViewContainer = "mvc-bs-container"
-)
-
 func init() {
 	mvc.RegisterView(ViewContainer, newContainerFromElement)
 }

@@ -50,13 +50,6 @@ var _ mvc.View = (*inputswitch)(nil)
 // GLOBALS
 
 const (
-	ViewForm          = "mvc-bs-form"
-	ViewInput         = "mvc-bs-input"
-	ViewInputGroup    = "mvc-bs-inputgroup"
-	ViewSelect        = "mvc-bs-select"
-	ViewRadioGroup    = "mvc-bs-radiogroup"
-	ViewCheckboxGroup = "mvc-bs-checkboxgroup"
-
 	// Class used to indicate inline groups
 	classInlineGroup = "mvc-bs-inlinegroup"
 )

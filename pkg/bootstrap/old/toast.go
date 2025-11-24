@@ -24,11 +24,6 @@ type toastgroup struct {
 // GLOBALS
 
 const (
-	ViewToast      = "mvc-bs-toast"
-	ViewToastGroup = "mvc-bs-toastgroup"
-)
-
-const (
 	templateToast = `
 		<div class="toast" role="alert" aria-live="assertive" aria-atomic="true">
 			<slot name="header"></slot>

@@ -21,10 +21,6 @@ type text struct {
 // GLOBALS
 
 const (
-	ViewText = "mvc-bs-text"
-)
-
-const (
 	templateBlockquote = `
 	<figure>
 		<blockquote class="blockquote"><slot></slot></blockquote>

@@ -25,11 +25,6 @@ type paginationitem struct {
 // GLOBALS
 
 const (
-	ViewPagination     = "mvc-bs-pagination"
-	ViewPaginationItem = "mvc-bs-paginationitem"
-)
-
-const (
 	templatePagination = `
 		<nav><ul class="pagination" data-slot></ul></nav>	
 	`

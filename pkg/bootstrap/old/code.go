@@ -18,10 +18,6 @@ type codeblock struct {
 ///////////////////////////////////////////////////////////////////////////////
 // GLOBALS
 
-const (
-	ViewCodeBlock = "mvc-bs-codeblock"
-)
-
 func init() {
 	mvc.RegisterView(ViewCodeBlock, newCodeBlockFromElement)
 }

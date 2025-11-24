@@ -18,10 +18,6 @@ type badge struct {
 ///////////////////////////////////////////////////////////////////////////////
 // GLOBALS
 
-const (
-	ViewBadge = "mvc-bs-badge"
-)
-
 func init() {
 	mvc.RegisterView(ViewBadge, newBadgeFromElement)
 }

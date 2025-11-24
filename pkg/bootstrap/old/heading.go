@@ -25,10 +25,6 @@ var _ mvc.View = (*heading)(nil)
 ///////////////////////////////////////////////////////////////////////////////
 // GLOBALS
 
-const (
-	ViewHeading = "mvc-bs-heading"
-)
-
 var (
 	headingLevels = map[int]string{
 		1: "H1",

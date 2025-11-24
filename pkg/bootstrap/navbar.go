@@ -2,6 +2,7 @@ package bootstrap
 
 import (
 	"fmt"
+	"strings"
 
 	// Packages
 	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
@@ -33,17 +34,11 @@ var _ mvc.View = (*navdropdown)(nil)
 // GLOBALS
 
 const (
-	ViewNavBar      = "mvc-bs-navbar"
-	ViewNavItem     = "mvc-bs-navitem"
-	ViewNavDropdown = "mvc-bs-navdropdown"
-)
-
-const (
 	templateNavBar = `
 		<nav class="navbar navbar-expand bg-primary">
 			<div class="container-fluid">
-				<slot name="label"><!-- Label --></slot>
-				<slot name="toggle-button"><!-- Toggle Button --></slot>
+				<slot name="label"></slot>
+				<slot name="toggle-button"></slot>
 				<div class="collapse navbar-collapse">
 					<slot><!-- Body --></slot>
 				</div>
@@ -58,7 +53,9 @@ const (
 	`
 	templateNavDropdown = `
 		<li class="nav-item dropdown">
-			<a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"><slot name="label"><!-- Label --></slot></a>
+			<a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+				<slot name="label"></slot>
+			</a>
 			<slot></slot>
 		</li>
 	`
@@ -71,9 +68,22 @@ const (
 )
 
 func init() {
-	mvc.RegisterView(ViewNavBar, newNavBarFromElement)
-	mvc.RegisterView(ViewNavItem, newNavItemFromElement)
-	mvc.RegisterView(ViewNavDropdown, newNavDropdownFromElement)
+	// Register views
+	// For the navigation bar, a controller to which the view is attached may respond to the following events:
+	// click - Fires when a dropdown or item is clicked
+	// hide.bs.dropdown	- Fires immediately when the hide instance method has been called.
+	// hidden.bs.dropdown - Fired when the dropdown has finished being hidden from the user and CSS transitions have completed.
+	// show.bs.dropdown - Fires immediately when the show instance method is called.
+	// shown.bs.dropdown - Fired when the dropdown has been made visible to the user and CSS transitions have completed.
+	mvc.RegisterView(ViewNavBar, func(element Element) mvc.View {
+		return mvc.NewViewWithElement(new(navbar), element)
+	}, "click", "show.bs.dropdown", "hide.bs.dropdown", "shown.bs.dropdown", "hidden.bs.dropdown")
+	mvc.RegisterView(ViewNavItem, func(element Element) mvc.View {
+		return mvc.NewViewWithElement(new(navitem), element)
+	})
+	mvc.RegisterView(ViewNavDropdown, func(element Element) mvc.View {
+		return mvc.NewViewWithElement(new(navdropdown), element)
+	})
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -81,18 +91,20 @@ func init() {
 
 func NavBar(id string, args ...any) *navbar {
 	// Create the navbar
-	navbar := mvc.NewViewExEx(new(navbar), ViewNavBar, templateNavBar, args).(*navbar)
+	view := mvc.NewView(new(navbar), ViewNavBar, templateNavBar, func(self, child mvc.View) {
+		self.(*navbar).View = child
+	}, args)
 
 	// Replace the toggle button slot
-	navbar.ReplaceSlot("toggle-button", mvc.HTML(templateToggleButton, mvc.WithAttr("data-bs-target", "#"+id), mvc.WithAttr("aria-controls", id)))
+	view.ReplaceSlot("toggle-button", mvc.HTML(templateToggleButton, mvc.WithAttr("data-bs-target", "#"+id), mvc.WithAttr("aria-controls", id)))
 
 	// Set the target for the toggle
-	if collapse := navbar.Root().GetElementsByClassName("collapse"); len(collapse) > 0 {
+	if collapse := view.Root().GetElementsByClassName("collapse"); len(collapse) > 0 {
 		collapse[0].SetAttribute("id", id)
 	}
 
 	// Return the navbar
-	return navbar
+	return view.Self().(*navbar)
 }
 
 func NavItem(href string, args ...any) *navitem {
@@ -100,60 +112,25 @@ func NavItem(href string, args ...any) *navitem {
 	if href == "" {
 		href = "#"
 	}
-
-	// Return the navitem
-	item := mvc.NewViewExEx(
-		new(navitem), ViewNavItem, templateNavItem, mvc.WithAttr(dataAttrNavHref, href), args,
-	).(*navitem)
-	return item
+	return mvc.NewView(new(navitem), ViewNavItem, templateNavItem, func(self, child mvc.View) {
+		self.(*navitem).View = child
+	}, mvc.WithAttr(dataAttrNavHref, href), args).Self().(*navitem)
 }
 
 func NavDivider() *navitem {
-	return mvc.NewViewExEx(new(navitem), ViewNavItem, templateNavDivider).(*navitem)
+	return mvc.NewView(new(navitem), ViewNavItem, templateNavDivider, func(self, child mvc.View) {
+		self.(*navitem).View = child
+	}).Self().(*navitem)
 }
 
 func NavDropdown(args ...any) *navdropdown {
-	// Return the navdropdown
-	return mvc.NewViewExEx(
-		new(navdropdown), ViewNavDropdown, templateNavDropdown, args,
-	).(*navdropdown)
-}
-
-func newNavBarFromElement(element Element) mvc.View {
-	if element.TagName() != "NAV" {
-		return nil
-	}
-	return mvc.NewViewWithElement(new(navbar), element)
-}
-
-func newNavItemFromElement(element Element) mvc.View {
-	if element.TagName() != "LI" {
-		return nil
-	}
-	return mvc.NewViewWithElement(new(navitem), element)
-}
-
-func newNavDropdownFromElement(element Element) mvc.View {
-	if element.TagName() != "LI" {
-		return nil
-	}
-	return mvc.NewViewWithElement(new(navdropdown), element)
+	return mvc.NewView(new(navdropdown), ViewNavDropdown, templateNavDropdown, func(self, child mvc.View) {
+		self.(*navdropdown).View = child
+	}, args).Self().(*navdropdown)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
-
-func (navbar *navbar) SetView(view mvc.View) {
-	navbar.View = view
-}
-
-func (navitem *navitem) SetView(view mvc.View) {
-	navitem.View = view
-}
-
-func (navdropdown *navdropdown) SetView(view mvc.View) {
-	navdropdown.View = view
-}
 
 func (navbar *navbar) Label(children ...any) mvc.View {
 	return navbar.ReplaceSlot("label", mvc.HTML("A", mvc.WithAttr("href", "#"), mvc.WithClass("navbar-brand"), children))
@@ -183,7 +160,6 @@ func (navbar *navbar) Apply(opts ...mvc.Opt) mvc.View {
 			}
 		}
 	}
-
 	return navbar
 }
 
@@ -195,13 +171,13 @@ func (navbar *navbar) Content(children ...any) mvc.View {
 			items = append(items, child)
 		case *navdropdown:
 			items = append(items, child)
-		case *form:
-			items = append(items, child)
+			//		case *form:
+			//			items = append(items, child)
 		default:
 			panic(fmt.Sprintf("Content[navbar]: invalid child type: %T", child))
 		}
 	}
-	return navbar.ReplaceSlot("", mvc.HTML("ul", mvc.WithClass("navbar-nav"), items))
+	return navbar.ReplaceSlot(mvc.ContentSlot, mvc.HTML("UL", mvc.WithClass("navbar-nav"), items))
 }
 
 func (navdropdown *navdropdown) Content(children ...any) mvc.View {
@@ -214,13 +190,18 @@ func (navdropdown *navdropdown) Content(children ...any) mvc.View {
 			panic(fmt.Sprintf("Content[navdropdown]: invalid child type: %T", child))
 		}
 	}
-	return navdropdown.ReplaceSlot("", mvc.HTML("ul", mvc.WithClass("dropdown-menu"), items))
+	replace := mvc.HTML("UL", mvc.WithClass("dropdown-menu"), items)
+	return navdropdown.ReplaceSlot(mvc.ContentSlot, replace)
 }
 
 func (navitem *navitem) Content(children ...any) mvc.View {
-	href := navitem.Root().GetAttribute(dataAttrNavHref)
+	href := strings.TrimSpace(navitem.Root().GetAttribute(dataAttrNavHref))
 	if href == "" {
 		href = "#"
 	}
-	return navitem.ReplaceSlot("", mvc.HTML("a", mvc.WithAttr("href", href), mvc.WithClass("nav-link", "text-nowrap"), children))
+	return navitem.ReplaceSlot(mvc.ContentSlot, mvc.HTML("A", mvc.WithAttr("href", href), mvc.WithClass("nav-link", "text-nowrap"), children))
+}
+
+func (navdropdown *navdropdown) Label(children ...any) mvc.View {
+	return navdropdown.ReplaceSlot("label", mvc.HTML("span", children...))
 }

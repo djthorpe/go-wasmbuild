@@ -25,11 +25,6 @@ type accordionitem struct {
 // GLOBALS
 
 const (
-	ViewAccordion     = "mvc-bs-accordion"
-	ViewAccordionItem = "mvc-bs-accordionitem"
-)
-
-const (
 	templateAccordionItem = `
 		<div class="accordion-item">
 			<h2 class="accordion-header">

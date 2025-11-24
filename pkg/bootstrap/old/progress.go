@@ -24,10 +24,6 @@ var _ mvc.View = (*progress)(nil)
 ///////////////////////////////////////////////////////////////////////////////
 // GLOBALS
 
-const (
-	ViewProgress = "mvc-bs-progress"
-)
-
 func init() {
 	mvc.RegisterView(ViewProgress, newProgressFromElement)
 }

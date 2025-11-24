@@ -22,12 +22,6 @@ type deflist struct {
 ///////////////////////////////////////////////////////////////////////////////
 // GLOBALS
 
-const (
-	ViewList           = "mvc-bs-list"
-	ViewListGroup      = "mvc-bs-listgroup"
-	ViewDefinitionList = "mvc-bs-deflist"
-)
-
 func init() {
 	mvc.RegisterView(ViewList, newListFromElement)
 	mvc.RegisterView(ViewListGroup, newListGroupFromElement)

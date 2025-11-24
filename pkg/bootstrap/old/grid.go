@@ -13,42 +13,37 @@ import (
 ///////////////////////////////////////////////////////////////////////////////
 // TYPES
 
-// text are elements that represent text views
-type link struct {
+type grid struct {
 	mvc.View
 }
 
-var _ mvc.View = (*link)(nil)
+var _ mvc.View = (*grid)(nil)
 
 ///////////////////////////////////////////////////////////////////////////////
 // GLOBALS
 
-const (
-	ViewLink = "mvc-bs-link"
-)
-
 func init() {
-	mvc.RegisterView(ViewLink, newLinkFromElement)
+	mvc.RegisterView(ViewGrid, newGridFromElement)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
-func Link(href string, args ...any) mvc.View {
-	return mvc.NewView(new(link), ViewLink, "A", mvc.WithAttr("href", href), args)
+func Grid(args ...any) *grid {
+	return mvc.NewView(new(grid), ViewGrid, "DIV", mvc.WithClass("row"), args).(*grid)
 }
 
-func newLinkFromElement(element Element) mvc.View {
+func newGridFromElement(element Element) mvc.View {
 	tagName := element.TagName()
-	if tagName != "A" {
-		panic(fmt.Sprintf("newLinkFromElement: invalid tag name %q", tagName))
+	if tagName != "DIV" {
+		panic(fmt.Sprintf("newGridFromElement: invalid tag name %q", tagName))
 	}
-	return mvc.NewViewWithElement(new(link), element)
+	return mvc.NewViewWithElement(new(grid), element)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
 
-func (link *link) SetView(view mvc.View) {
-	link.View = view
+func (grid *grid) SetView(view mvc.View) {
+	grid.View = view
 }
