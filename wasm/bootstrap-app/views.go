@@ -46,7 +46,7 @@ var (
 		{"Icon(name)", "An icon view", false, false, false},
 		{"Image(href, any)", "An image view", false, false, false},
 		{"Form(name, any)", "A form view", false, false, false},
-		{"Input(name, any)", "An text input view", true, false, false},
+		{"Input(name, any)", "A text input view", true, false, false},
 		{"PasswordInput(name, any)", "A password input view", true, false, false},
 		{"NumberInput(name, any)", "A number input view", true, false, false},
 		{"RangeInput(name, any)", "A number input view as a slider", true, false, false},
