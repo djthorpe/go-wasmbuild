@@ -98,10 +98,9 @@ func (c Config) BuildContext(ctx *Context, path, output string, watch bool) (*Bu
 	gocmd, goroot, err := GoEnvFromCmd(ctx.Go)
 	if err != nil {
 		return nil, fmt.Errorf("failed to determine GOROOT or TINYGOROOT: %w", err)
-	} else {
-		context.GoCmd = gocmd
-		context.GoRoot = goroot
 	}
+	context.GoCmd = gocmd
+	context.GoRoot = goroot
 
 	// goargs
 	context.GoArgs = append([]string{"build"}, strings.Fields(ctx.GoFlags)...)
