@@ -402,10 +402,7 @@ func GoEnvFromCmd(cmd string) (string, string, error) {
 	}
 
 	// Run 'tinygo env TINYGOROOT' to get TINYGOROOT
-	output, err := exec.Command(cmd, "env", "TINYGOROOT").Output()
-	if err != nil {
-		return "", "", fmt.Errorf("failed to determine TINYGOROOT: %w", err)
-	}
+	output, _ := exec.Command(cmd, "env", "TINYGOROOT").Output()
 	if output = bytes.TrimSpace(output); len(output) > 0 {
 		return cmd, string(output), nil
 	}
