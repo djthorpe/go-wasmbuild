@@ -112,11 +112,12 @@ func (c Config) BuildContext(ctx *Context, path, output string, watch bool) (*Bu
 	wasmPathExecJS := RegularFileFromPathList(ctx.WasmExec, goroot)
 	if wasmPathExecJS == "" {
 		return nil, fmt.Errorf("wasm_exec.js not found in GOROOT")
-	} else if wasmFileExecJS, err := NewFileFromSource(wasmPathExecJS, "wasm_exec.js"); err != nil {
-		return nil, fmt.Errorf("failed to read wasm_exec.js: %w", err)
-	} else {
-		context.WasmExecJS = wasmFileExecJS
 	}
+	wasmFileExecJS, err := NewFileFromSource(wasmPathExecJS, "wasm_exec.js")
+	if err != nil {
+		return nil, fmt.Errorf("failed to read wasm_exec.js: %w", err)
+	}
+	context.WasmExecJS = wasmFileExecJS
 
 	//  wasm_exec.html
 	funcs := template.FuncMap{
