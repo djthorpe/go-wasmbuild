@@ -159,9 +159,8 @@ func (c Config) BuildContext(ctx *Context, path, output string, watch bool) (*Bu
 	wasmExecHTML, err := NewFileFromTemplate(etc.WasmExecHTML, "wasm_exec.html", c.Vars, funcs)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create wasm_exec.html: %w", err)
-	} else {
-		context.WasmExecHTML = wasmExecHTML
 	}
+	context.WasmExecHTML = wasmExecHTML
 
 	// favicon
 	context.FavIcon = NewFile(etc.FaviconPNG, "favicon.png")
