@@ -14,7 +14,7 @@ import (
 
 type Context struct {
 	Go       string `default:"go" help:"Path to go tool"`
-	WasmExec string `default:"lib/wasm/wasm_exec.js:misc/wasm/wasm_exec.js" help:"Path to wasm_exec.js relative to GOROOT"`
+	WasmExec string `default:"lib/wasm/wasm_exec.js:misc/wasm/wasm_exec.js:targets/wasm_exec.js" help:"Path to wasm_exec.js relative to GOROOT"`
 	GoFlags  string `help:"Additional flags to pass to go build"`
 	Config   string `default:"wasmbuild.yaml" help:"Path to configuration YAML file (relative to source path)"`
 	Verbose  bool   `short:"v" help:"Enable verbose output"`
