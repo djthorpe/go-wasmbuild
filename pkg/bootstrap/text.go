@@ -2,12 +2,8 @@ package bootstrap
 
 import (
 	// Package imports
-	"slices"
-
+	dom "github.com/djthorpe/go-wasmbuild"
 	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
-
-	// Namespace imports
-	. "github.com/djthorpe/go-wasmbuild"
 )
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -21,10 +17,6 @@ type text struct {
 // GLOBALS
 
 const (
-	ViewText = "mvc-bs-text"
-)
-
-const (
 	templateBlockquote = `
 	<figure>
 		<blockquote class="blockquote"><slot></slot></blockquote>
@@ -33,72 +25,67 @@ const (
 	`
 )
 
-var (
-	textTagNames = []string{
-		"P",
-		"DEL",
-		"MARK",
-		"SMALL",
-		"STRONG",
-		"EM",
-		"BLOCKQUOTE",
-		"CODE",
-	}
-)
-
 func init() {
-	mvc.RegisterView(ViewText, newTextFromElement)
+	mvc.RegisterView(ViewText, func(element dom.Element) mvc.View {
+		return mvc.NewViewWithElement(new(text), element, func(self, child mvc.View) {
+			self.(*text).View = child
+		})
+	})
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
 func Para(args ...any) *text {
-	return mvc.NewView(new(text), ViewText, "P", args).(*text)
+	return mvc.NewView(new(text), ViewText, "P", func(self, child mvc.View) {
+		self.(*text).View = child
+	}, args).(*text)
 }
 
 func LeadPara(args ...any) *text {
-	return mvc.NewView(new(text), ViewText, "P", mvc.WithClass("lead"), args).(*text)
+	return mvc.NewView(new(text), ViewText, "P", func(self, child mvc.View) {
+		self.(*text).View = child
+	}, mvc.WithClass("lead"), args).(*text)
 }
 
 func Deleted(args ...any) *text {
-	return mvc.NewView(new(text), ViewText, "DEL", args).(*text)
+	return mvc.NewView(new(text), ViewText, "DEL", func(self, child mvc.View) {
+		self.(*text).View = child
+	}, args).(*text)
 }
 
 func Highlighted(args ...any) *text {
-	return mvc.NewView(new(text), ViewText, "MARK", args).(*text)
+	return mvc.NewView(new(text), ViewText, "MARK", func(self, child mvc.View) {
+		self.(*text).View = child
+	}, args).(*text)
 }
 
 func Smaller(args ...any) *text {
-	return mvc.NewView(new(text), ViewText, "SMALL", args).(*text)
+	return mvc.NewView(new(text), ViewText, "SMALL", func(self, child mvc.View) {
+		self.(*text).View = child
+	}, args).(*text)
 }
 
 func Strong(args ...any) *text {
-	return mvc.NewView(new(text), ViewText, "STRONG", args).(*text)
+	return mvc.NewView(new(text), ViewText, "STRONG", func(self, child mvc.View) {
+		self.(*text).View = child
+	}, args).(*text)
 }
 
 func Em(args ...any) *text {
-	return mvc.NewView(new(text), ViewText, "EM", args).(*text)
+	return mvc.NewView(new(text), ViewText, "EM", func(self, child mvc.View) {
+		self.(*text).View = child
+	}, args).(*text)
 }
 
 func Blockquote(args ...any) *text {
-	return mvc.NewViewExEx(new(text), ViewText, templateBlockquote, args).(*text)
+	return mvc.NewView(new(text), ViewText, templateBlockquote, func(self, child mvc.View) {
+		self.(*text).View = child
+	}, args).(*text)
 }
 
 func Code(args ...any) *text {
-	return mvc.NewView(new(text), ViewText, "CODE", args).(*text)
-}
-
-func newTextFromElement(element Element) mvc.View {
-	if !slices.Contains(textTagNames, element.TagName()) {
-		return nil
-	}
-	return mvc.NewViewWithElement(new(text), element)
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// PUBLIC METHODS
-
-func (text *text) SetView(view mvc.View) {
-	text.View = view
+	return mvc.NewView(new(text), ViewText, "CODE", func(self, child mvc.View) {
+		self.(*text).View = child
+	}, args).(*text)
 }

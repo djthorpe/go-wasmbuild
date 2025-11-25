@@ -1,6 +1,8 @@
 package bootstrap
 
 import (
+	"fmt"
+
 	// Packages
 	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
 
@@ -11,42 +13,38 @@ import (
 ///////////////////////////////////////////////////////////////////////////////
 // TYPES
 
-type img struct {
+// text are elements that represent text views
+type link struct {
 	mvc.View
 }
+
+var _ mvc.View = (*link)(nil)
 
 ///////////////////////////////////////////////////////////////////////////////
 // GLOBALS
 
-const (
-	ViewImage = "mvc-bs-img"
-)
-
 func init() {
-	mvc.RegisterView(ViewImage, newImgFromElement)
+	mvc.RegisterView(ViewLink, newLinkFromElement)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
-func Image(href string, args ...any) *img {
-	// Return the img
-	return mvc.NewView(
-		new(img), ViewImage, "IMG",
-		mvc.WithAttr("src", href), mvc.WithClass("img-fluid"), args,
-	).(*img)
+func Link(href string, args ...any) mvc.View {
+	return mvc.NewView(new(link), ViewLink, "A", mvc.WithAttr("href", href), args)
 }
 
-func newImgFromElement(element Element) mvc.View {
-	if element.TagName() != "IMG" {
-		return nil
+func newLinkFromElement(element Element) mvc.View {
+	tagName := element.TagName()
+	if tagName != "A" {
+		panic(fmt.Sprintf("newLinkFromElement: invalid tag name %q", tagName))
 	}
-	return mvc.NewViewWithElement(new(img), element)
+	return mvc.NewViewWithElement(new(link), element)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
 
-func (img *img) SetView(view mvc.View) {
-	img.View = view
+func (link *link) SetView(view mvc.View) {
+	link.View = view
 }

@@ -1,8 +1,6 @@
 package bootstrap
 
 import (
-	"fmt"
-
 	// Packages
 	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
 
@@ -13,41 +11,38 @@ import (
 ///////////////////////////////////////////////////////////////////////////////
 // TYPES
 
-type grid struct {
+type img struct {
 	mvc.View
 }
-
-var _ mvc.View = (*grid)(nil)
 
 ///////////////////////////////////////////////////////////////////////////////
 // GLOBALS
 
-const (
-	ViewGrid = "mvc-bs-grid"
-)
-
 func init() {
-	mvc.RegisterView(ViewGrid, newGridFromElement)
+	mvc.RegisterView(ViewImage, newImgFromElement)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
-func Grid(args ...any) *grid {
-	return mvc.NewView(new(grid), ViewGrid, "DIV", mvc.WithClass("row"), args).(*grid)
+func Image(href string, args ...any) *img {
+	// Return the img
+	return mvc.NewView(
+		new(img), ViewImage, "IMG",
+		mvc.WithAttr("src", href), mvc.WithClass("img-fluid"), args,
+	).(*img)
 }
 
-func newGridFromElement(element Element) mvc.View {
-	tagName := element.TagName()
-	if tagName != "DIV" {
-		panic(fmt.Sprintf("newGridFromElement: invalid tag name %q", tagName))
+func newImgFromElement(element Element) mvc.View {
+	if element.TagName() != "IMG" {
+		return nil
 	}
-	return mvc.NewViewWithElement(new(grid), element)
+	return mvc.NewViewWithElement(new(img), element)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
 
-func (grid *grid) SetView(view mvc.View) {
-	grid.View = view
+func (img *img) SetView(view mvc.View) {
+	img.View = view
 }

@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	// Packages
-	"github.com/djthorpe/go-wasmbuild/pkg/mvc"
+	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
 )
 
 ///////////////////////////////////////////////////////////////////////////////

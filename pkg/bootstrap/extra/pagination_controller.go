@@ -1,9 +1,9 @@
 package extra
 
 import (
-	// Packages
 	"fmt"
 
+	// Packages
 	bs "github.com/djthorpe/go-wasmbuild/pkg/bootstrap"
 	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
 )
@@ -30,7 +30,9 @@ func PaginationController(view mvc.View) *pagination_controller {
 	}
 
 	// Create controller and return it
-	return mvc.NewController(new(pagination_controller), view).Self().(*pagination_controller)
+	return mvc.NewController(new(pagination_controller), func(self, child mvc.Controller) {
+		self.(*pagination_controller).Controller = child
+	}, view).Self().(*pagination_controller)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -56,6 +58,8 @@ func (c *pagination_controller) Set(offset, limit, count uint) {
 	c.offset = offset
 	c.limit = limit
 	c.count = count
+
+	// TODO: Update the pagination state
 }
 
 ///////////////////////////////////////////////////////////////////////////////

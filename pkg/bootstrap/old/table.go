@@ -21,11 +21,6 @@ type tablerow struct {
 // GLOBALS
 
 const (
-	ViewTable    = "mvc-bs-table"
-	ViewTableRow = "mvc-bs-tablerow"
-)
-
-const (
 	templateTable = `
 		<table class="table">
 			<thead><tr data-slot="header"></tr></thead>

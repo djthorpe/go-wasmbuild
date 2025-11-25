@@ -31,10 +31,6 @@ var _ mvc.View = (*buttontoolbar)(nil)
 // GLOBALS
 
 const (
-	ViewButton        = "mvc-bs-button"
-	ViewButtonGroup   = "mvc-bs-buttongroup"
-	ViewButtonToolbar = "mvc-bs-buttontoolbar"
-
 	// The prefix class for outline buttons
 	viewOutlineButtonClassPrefix = "btn-outline"
 

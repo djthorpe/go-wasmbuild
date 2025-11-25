@@ -29,11 +29,6 @@ var _ mvc.View = (*card)(nil)
 // GLOBALS
 
 const (
-	ViewCard      = "mvc-bs-card"
-	ViewCardGroup = "mvc-bs-cardgroup"
-)
-
-const (
 	templateCard = `
 		<div class="card">
 			<slot name="header"><!-- Header --></slot>
@@ -101,7 +96,7 @@ func (card *card) Content(children ...any) mvc.View {
 
 func (card *card) Label(children ...any) mvc.View {
 	if len(children) == 0 {
-		return card.View.Label()
+		return card.ReplaceSlot("label", mvc.Placeholder())
 	}
 	if len(children) > 1 {
 		panic("card.Label: only one child element is allowed")

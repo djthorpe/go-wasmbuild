@@ -23,10 +23,6 @@ var _ mvc.View = (*modal)(nil)
 // GLOBALS
 
 const (
-	ViewModal = "mvc-bs-modal"
-)
-
-const (
 	templateModal = `
 		<div class="modal fade" tabindex="-1">
 			<div class="modal-dialog">

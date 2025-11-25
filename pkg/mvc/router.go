@@ -42,7 +42,9 @@ const (
 
 func init() {
 	RegisterView(ViewRouter, func(element wasm.Element) View {
-		return NewViewWithElement(new(router), element)
+		return NewViewWithElement(new(router), element, func(self, child View) {
+			self.(*router).View = child
+		})
 	})
 }
 
@@ -51,7 +53,7 @@ func init() {
 
 // Create a Router
 func Router(args ...any) RouterView {
-	self := NewView(new(router), ViewRouter, "div", args).(RouterView)
+	self := NewView(new(router), ViewRouter, "div", nil, args).(RouterView)
 	router := self.(*router)
 	window := dom.GetWindow()
 
@@ -63,20 +65,8 @@ func Router(args ...any) RouterView {
 	return self
 }
 
-// Create a Table from an existing element
-func newRouterFromElement(element wasm.Element) View {
-	if element.TagName() != "DIV" {
-		return nil
-	}
-	return NewViewWithElement(new(router), element)
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
-
-func (router *router) SetView(view View) {
-	router.View = view
-}
 
 func (router *router) Page(path string, view View) RouterView {
 	if path != "" && !strings.HasPrefix(path, "#") {
@@ -110,12 +100,11 @@ func (router *router) match(hash string) *page {
 // page exists, the first registered page (if any) becomes the default view.
 func (router *router) refresh(hash string) {
 	if page := router.match(hash); page != nil {
-		router.Content(page.view)
+		router.ReplaceSlotChildren(ContentSlot, page.view)
 		return
 	}
 	if len(router.pages) > 0 {
-		router.Content(router.pages[0].view)
+		router.ReplaceSlotChildren(ContentSlot, router.pages[0].view)
 		return
 	}
-	router.Content()
 }

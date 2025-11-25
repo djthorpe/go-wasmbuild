@@ -26,88 +26,29 @@ type View interface {
 	// Return the view's parent view
 	Parent() View
 
-	// Return a slot by name, or nil if not found
+	// Return self
+	Self() View
+
+	// Return a slot element by name, or nil if not found
 	Slot(string) dom.Element
 
-	// Replace a named slot with a node
-	ReplaceSlot(string, any) View
+	// Replace a named slot with a node amnd apply options to the slot
+	ReplaceSlot(string, any, ...Opt) View
+
+	// Replace the children of a named slot with views, elememts or text and apply options to the slot
+	ReplaceSlotChildren(name string, args ...any) View
+
+	// Apply class and attribute options to the root element
+	Apply(...Opt) View
+
+	// Replace the content of the view
+	Content(...any) View
 
 	// Add an event listener to the view's root element
 	AddEventListener(string, func(dom.Event)) View
 
 	// Remove an event listener from the view's root element
 	RemoveEventListener(string) View
-
-	// Return the value of the view as a string. The contents of the
-	// string depends on the view type
-	Value() string
-
-	// Set the value of the view as a string. The interpretation of the
-	// string depends on the view type
-	Set(string) View
-
-	// Apply class and attribute options to the view
-	Apply(...Opt) View
-
-	// TODO - Deprecate these methods in favour of ReplaceSlot
-
-	// Set the view's content to the given text, Element or View children
-	// If no arguments are given, the content is cleared
-	Content(...any) View
-
-	// Set the view's label element. Panics if the view does not have a slot
-	// called "label"
-	Label(...any) View
-
-	// Set the view's header element. Panics if the view does not have a slot
-	// called "header"
-	Header(...any) View
-
-	// Set the view's footer element. Panics if the view does not have a slot
-	// called "footer"
-	Footer(...any) View
-}
-
-// ViewWithState represents a UI component with active and disabled states
-type ViewWithState interface {
-	View
-
-	// Indicates whether the view is active
-	Active() bool
-
-	// Indicates whether the view is disabled
-	Disabled() bool
-}
-
-// ViewWithGroupState represents a UI component with a group of active and disabled states
-type ViewWithGroupState interface {
-	View
-
-	// Returns any elements which are active
-	Active() []dom.Element
-
-	// Returns any elements which are disabled
-	Disabled() []dom.Element
-}
-
-// ViewWithVisibility represents a UI component with the ability to show or hide itself
-type ViewWithVisibility interface {
-	View
-
-	// Returns true if the view is visible
-	Visible() bool
-
-	// Makes the view visible and returns the view
-	Show() ViewWithVisibility
-
-	// Hides the view and returns the view
-	Hide() ViewWithVisibility
-}
-
-// ViewWithSelf represents a UI component that can set its own view
-type ViewWithSelf interface {
-	View
-	SetView(view View)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -138,7 +79,7 @@ const (
 	DataSlotAttrKey = "data-slot"
 
 	// The name of the default slot, when name atribute is missing
-	defaultSlot = "body"
+	ContentSlot = "body"
 )
 
 var (
@@ -163,160 +104,52 @@ func RegisterView(name string, constructor ViewConstructorFunc, eventtypes ...st
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
-// Create a new view with template, applying any options to it
-func NewViewExEx(self View, name string, template string, args ...any) View {
-	if _, exists := views[name]; !exists {
-		panic(fmt.Sprintf("NewViewExEx: view not registered %q", name))
-	}
-	// Create the element from the template, and return the slots on the view
-	root, slots := elementFromTemplate(template)
-
-	// Create the view
-	v := &view{
-		self: self,
-		name: name,
-		root: root,
-		slot: slots,
-	}
-
-	// Set the view in self
-	if self_, ok := self.(ViewWithSelf); !ok {
-		panic(fmt.Sprintf("NewView: %v does not implement ViewWithSelf", name))
-	} else {
-		self_.SetView(v)
-	}
-
-	// Set the component identifier
-	v.root.SetAttribute(DataComponentAttrKey, name)
-
-	// Apply options to the view
-	opts, content := gatherOpts(args...)
-	v.Apply(opts...)
-
-	// Set the content in the view
-	if len(content) > 0 {
-		v.self.Content(content...)
-	}
-
-	// Return the view
-	return v.self
-}
-
-func elementFromTemplate(template string) (dom.Element, map[string]dom.Element) {
-	// Create the root element
-	root := elementFactory("div")
-	root.SetInnerHTML(template)
-
-	// There should be a single child element
-	if root.ChildElementCount() != 1 {
-		panic(fmt.Sprintf("elementFromTemplate: template must have a single root element, found %d", root.ChildElementCount()))
-	} else {
-		root = root.FirstElementChild()
-	}
-
-	// Find the slots in the template by <slot> elements, or data-slot attributes
-	slots := root.GetElementsByTagName("slot")
-	if len(slots) == 0 {
-		slots = getElementsByAttribute(root, DataSlotAttrKey)
-	}
-
-	// Create the slot map
-	slotmap := make(map[string]dom.Element, len(slots))
-
-	// In the case there is no slot, use the root element as the default slot
-	if len(slots) == 0 {
-		slotmap[defaultSlot] = root
-		return root, slotmap
-	}
-
-	// Otherwise enumerate the slots, using the 'data-slot' attribute or 'name' attribute
-	for _, slot := range slots {
-		name := slotNameFromElement(slot)
-		if name == "" {
-			name = defaultSlot
-		}
-		if _, exists := slotmap[name]; exists {
-			panic("elementFromTemplate: duplicate slot name " + name)
-		}
-		// Set the slot
-		slotmap[name] = slot
-	}
-
-	// Ensure a default slot exists
-	if _, exists := slotmap[defaultSlot]; !exists {
-		slotmap[defaultSlot] = root
-	}
-
-	// Return the root element and slot map
-	return root, slotmap
-}
-
-func slotNameFromElement(element dom.Element) string {
-	// Slot name is from 'name' attribute for <slot> elements, or 'data-slot' attribute otherwise
-	if element.TagName() == "SLOT" {
-		return element.GetAttribute("name")
-	} else {
-		return element.GetAttribute(DataSlotAttrKey)
-	}
-}
-
-func getElementsByAttribute(root dom.Element, attr string) []dom.Element {
-	var elements []dom.Element
-	children := root.Children()
-	for _, child := range children {
-		// Recursively search child elements
-		if child.HasAttribute(attr) {
-			elements = append(elements, child)
-		} else {
-			elements = append(elements, getElementsByAttribute(child, attr)...)
-		}
-	}
-	return elements
-}
-
 // Create a new empty view, applying any options to it
-func NewView(self View, name string, tagName string, args ...any) View {
+func NewView(self View, name string, template string, fn func(View, View), args ...any) View {
 	if _, exists := views[name]; !exists {
-		panic(fmt.Sprintf("NewView: view not registered %q", name))
+		panic(fmt.Sprintf("NewView[%s]: view not registered", name))
+	}
+
+	var root dom.Element
+	var slot map[string]dom.Element
+	if reTagName.MatchString(template) {
+		root = HTML(template)
+		slot = map[string]dom.Element{
+			ContentSlot: root,
+		}
+	} else {
+		root, slot = elementFromTemplate(template)
 	}
 
 	// Create the view
-	v := &view{
-		self: self,
-		name: name,
-		root: elementFactory(tagName),
-		slot: make(map[string]dom.Element),
-	}
+	v := &view{self: self, name: name, root: root, slot: slot}
 
-	// Set the view in self
-	if self_, ok := self.(ViewWithSelf); !ok {
-		panic(fmt.Sprintf("NewView: %v does not implement ViewWithSelf", name))
-	} else {
-		self_.SetView(v)
-	}
+	// Set component identifier
+	root.SetAttribute(DataComponentAttrKey, name)
 
-	// Set the component identifier
-	v.root.SetAttribute(DataComponentAttrKey, name)
-
-	// Apply options to the view
+	// Apply options and content to the view
 	opts, content := gatherOpts(args...)
 	if len(opts) > 0 {
-		if err := applyOpts(v.root, opts...); err != nil {
-			panic(err)
-		}
+		v.Apply(opts...)
 	}
 
-	// Add content to the component
+	// Call the initialization function to establish the relationship between
+	// the view and its child view
+	if fn != nil {
+		fn(v.Self(), v)
+	}
+
+	// Insert content into the view
 	if len(content) > 0 {
-		v.self.Content(content...)
+		v.Self().Content(content...)
 	}
 
 	// Return the view
-	return v.self
+	return v
 }
 
 // Create view from an existing element, applying any options to it
-func NewViewWithElement(self View, element dom.Element, opts ...Opt) View {
+func NewViewWithElement(self View, element dom.Element, fn func(View, View), opts ...Opt) View {
 	if element == nil {
 		panic("NewViewWithElement: missing element")
 	} else if self == nil {
@@ -333,13 +166,6 @@ func NewViewWithElement(self View, element dom.Element, opts ...Opt) View {
 		panic("NewViewWithElement: element missing data-mvc attribute")
 	}
 
-	// Set the view in self
-	if self_, ok := self.(ViewWithSelf); !ok {
-		panic(fmt.Sprintf("NewView: %v does not implement ViewWithSelf", v.name))
-	} else {
-		self_.SetView(v)
-	}
-
 	// Apply options to the view
 	if len(opts) > 0 {
 		if err := applyOpts(v.root, opts...); err != nil {
@@ -349,8 +175,14 @@ func NewViewWithElement(self View, element dom.Element, opts ...Opt) View {
 
 	// TODO: Set the view slots
 
+	// Call the initialization function to establish the relationship between
+	// the view and its child view
+	if fn != nil {
+		fn(v.Self(), v)
+	}
+
 	// Return self
-	return v.self
+	return v.Self()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -375,6 +207,7 @@ func (v *view) Root() dom.Element {
 	return v.root
 }
 
+// Return parent view
 func (v *view) Parent() View {
 	e := v.root
 	for {
@@ -384,7 +217,7 @@ func (v *view) Parent() View {
 			break
 		}
 		if view, err := viewFromElement(e); err != nil {
-			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+			fmt.Fprintf(os.Stderr, "Parent[%s]: %v\n", v.Name(), err)
 			break
 		} else if view != nil {
 			return view
@@ -393,111 +226,98 @@ func (v *view) Parent() View {
 	return nil
 }
 
+// Return self
+func (v *view) Self() View {
+	if v.self == nil {
+		return v
+	}
+	return v.self
+}
+
+// Replace the content of the view
+func (v *view) Content(args ...any) View {
+	return v.ReplaceSlotChildren(ContentSlot, args...)
+}
+
 // Return a slot element by name. Returns nil if the slot does not exist
 func (v *view) Slot(name string) dom.Element {
-	if name == "" {
-		name = defaultSlot
+	if name = strings.TrimSpace(name); name == "" {
+		name = ContentSlot
 	}
 	return v.slot[name]
 }
 
 // Replace a slot with a view, text or element
-func (v *view) ReplaceSlot(name string, root any) View {
-	// Set name for default slot
-	if name = strings.TrimSpace(name); name == "" {
-		name = defaultSlot
-	}
-
-	// Ensure slot exists
-	slot, exists := v.slot[name]
-	if !exists {
-		panic(fmt.Sprintf("ReplaceSlot: slot %q does not exist", name))
+func (v *view) ReplaceSlot(name string, root any, opts ...Opt) View {
+	slot := v.Slot(name)
+	if slot == nil {
+		panic(fmt.Sprintf("ReplaceSlot[%s]: slot %q does not exist", v.Name(), name))
 	}
 
 	// Replace the slot content
-	node := NodeFromAny(root)
-	if node.NodeType() != dom.ELEMENT_NODE {
-		panic(fmt.Sprintf("ReplaceSlot: unsupported node type %v", node.NodeType()))
+	if root != nil {
+		node := NodeFromAny(root)
+		if node.NodeType() != dom.ELEMENT_NODE {
+			panic(fmt.Sprintf("ReplaceSlot[%s]: unsupported node type %v", v.Name(), node.NodeType()))
+		}
+
+		// Set the data-slot attribute on the new element
+		element, ok := node.(dom.Element)
+		if !ok {
+			panic(dom.ErrInternalAppError.Withf("ReplaceSlot[%s]: node is not an Element on slot %q", v.Name(), name).Error())
+		} else {
+			// Actually replace the content in the slot and set it to the new content
+			element.SetAttribute(DataSlotAttrKey, name)
+			slot.ReplaceWith(element)
+			v.slot[name] = element
+		}
 	}
 
-	// Set the data-slot attribute on the new element
-	element, ok := node.(dom.Element)
-	if !ok {
-		panic(dom.ErrInternalAppError.Withf("ReplaceSlot: node is not an Element on slot %q of view %q", name, v.Name()).Error())
-	} else {
-		// Actually replace the content in the slot and set it to the new content
-		element.SetAttribute(DataSlotAttrKey, name)
-		slot.ReplaceWith(element)
-		v.slot[name] = element
+	// Apply options to the slot element
+	if err := applyOpts(slot, opts...); err != nil {
+		panic(err)
 	}
 
 	// Return self for chaining
-	return v.self
+	return v.Self()
+}
+
+// Replace slot children with  view, text or elements and apply options to the slot
+func (v *view) ReplaceSlotChildren(name string, args ...any) View {
+	slot := v.Slot(name)
+	if slot == nil {
+		panic(fmt.Sprintf("ReplaceSlotChildren[%s]: slot %q does not exist", v.Name(), name))
+	}
+
+	// Apply options and content to the view
+	opts, children := gatherOpts(args...)
+	if len(opts) > 0 {
+		v.Apply(opts...)
+	}
+
+	slot.SetInnerHTML("")
+	for _, child := range children {
+		slot.AppendChild(NodeFromAny(child))
+	}
+	return v.Self()
 }
 
 // Apply class and attribute options to the view root element
 func (v *view) Apply(opts ...Opt) View {
-	if len(opts) > 0 {
-		if err := applyOpts(v.root, opts...); err != nil {
-			panic(err)
-		}
+	if err := applyOpts(v.Root(), opts...); err != nil {
+		panic(err)
 	}
-	return v.self
-}
-
-// Set content of the default slot
-func (v *view) Content(children ...any) View {
-	target, exists := v.slot[defaultSlot]
-	if !exists {
-		target = v.root
-	}
-	return v.replaceChildContent(target, children...)
-}
-
-func (v *view) Header(children ...any) View {
-	slot, exists := v.slot["header"]
-	if !exists {
-		panic("view.Header: view does not have a header slot")
-	}
-	return v.replaceChildContent(slot, children...)
-}
-
-func (v *view) Footer(children ...any) View {
-	slot, exists := v.slot["footer"]
-	if !exists {
-		panic("view.Footer: view does not have a footer slot")
-	}
-	return v.replaceChildContent(slot, children...)
-}
-
-func (v *view) Label(children ...any) View {
-	slot, exists := v.slot["label"]
-	if !exists {
-		panic("view.Label: view does not have a label slot")
-	}
-	return v.replaceChildContent(slot, children...)
+	return v.Self()
 }
 
 func (v *view) AddEventListener(event string, handler func(dom.Event)) View {
 	v.root.AddEventListener(event, handler)
-	return v.self
+	return v.Self()
 }
 
 func (v *view) RemoveEventListener(event string) View {
 	v.root.RemoveEventListener(event)
-	return v.self
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// PUBLIC METHODS - ViewWithValue
-
-func (v *view) Value() string {
-	return v.root.Value()
-}
-
-func (v *view) Set(value string) View {
-	v.root.SetValue(value)
-	return v.self
+	return v.Self()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -508,12 +328,12 @@ func ViewFromEvent(e dom.Event) View {
 	if e == nil {
 		return nil
 	}
+	// Work up the chain until a view is found
 	switch element := e.Target().(type) {
 	case dom.Element:
-		// Work up the chain until a view is found
 		for {
 			if view, err := viewFromElement(element); err != nil {
-				fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+				fmt.Fprintf(os.Stderr, "ViewFromEvent: %v\n", err)
 				return nil
 			} else if view != nil {
 				return view
@@ -545,16 +365,8 @@ func NodeFromAny(child any) dom.Node {
 	panic(dom.ErrInternalAppError.Withf("NodeFromAny: unsupported: %T", child))
 }
 
-func (v *view) replaceChildContent(target dom.Element, children ...any) View {
-	if target == nil {
-		return v.self
-	}
-	target.SetInnerHTML("")
-	for _, child := range children {
-		target.AppendChild(NodeFromAny(child))
-	}
-	return v.self
-}
+///////////////////////////////////////////////////////////////////////////////
+// PRIVATE METHODS
 
 func viewFromElement(element dom.Element) (View, error) {
 	if !element.HasAttribute(DataComponentAttrKey) {
@@ -570,4 +382,76 @@ func viewFromElement(element dom.Element) (View, error) {
 	} else {
 		return view, nil
 	}
+}
+
+func elementFromTemplate(template string) (dom.Element, map[string]dom.Element) {
+	// Create the root element
+	root := elementFactory("div")
+	root.SetInnerHTML(template)
+
+	// There should be a single child element
+	if root.ChildElementCount() != 1 {
+		panic(fmt.Sprintf("elementFromTemplate: template must have a single root element, found %d", root.ChildElementCount()))
+	} else {
+		root = root.FirstElementChild()
+	}
+
+	// Find the slots in the template by <slot> elements, or data-slot attributes
+	slots := root.GetElementsByTagName("slot")
+	if len(slots) == 0 {
+		slots = getElementsByAttribute(root, DataSlotAttrKey)
+	}
+
+	// Create the slot map
+	slotmap := make(map[string]dom.Element, len(slots))
+
+	// In the case there is no slot, use the root element as the default slot
+	if len(slots) == 0 {
+		slotmap[ContentSlot] = root
+		return root, slotmap
+	}
+
+	// Otherwise enumerate the slots, using the 'data-slot' attribute or 'name' attribute
+	for _, slot := range slots {
+		name := slotNameFromElement(slot)
+		if name == "" {
+			name = ContentSlot
+		}
+		if _, exists := slotmap[name]; exists {
+			panic("elementFromTemplate: duplicate slot name " + name)
+		}
+		// Set the slot
+		slotmap[name] = slot
+	}
+
+	// Ensure a default slot exists
+	if _, exists := slotmap[ContentSlot]; !exists {
+		slotmap[ContentSlot] = root
+	}
+
+	// Return the root element and slot map
+	return root, slotmap
+}
+
+func slotNameFromElement(element dom.Element) string {
+	// Slot name is from 'name' attribute for <slot> elements, or 'data-slot' attribute otherwise
+	if element.TagName() == "SLOT" {
+		return element.GetAttribute("name")
+	} else {
+		return element.GetAttribute(DataSlotAttrKey)
+	}
+}
+
+func getElementsByAttribute(root dom.Element, attr string) []dom.Element {
+	var elements []dom.Element
+	children := root.Children()
+	for _, child := range children {
+		// Recursively search child elements
+		if child.HasAttribute(attr) {
+			elements = append(elements, child)
+		} else {
+			elements = append(elements, getElementsByAttribute(child, attr)...)
+		}
+	}
+	return elements
 }

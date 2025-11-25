@@ -13,7 +13,7 @@ import (
 
 // app is a simple app view
 type app struct {
-	view
+	View
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -38,21 +38,20 @@ var (
 
 // New creates an empty application root, attaches it to the document body and
 // returns the view so callers can begin composing content.
-func New() *app {
-	// Create the application
-	view := new(app)
-	view.self = view
-	view.name = ViewApp
-	view.root = elementFactory("div")
-	if view.root == nil {
-		panic("document has no body element")
-	}
+func New(args ...any) *app {
+	view := NewView(new(app), ViewApp, "DIV", func(self, child View) {
+		self.(*app).View = child
+	}, args...).Self().(*app)
 
-	// Prepend the application div to the document body
-	doc.Body().Prepend(view.root)
+	// Attach the view to the document body
+	doc.Body().Prepend(view.Root())
 
 	// Return the view
 	return view
+}
+
+func (a *app) Run() {
+	select {}
 }
 
 ///////////////////////////////////////////////////////////////////////////////

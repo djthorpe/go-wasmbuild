@@ -4,10 +4,8 @@ import (
 	"slices"
 
 	// Packages
+	dom "github.com/djthorpe/go-wasmbuild"
 	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
-
-	// Namespace imports
-	. "github.com/djthorpe/go-wasmbuild"
 )
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -71,7 +69,7 @@ func WithFlex(position Position) mvc.Opt {
 			mvc.WithoutClass("flex-row")(o)
 			mvc.WithoutClass("flex-column")(o)
 		default:
-			return ErrInternalAppError.With("WithFlex: invalid position")
+			return dom.ErrInternalAppError.With("WithFlex: invalid position")
 		}
 
 		// TODO: Add alignment classes
@@ -87,7 +85,7 @@ func WithPosition(position Position) mvc.Opt {
 	return func(o mvc.OptSet) error {
 		prefix := positionPrefixForView(o.Name(), position)
 		if prefix == "" {
-			return ErrInternalAppError.Withf("WithPosition: unsupported view %q", o.Name())
+			return dom.ErrInternalAppError.Withf("WithPosition: unsupported view %q", o.Name())
 		}
 
 		// Remove all other classes
@@ -104,7 +102,7 @@ func WithPosition(position Position) mvc.Opt {
 		// Add class for this position
 		className := position.className(prefix)
 		if !slices.Contains(classNames, className) {
-			return ErrInternalAppError.Withf("WithPosition: invalid position %d for view %q", position, o.Name())
+			return dom.ErrInternalAppError.Withf("WithPosition: invalid position %d for view %q", position, o.Name())
 		}
 		return mvc.WithClass(className)(o)
 	}
@@ -137,7 +135,7 @@ func WithBorder(colors ...Color) mvc.Opt {
 		}
 
 		// Not yet implemented
-		return ErrInternalAppError.Withf("WithBorder: multi-border colors not yet implemented")
+		return dom.ErrInternalAppError.Withf("WithBorder: multi-border colors not yet implemented")
 	}
 }
 

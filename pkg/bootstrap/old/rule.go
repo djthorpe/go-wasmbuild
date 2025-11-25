@@ -23,10 +23,6 @@ var _ mvc.View = (*rule)(nil)
 ///////////////////////////////////////////////////////////////////////////////
 // GLOBALS
 
-const (
-	ViewRule = "mvc-bs-rule"
-)
-
 func init() {
 	mvc.RegisterView(ViewRule, newRuleFromElement)
 }

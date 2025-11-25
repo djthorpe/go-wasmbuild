@@ -5,10 +5,8 @@ import (
 	"slices"
 
 	// Packages
+	dom "github.com/djthorpe/go-wasmbuild"
 	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
-
-	// Namespace imports
-	. "github.com/djthorpe/go-wasmbuild"
 )
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -54,7 +52,7 @@ func WithSize(size Size) mvc.Opt {
 	return func(o mvc.OptSet) error {
 		prefix := sizePrefixForView(o.Name())
 		if prefix == "" {
-			return ErrInternalAppError.Withf("WithSize: unsupported view %q", o.Name())
+			return dom.ErrInternalAppError.Withf("WithSize: unsupported view %q", o.Name())
 		}
 
 		// Remove all other size classes
@@ -64,7 +62,7 @@ func WithSize(size Size) mvc.Opt {
 
 		// Add class for this size
 		if !slices.Contains(allSizesForView(o.Name()), size) {
-			return ErrInternalAppError.Withf("WithSize: invalid size %q for view %q", size, o.Name())
+			return dom.ErrInternalAppError.Withf("WithSize: invalid size %q for view %q", size, o.Name())
 		} else if err := mvc.WithClass(size.className(prefix))(o); err != nil {
 			return err
 		}
