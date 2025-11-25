@@ -54,14 +54,20 @@ type BuildContext struct {
 // BuildContext creates a BuildContext from the Config, returning all the
 // information needed to build a WASM application.
 func (c Config) BuildContext(ctx *Context, path, output string, watch bool) (*BuildContext, error) {
+	context := &BuildContext{
+		Config: c,
+		GoCmd:  ctx.Go,
+	}
+
 	// Make input path absolute
-	if filepath.IsAbs(path) == false {
+	if !filepath.IsAbs(path) {
 		var err error
 		path, err = filepath.Abs(path)
 		if err != nil {
 			return nil, fmt.Errorf("failed to determine absolute path: %w", err)
 		}
 	}
+	context.Path = path
 
 	// Determine the output path
 	if output == "" {
@@ -86,36 +92,31 @@ func (c Config) BuildContext(ctx *Context, path, output string, watch bool) (*Bu
 			return nil, fmt.Errorf("failed to create build directory: %w", err)
 		}
 	}
+	context.Output = output
 
-	// Get GOROOT from environment
-	goroot := os.Getenv("GOROOT")
-	if goroot == "" {
-		// If GOROOT is not set, try to determine it from the go tool
-		if !filepath.IsAbs(ctx.Go) {
-			var err error
-			ctx.Go, err = exec.LookPath(ctx.Go)
-			if err != nil {
-				return nil, fmt.Errorf("failed to locate go executable: %w", err)
-			}
-		}
-
-		// Run 'go env GOROOT' to get GOROOT
-		cmd := exec.Command(ctx.Go, "env", "GOROOT")
-		output, err := cmd.Output()
-		if err != nil {
-			return nil, fmt.Errorf("failed to determine GOROOT: %w", err)
-		}
-		goroot = strings.TrimSpace(string(output))
+	// goroot
+	gocmd, goroot, err := GoEnvFromCmd(ctx.Go)
+	if err != nil {
+		return nil, fmt.Errorf("failed to determine GOROOT: %w", err)
+	} else {
+		context.GoCmd = gocmd
+		context.GoRoot = goroot
 	}
+
+	// goargs
+	context.GoArgs = append([]string{"build"}, strings.Fields(ctx.GoFlags)...)
+
+	// goenv
+	context.GoEnv = []string{"GOOS=js", "GOARCH=wasm"}
 
 	// wasm_exec.js
 	wasmPathExecJS := RegularFileFromPathList(ctx.WasmExec, goroot)
 	if wasmPathExecJS == "" {
 		return nil, fmt.Errorf("wasm_exec.js not found in GOROOT")
-	}
-	wasmExecJS, err := NewFileFromSource(wasmPathExecJS, "wasm_exec.js")
-	if err != nil {
+	} else if wasmFileExecJS, err := NewFileFromSource(wasmPathExecJS, "wasm_exec.js"); err != nil {
 		return nil, fmt.Errorf("failed to read wasm_exec.js: %w", err)
+	} else {
+		context.WasmExecJS = wasmFileExecJS
 	}
 
 	//  wasm_exec.html
@@ -158,26 +159,15 @@ func (c Config) BuildContext(ctx *Context, path, output string, watch bool) (*Bu
 	wasmExecHTML, err := NewFileFromTemplate(etc.WasmExecHTML, "wasm_exec.html", c.Vars, funcs)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create wasm_exec.html: %w", err)
+	} else {
+		context.WasmExecHTML = wasmExecHTML
 	}
 
+	// favicon
+	context.FavIcon = NewFile(etc.FaviconPNG, "favicon.png")
+
 	// Return build context
-	return &BuildContext{
-		Config: c,
-		Path:   path,
-		Output: output,
-		GoCmd:  ctx.Go,
-		GoRoot: goroot,
-		GoArgs: append([]string{
-			"build",
-		}, strings.Fields(ctx.GoFlags)...),
-		GoEnv: []string{
-			"GOOS=js",
-			"GOARCH=wasm",
-		},
-		WasmExecJS:   wasmExecJS,
-		WasmExecHTML: wasmExecHTML,
-		FavIcon:      NewFile(etc.FaviconPNG, "favicon.png"),
-	}, nil
+	return context, nil
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -225,9 +215,10 @@ func (c *BuildCmd) Run(ctx *Context) error {
 		buildContext.FavIcon,
 	} {
 		// Write file
-		ctx.log.Info("cp ", files.Path, " ", buildContext.Output)
-		if err := files.WriteTo(buildContext.Output); err != nil {
+		if sz, err := files.WriteTo(buildContext.Output); err != nil {
 			return fmt.Errorf("failed to copy %s: %w", files.Path, err)
+		} else {
+			ctx.log.Info("cp ", files.Path, " ", buildContext.Output, " (", sz, " bytes)")
 		}
 	}
 
@@ -264,9 +255,10 @@ func (c *BuildCmd) Run(ctx *Context) error {
 			}
 
 			// Copy file across
-			ctx.log.Info("cp ", path, " ", filepath.Dir(destPath))
-			if err := CopyFile(path, destPath); err != nil {
+			if sz, err := CopyFile(path, destPath); err != nil {
 				return err
+			} else {
+				ctx.log.Info("cp ", path, " ", filepath.Dir(destPath), " (", sz, " bytes)")
 			}
 
 			// Return success
@@ -338,29 +330,29 @@ func (c *BuildContext) CompileExec(ctx *Context) (*File, error) {
 	return NewFile(wasmData, filepath.Base(c.Path)+".wasm"), nil
 }
 
-func CopyFile(src, dest string) error {
+func CopyFile(src, dest string) (int64, error) {
 	// Open source file
 	srcFile, err := os.Open(src)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	defer srcFile.Close()
 
 	// Create destination file
 	destFile, err := os.Create(dest)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	defer destFile.Close()
 
 	// Copy data
-	_, err = io.Copy(destFile, srcFile)
+	n, err := io.Copy(destFile, srcFile)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	// Return success
-	return nil
+	return n, nil
 }
 
 // Return the path to file wasm_exec.js
@@ -396,3 +388,48 @@ func ResolveFile(path, base string) (string, error) {
 	}
 	return path, nil
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// PRIVATE METHODS
+
+func GoEnvFromCmd(cmd string) (string, string, error) {
+	if !filepath.IsAbs(cmd) {
+		var err error
+		cmd, err = exec.LookPath(cmd)
+		if err != nil {
+			return "", "", fmt.Errorf("failed to locate go executable: %w", err)
+		}
+	}
+
+	// Run 'tinygo env TINYGOROOT' to get TINYGOROOT
+	output, err := exec.Command(cmd, "env", "TINYGOROOT").Output()
+	if err != nil {
+		return "", "", fmt.Errorf("failed to determine TINYGOROOT: %w", err)
+	}
+	if output = bytes.TrimSpace(output); len(output) > 0 {
+		return cmd, string(output), nil
+	}
+
+	// Run 'go env GOROOT' to get GOROOT
+	output, err = exec.Command(cmd, "env", "GOROOT").Output()
+	if err != nil {
+		return "", "", fmt.Errorf("failed to determine GOROOT: %w", err)
+	}
+	if output = bytes.TrimSpace(output); len(output) > 0 {
+		return cmd, string(output), nil
+	}
+	return "", "", fmt.Errorf("GOROOT not found")
+}
+
+/*
+
+	// wasm_exec.js
+	wasmPathExecJS := RegularFileFromPathList(ctx.WasmExec, goroot)
+	if wasmPathExecJS == "" {
+		return nil, fmt.Errorf("wasm_exec.js not found in GOROOT")
+	}
+
+
+	// Return success
+}
+*/

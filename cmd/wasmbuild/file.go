@@ -81,12 +81,15 @@ func (f *File) String() string {
 ///////////////////////////////////////////////////////////////////////////////
 // METHODS
 
-func (f *File) WriteTo(dir string) error {
+func (f *File) WriteTo(dir string) (int64, error) {
 	dest := filepath.Join(dir, f.Path)
 	if err := os.MkdirAll(filepath.Dir(dest), 0o755); err != nil {
-		return err
+		return 0, err
 	}
-	return os.WriteFile(dest, f.Data, 0o644)
+	if err := os.WriteFile(dest, f.Data, 0o644); err != nil {
+		return 0, err
+	}
+	return int64(len(f.Data)), nil
 }
 
 func (f *File) URL() string {
