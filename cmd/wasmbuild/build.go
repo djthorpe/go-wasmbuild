@@ -417,15 +417,3 @@ func GoEnvFromCmd(cmd string) (string, string, error) {
 	return "", "", fmt.Errorf("GOROOT not found")
 }
 
-/*
-
-	// wasm_exec.js
-	wasmPathExecJS := RegularFileFromPathList(ctx.WasmExec, goroot)
-	if wasmPathExecJS == "" {
-		return nil, fmt.Errorf("wasm_exec.js not found in GOROOT")
-	}
-
-
-	// Return success
-}
-*/
