@@ -68,9 +68,8 @@ func Views() mvc.View {
 	boolToIcon := func(b bool) mvc.View {
 		if b {
 			return bs.Icon("check-lg", bs.WithColor(bs.Success))
-		} else {
-			return bs.Para()
 		}
+		return bs.Para()
 	}
 	for _, view := range views {
 		rows = append(rows, bs.Row(
