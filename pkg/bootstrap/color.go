@@ -140,6 +140,8 @@ func colorPrefixForView(name string) string {
 		return "text"
 	case ViewCodeBlock:
 		return "bg"
+	case ViewGrid:
+		return "bg"
 	case ViewText:
 		return "text"
 	case ViewProgress:

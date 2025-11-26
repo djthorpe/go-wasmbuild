@@ -112,7 +112,7 @@ func NavBar(id string, args ...any) *navbar {
 	}
 
 	// Return the navbar
-	return view.Self().(*navbar)
+	return view.(*navbar)
 }
 
 func NavItem(href string, args ...any) *navitem {
@@ -122,7 +122,7 @@ func NavItem(href string, args ...any) *navitem {
 	}
 	return mvc.NewView(new(navitem), ViewNavItem, templateNavItem, func(self, child mvc.View) {
 		self.(*navitem).View = child
-	}, mvc.WithAttr(dataAttrNavHref, href), args).Self().(*navitem)
+	}, mvc.WithAttr(dataAttrNavHref, href), args).(*navitem)
 }
 
 func NavDivider() *navitem {
@@ -134,7 +134,7 @@ func NavDivider() *navitem {
 func NavDropdown(args ...any) *navdropdown {
 	return mvc.NewView(new(navdropdown), ViewNavDropdown, templateNavDropdown, func(self, child mvc.View) {
 		self.(*navdropdown).View = child
-	}, args).Self().(*navdropdown)
+	}, args).(*navdropdown)
 }
 
 ///////////////////////////////////////////////////////////////////////////////

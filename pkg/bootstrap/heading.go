@@ -2,14 +2,10 @@ package bootstrap
 
 import (
 	"fmt"
-	"maps"
-	"slices"
 
 	// Packages
+	dom "github.com/djthorpe/go-wasmbuild"
 	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
-
-	// Namespace imports
-	. "github.com/djthorpe/go-wasmbuild"
 )
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -37,7 +33,11 @@ var (
 )
 
 func init() {
-	mvc.RegisterView(ViewHeading, newHeadingFromElement)
+	mvc.RegisterView(ViewHeading, func(element dom.Element) mvc.View {
+		return mvc.NewViewWithElement(new(heading), element, func(self, child mvc.View) {
+			self.(*heading).View = child
+		})
+	})
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -48,20 +48,7 @@ func Heading(level int, args ...any) mvc.View {
 	if !exists {
 		panic(fmt.Sprintf("Heading: invalid level %d", level))
 	}
-	return mvc.NewView(new(heading), ViewHeading, tagName, args)
-}
-
-func newHeadingFromElement(element Element) mvc.View {
-	tagName := element.TagName()
-	if !slices.Contains(slices.Collect(maps.Values(headingLevels)), tagName) {
-		panic(fmt.Sprintf("newHeadingFromElement: invalid tag name %q", tagName))
-	}
-	return mvc.NewViewWithElement(new(heading), element)
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// PUBLIC METHODS
-
-func (h *heading) SetView(view mvc.View) {
-	h.View = view
+	return mvc.NewView(new(heading), ViewHeading, tagName, func(self, child mvc.View) {
+		self.(*heading).View = child
+	}, args)
 }

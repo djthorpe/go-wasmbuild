@@ -2,7 +2,6 @@ package main
 
 import (
 	// Packages
-
 	bs "github.com/djthorpe/go-wasmbuild/pkg/bootstrap"
 	bsextra "github.com/djthorpe/go-wasmbuild/pkg/bootstrap/extra"
 	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
@@ -13,7 +12,10 @@ func main() {
 	controller := bsextra.NavbarController(navbar())
 
 	// Run the application
-	mvc.New(controller.Views()[0]).Run()
+	mvc.New(
+		controller.Views()[0],
+		Text(),
+	).Run()
 }
 
 func navbar() mvc.View {
