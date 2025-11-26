@@ -75,8 +75,8 @@ func Example(fn func() (mvc.View, string)) mvc.View {
 	source = strings.ReplaceAll(source, ", sourcecode()", "")
 	source = strings.ReplaceAll(source, "(mvc.View, string)", "mvc.View")
 	source = strings.ReplaceAll(source, "\t", "  ")
-	return bs.Row(
-		bs.Col6(view),
-		bs.Col6(bs.CodeBlock(source, bs.WithBorder(), mvc.WithClass("p-2"), mvc.WithStyle("font-size: 0.75em; overflow-x: auto"))),
+	return bs.Container(
+		view,
+		bs.CodeBlock(source, bs.WithBorder(), mvc.WithClass("mt-3", "p-3"), mvc.WithStyle("font-size: 0.75em; overflow-x: auto")),
 	)
 }

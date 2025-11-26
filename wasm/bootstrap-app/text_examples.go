@@ -2,23 +2,22 @@ package main
 
 import (
 	// Packages
-
-	dom "github.com/djthorpe/go-wasmbuild"
 	bs "github.com/djthorpe/go-wasmbuild/pkg/bootstrap"
 	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
 )
 
-func TextExamples() mvc.View {
+func Text() mvc.View {
 	return bs.Container(
-		mvc.WithClass("my-4"),
-		bs.Heading(2, "Text Examples"), bs.HRule(),
-		bs.Heading(3, "Paragraph", mvc.WithClass("mt-5")), Example(Example_Text_001),
-		bs.Heading(3, "Lead Paragraph", mvc.WithClass("mt-5")), Example(Example_Text_002),
-		bs.Heading(3, "Blockquote", mvc.WithClass("mt-5")), Example(Example_Text_003),
-		bs.Heading(3, "Position", mvc.WithClass("mt-5")), Example(Example_Text_007),
-		bs.Heading(3, "Colored Paragraphs", mvc.WithClass("mt-5")), Example(Example_Text_004),
-		bs.Heading(3, "Inline Text Styles", mvc.WithClass("mt-5")), Example(Example_Text_005),
-		bs.Heading(3, "Links", mvc.WithClass("mt-5")), Example(Example_Text_006),
+		mvc.WithClass("my-3"),
+		bs.Heading(3, "Text Examples"),
+		bs.Heading(4, "Paragraph", mvc.WithClass("mt-4")), Example(Example_Text_001),
+		bs.Heading(4, "Lead Paragraph", mvc.WithClass("mt-4")), Example(Example_Text_002),
+		bs.Heading(4, "Blockquote", mvc.WithClass("mt-4")), Example(Example_Text_003),
+		bs.Heading(4, "Color", mvc.WithClass("mt-4")), Example(Example_Text_004),
+		bs.Heading(4, "Inline Styles", mvc.WithClass("mt-4")), Example(Example_Text_005),
+		bs.Heading(4, "Markdown", mvc.WithClass("mt-4")), Example(Example_Text_006),
+		bs.Heading(4, "Position", mvc.WithClass("mt-4")), Example(Example_Text_007),
+		bs.Heading(4, "Link", mvc.WithClass("mt-4")), Example(Example_Text_008),
 	)
 }
 
@@ -72,35 +71,27 @@ func Example_Text_005() (mvc.View, string) {
 
 func Example_Text_006() (mvc.View, string) {
 	return bs.Container(mvc.WithClass("my-2"),
-		bs.Para(bs.Link("#link", "Default Link Color")),
-		bs.Para(bs.Link("#link", "Secondary Link Color", bs.WithColor(bs.Secondary))),
-		bs.Para(bs.Link("#link", "Danger Link Color", bs.WithColor(bs.Danger))),
+		bs.Markdown("This is some _markdown_ formatted content with ~~deleted~~ and **strong** text"),
 	), sourcecode()
 }
 
 func Example_Text_007() (mvc.View, string) {
-	blockquote := bs.Blockquote(
-		bs.WithBorder(), mvc.WithClass("p-3"),
-		bs.WithPosition(bs.Center),
-		`Lorem ipsum dolor sit amet, consectetur adipiscing elit, 
-		sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
-		quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis 
-		aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.`).Label(
-		"Said someone very important",
-	)
-	return bs.Container(
-		bs.ButtonGroup(
-			bs.Button("Start", mvc.WithID("start")), bs.Button("Center", mvc.WithID("center")), bs.Button("End", mvc.WithID("end")), mvc.WithClass("m-3"),
-		).AddEventListener("click", func(e dom.Event) {
-			switch mvc.ViewFromEvent(e).ID() {
-			case "start":
-				blockquote.Apply(bs.WithPosition(bs.Start))
-			case "center":
-				blockquote.Apply(bs.WithPosition(bs.Center))
-			case "end":
-				blockquote.Apply(bs.WithPosition(bs.End))
-			}
-		}),
-		blockquote,
+	return bs.Container(mvc.WithClass("my-2"),
+		bs.Heading(5, "Start Aligned", bs.WithPosition(bs.Start)),
+		bs.Para("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.", bs.WithPosition(bs.Start)),
+		bs.Heading(5, "Center Aligned", bs.WithPosition(bs.Center)),
+		bs.Para("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.", bs.WithPosition(bs.Center)),
+		bs.Heading(5, "End Aligned", bs.WithPosition(bs.End)),
+		bs.Para("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.", bs.WithPosition(bs.End)),
+	), sourcecode()
+}
+
+func Example_Text_008() (mvc.View, string) {
+	return bs.Container(mvc.WithClass("my-2"),
+		bs.Para(bs.Link("#link", "Default Link Color")),
+		bs.Para(bs.Link("#link", "Secondary Link Color", bs.WithColor(bs.Secondary))),
+		bs.Para(bs.Link("#link", "Danger Link Color", bs.WithColor(bs.Danger))),
+		bs.Para(bs.IconLink("#link", bs.Icon("link"), "Icon Link")),
+		bs.Para(bs.IconLink("#link", "Icon Link", bs.Icon("arrow-right"), bs.WithColor(bs.Danger))),
 	), sourcecode()
 }
