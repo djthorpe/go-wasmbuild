@@ -9,10 +9,14 @@ import (
 func Text() mvc.View {
 	return bs.Container(
 		mvc.WithClass("my-3"),
+		Markdown("text_examples.md"),
+		bs.HRule(),
 		bs.Heading(3, "Text Examples"),
 		bs.Heading(4, "Paragraph", mvc.WithClass("mt-4")), Example(Example_Text_001),
 		bs.Heading(4, "Lead Paragraph", mvc.WithClass("mt-4")), Example(Example_Text_002),
 		bs.Heading(4, "Blockquote", mvc.WithClass("mt-4")), Example(Example_Text_003),
+		bs.Heading(4, "Code Blocks", mvc.WithClass("mt-4")), Example(Example_Text_009),
+		bs.Heading(4, "Headings", mvc.WithClass("mt-4")), Example(Example_Text_010),
 		bs.Heading(4, "Color", mvc.WithClass("mt-4")), Example(Example_Text_004),
 		bs.Heading(4, "Inline Styles", mvc.WithClass("mt-4")), Example(Example_Text_005),
 		bs.Heading(4, "Markdown", mvc.WithClass("mt-4")), Example(Example_Text_006),
@@ -41,7 +45,8 @@ func Example_Text_003() (mvc.View, string) {
 	return bs.Blockquote(`Lorem ipsum dolor sit amet, consectetur adipiscing elit, 
 		sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
 		quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis 
-		aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.`).Label(
+		aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.`,
+	).Label(
 		"Said someone very important",
 	), sourcecode()
 }
@@ -93,5 +98,30 @@ func Example_Text_008() (mvc.View, string) {
 		bs.Para(bs.Link("#link", "Danger Link Color", bs.WithColor(bs.Danger))),
 		bs.Para(bs.IconLink("#link", bs.Icon("link"), "Icon Link")),
 		bs.Para(bs.IconLink("#link", "Icon Link", bs.Icon("arrow-right"), bs.WithColor(bs.Danger))),
+	), sourcecode()
+}
+
+func Example_Text_009() (mvc.View, string) {
+	const codeBlock = `<html>
+<head>
+  <title>Example</title>
+</head>
+<body>
+  <p>This is a paragraph.</p>
+</body>
+</html>`
+	return bs.Container(mvc.WithClass("my-2"),
+		bs.CodeBlock(codeBlock),
+	), sourcecode()
+}
+
+func Example_Text_010() (mvc.View, string) {
+	return bs.Container(mvc.WithClass("my-2"),
+		bs.Heading(1, "Heading 1"),
+		bs.Heading(2, "Heading 2"),
+		bs.Heading(3, "Heading 3"),
+		bs.Heading(4, "Heading 4"),
+		bs.Heading(5, "Heading 5"),
+		bs.Heading(6, "Heading 6"),
 	), sourcecode()
 }
