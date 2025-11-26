@@ -33,7 +33,7 @@ func init() {
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
-// Markdown creates an inline markdown view using a SPAN root element
+// Markdown creates a block-level markdown view using a DIV root element
 func Markdown(text string) mvc.View {
 	// Parse markdown text
 	doc := md.Parse(strings.NewReader(text), tokenizer.Pos{})
