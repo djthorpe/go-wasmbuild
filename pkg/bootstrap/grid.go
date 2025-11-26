@@ -99,6 +99,3 @@ func Col12(args ...any) *grid {
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
 
-func (grid *grid) SetView(view mvc.View) {
-	grid.View = view
-}
