@@ -97,7 +97,7 @@ func (c Config) BuildContext(ctx *Context, path, output string, watch bool) (*Bu
 	// goroot
 	gocmd, goroot, err := GoEnvFromCmd(ctx.Go)
 	if err != nil {
-		return nil, fmt.Errorf("failed to determine GOROOT or TINYGOROOT: %w", err)
+		return nil, err
 	}
 	context.GoCmd = gocmd
 	context.GoRoot = goroot
@@ -407,7 +407,7 @@ func GoEnvFromCmd(cmd string) (string, string, error) {
 	}
 
 	// Run 'go env GOROOT' to get GOROOT
-	output, err = exec.Command(cmd, "env", "GOROOT").Output()
+	output, err := exec.Command(cmd, "env", "GOROOT").Output()
 	if err != nil {
 		return "", "", fmt.Errorf("failed to determine GOROOT: %w", err)
 	}
@@ -416,4 +416,3 @@ func GoEnvFromCmd(cmd string) (string, string, error) {
 	}
 	return "", "", fmt.Errorf("GOROOT not found")
 }
-

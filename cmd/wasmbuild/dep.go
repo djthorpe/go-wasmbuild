@@ -9,7 +9,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
-	"sync"
 	"time"
 
 	// Packages
@@ -31,7 +30,6 @@ type DepContext struct {
 
 type DepCmd struct {
 	BuildPath
-	WatchFlag
 }
 
 // DepPackageInfo represents the JSON output from go list
@@ -96,50 +94,10 @@ func (c *DepCmd) Run(ctx *Context) error {
 		ctx.log.Info(dep)
 	}
 
-	// If watch flag is set, run a watcher
-	if c.Watch {
-		// Watch for dependency changes
-		var wg sync.WaitGroup
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			dep.Run(ctx.ctx)
-		}()
-
-		// Respond to modification events
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for {
-				select {
-				case <-ctx.ctx.Done():
-					return
-				case event := <-dep.modified:
-					if event != nil {
-						ctx.log.Error(event)
-						continue
-					}
-
-					// Compile the code
-					if wasm, err := buildContext.CompileExec(ctx); err != nil {
-						ctx.log.Error("Compilation error after modification: ", err)
-						continue
-					} else {
-						dep.wasm = wasm
-					}
-
-					// Indicate success
-					ctx.log.Info("Re-compiled wasm: ", dep.wasm.Path)
-				}
-			}
-		}()
-
-		// Wait for all go-routines to end
-		wg.Wait()
-	} else if paths, err := dep.Dependencies(); err != nil {
+	// Print out dependencies
+	if paths, err := dep.Dependencies(); err != nil {
 		return err
 	} else {
-		// Print out dependencies
 		for _, p := range paths {
 			fmt.Println(p)
 		}
@@ -154,7 +112,7 @@ func (c *DepCmd) Run(ctx *Context) error {
 
 // Return a list of dependencies
 func (d *DepContext) Dependencies() ([]string, error) {
-	var err error
+	var result error
 
 	// Get package information including all dependencies
 	cmd := exec.Command(d.GoCmd, "list", "-json", d.Path)
@@ -169,9 +127,9 @@ func (d *DepContext) Dependencies() ([]string, error) {
 	var pkgInfo DepPackageInfo
 	deps := make(map[string]bool)
 	if err := json.Unmarshal(output, &pkgInfo); err != nil {
-		err = errors.Join(err, fmt.Errorf("failed to parse package info: %w", err))
+		result = errors.Join(result, fmt.Errorf("failed to parse package info: %w", err))
 	} else if pkgInfo.Module == nil {
-		err = errors.Join(err, fmt.Errorf("not in a Go module, skipping dependency discovery"))
+		result = errors.Join(result, fmt.Errorf("not in a Go module, skipping dependency discovery"))
 	} else {
 		// Find local dependencies (those that start with the module path)
 		for _, dep := range pkgInfo.Deps {
@@ -184,12 +142,12 @@ func (d *DepContext) Dependencies() ([]string, error) {
 			depCmd := exec.Command(d.GoCmd, "list", "-json", dep)
 			depOutput, err := depCmd.Output()
 			if err != nil {
-				err = errors.Join(err, fmt.Errorf("could not get info for dependency %s: %v", dep, err))
+				result = errors.Join(result, fmt.Errorf("could not get info for dependency %s: %v", dep, err))
 				continue
 			}
 
 			if err := json.Unmarshal(depOutput, &depInfo); err != nil {
-				err = errors.Join(err, fmt.Errorf("could not get info for dependency %s: %v", dep, err))
+				result = errors.Join(result, fmt.Errorf("could not get info for dependency %s: %v", dep, err))
 				continue
 			}
 
@@ -204,9 +162,15 @@ func (d *DepContext) Dependencies() ([]string, error) {
 	}
 
 	// Append the input path as a dependency
-	absPath, err := filepath.Abs(d.Path)
-	if err == nil {
+	absPath, absErr := filepath.Abs(d.Path)
+	if absErr != nil {
+		result = errors.Join(result, fmt.Errorf("failed to get absolute path for %s: %w", d.Path, absErr))
+		return nil, result
+	}
+	if result == nil {
 		deps[absPath] = true
+	} else {
+		return nil, result
 	}
 
 	// Append assets as dependencies

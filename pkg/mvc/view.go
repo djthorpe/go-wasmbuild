@@ -145,7 +145,7 @@ func NewView(self View, name string, template string, fn func(View, View), args 
 	}
 
 	// Return the view
-	return v
+	return v.Self()
 }
 
 // Create view from an existing element, applying any options to it

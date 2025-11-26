@@ -16,12 +16,7 @@ import (
 
 type ServeCmd struct {
 	BuildPath
-	WatchFlag
 	Listen string `default:"localhost:9090" help:"Address to listen on (e.g., localhost:9090 or 0.0.0.0:9090)"`
-}
-
-type WatchFlag struct {
-	Watch bool `short:"w" help:"Watch for changes in dependencies"`
 }
 
 type ServeContext struct {
@@ -62,7 +57,7 @@ func (c *ServeCmd) Run(ctx *Context) error {
 	}
 
 	// Create a build context from the configuration
-	buildContext, err := config.BuildContext(ctx, c.Path, "", c.Watch)
+	buildContext, err := config.BuildContext(ctx, c.Path, "", true)
 	if err != nil {
 		return err
 	}
@@ -74,7 +69,7 @@ func (c *ServeCmd) Run(ctx *Context) error {
 	}
 
 	// Create the server context from the configuration
-	serveContext, err := dep.ServeContext(ctx, c.Listen, c.Watch)
+	serveContext, err := dep.ServeContext(ctx, c.Listen, true)
 	if err != nil {
 		return err
 	}
