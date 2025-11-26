@@ -14,8 +14,17 @@ func main() {
 	// Run the application
 	mvc.New(
 		controller.Views()[0],
-		Text(),
+		router(),
 	).Run()
+}
+
+func router() mvc.View {
+	return mvc.Router(mvc.WithClass("container-fluid", "my-2")).
+		Page("#text", TextExamples()).
+		Page("#lists", ListExamples()).
+		Page("#badges", BadgeExamples()).
+		Page("#icons", IconExamples())
+
 }
 
 func navbar() mvc.View {
@@ -23,9 +32,9 @@ func navbar() mvc.View {
 		bs.WithPosition(bs.Sticky|bs.Top), bs.WithTheme(bs.Dark), bs.WithSize(bs.Medium),
 		bs.NavDropdown(
 			bs.NavItem("#text", "Text"),
-			bs.NavItem("#list", "Lists"),
-			bs.NavItem("#badge", "Badges"),
-			bs.NavItem("#icon", "Icons"),
+			bs.NavItem("#lists", "Lists"),
+			bs.NavItem("#badges", "Badges"),
+			bs.NavItem("#icons", "Icons"),
 		).Label("Typography"),
 		bs.NavDropdown(
 			bs.NavItem("#button", "Buttons"),

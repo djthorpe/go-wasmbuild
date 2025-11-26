@@ -9,16 +9,6 @@ import (
 )
 
 ///////////////////////////////////////////////////////////////////////////////
-// INTERFACE
-
-type RouterView interface {
-	View
-
-	// Append a page view to the router with a specific path
-	Page(path string, view View) RouterView
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // TYPES
 
 type router struct {
@@ -31,7 +21,7 @@ type page struct {
 	view View
 }
 
-var _ RouterView = (*router)(nil)
+var _ View = (*router)(nil)
 
 ///////////////////////////////////////////////////////////////////////////////
 // GLOBALS
@@ -52,14 +42,15 @@ func init() {
 // LIFECYCLE
 
 // Create a Router
-func Router(args ...any) RouterView {
-	self := NewView(new(router), ViewRouter, "div", nil, args).(RouterView)
-	router := self.(*router)
+func Router(args ...any) *router {
+	self := NewView(new(router), ViewRouter, "DIV", func(self, child View) {
+		self.(*router).View = child
+	}, args).(*router)
 	window := dom.GetWindow()
 
 	// Set event listener for hashchange
 	window.AddEventListener("hashchange", func(wasm.Event) {
-		router.refresh(window.Location().Hash())
+		self.refresh(window.Location().Hash())
 	})
 
 	return self
@@ -68,7 +59,7 @@ func Router(args ...any) RouterView {
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
 
-func (router *router) Page(path string, view View) RouterView {
+func (router *router) Page(path string, view View) *router {
 	if path != "" && !strings.HasPrefix(path, "#") {
 		panic("Router.Page: path must start with '#'")
 	}
