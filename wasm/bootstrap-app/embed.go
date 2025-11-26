@@ -14,7 +14,7 @@ import (
 	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
 )
 
-//go:embed *_examples.go
+//go:embed *_examples.go *_examples.md
 var embedExamplesFS embed.FS
 
 func sourcecode() string {
@@ -23,6 +23,14 @@ func sourcecode() string {
 		return err.Error()
 	}
 	return str
+}
+
+func markdown(filename string) string {
+	data, err := embedExamplesFS.ReadFile(filename)
+	if err != nil {
+		return err.Error()
+	}
+	return string(data)
 }
 
 func function(stack int) (string, error) {
@@ -68,6 +76,10 @@ func trimQualifiedName(name string) string {
 		return name[i+1:]
 	}
 	return name
+}
+
+func Markdown(filename string) mvc.View {
+	return bs.Markdown(markdown(filename))
 }
 
 func Example(fn func() (mvc.View, string)) mvc.View {
