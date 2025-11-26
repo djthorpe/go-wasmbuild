@@ -45,7 +45,7 @@ func Col(args ...any) *grid {
 func Col2(args ...any) *grid {
 	return mvc.NewView(new(grid), ViewGrid, "DIV", func(self, child mvc.View) {
 		self.(*grid).View = child
-	}, mvc.WithClass("col"), args).(*grid)
+	}, mvc.WithClass("col-2"), args).(*grid)
 }
 
 func Col3(args ...any) *grid {
