@@ -162,7 +162,11 @@ func (d *DepContext) Dependencies() ([]string, error) {
 	}
 
 	// Append the input path as a dependency
-	absPath, err := filepath.Abs(d.Path)
+	absPath, absErr := filepath.Abs(d.Path)
+	if absErr != nil {
+		result = errors.Join(result, fmt.Errorf("failed to get absolute path for %s: %w", d.Path, absErr))
+		return nil, result
+	}
 	if result == nil {
 		deps[absPath] = true
 	} else {
