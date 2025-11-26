@@ -45,13 +45,13 @@ func Col(args ...any) *grid {
 func Col2(args ...any) *grid {
 	return mvc.NewView(new(grid), ViewGrid, "DIV", func(self, child mvc.View) {
 		self.(*grid).View = child
-	}, mvc.WithClass("col"), args).(*grid)
+	}, mvc.WithClass("col-2"), args).(*grid)
 }
 
 func Col3(args ...any) *grid {
 	return mvc.NewView(new(grid), ViewGrid, "DIV", func(self, child mvc.View) {
 		self.(*grid).View = child
-	}, mvc.WithClass("col"), args).(*grid)
+	}, mvc.WithClass("col-3"), args).(*grid)
 }
 
 func Col4(args ...any) *grid {
@@ -99,6 +99,3 @@ func Col12(args ...any) *grid {
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
 
-func (grid *grid) SetView(view mvc.View) {
-	grid.View = view
-}
