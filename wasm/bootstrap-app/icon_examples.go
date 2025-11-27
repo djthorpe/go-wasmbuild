@@ -2,8 +2,10 @@ package main
 
 import (
 	// Packages
+
 	"strings"
 
+	dom "github.com/djthorpe/go-wasmbuild"
 	bs "github.com/djthorpe/go-wasmbuild/pkg/bootstrap"
 	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
 )
@@ -18,2000 +20,2135 @@ func IconExamples() mvc.View {
 }
 
 func AllIcons() mvc.View {
-	icons := make([]any, 0, len(iconsNames))
+	// Populate with all icons
+	iconRow := bs.Row(Icons()...)
+
+	// Return the container with search and icon row
+	return bs.Container(
+		bs.SearchInput("q", bs.WithPlaceholder("Search for an icon")),
+		iconRow,
+	).AddEventListener("input", func(e dom.Event) {
+		view := mvc.ViewFromEvent(e)
+		if view == nil || view.Name() != bs.ViewInput {
+			return
+		}
+		terms := strings.Fields(strings.ToLower(view.Root().Value()))
+		iconRow.ReplaceSlotChildren("", Icons(terms...))
+	})
+}
+
+func Icons(q ...string) []any {
+	// Empty the array
+	iconViews = iconViews[:0]
+
+	// Filter function
+	matches := func(name string, q []string) bool {
+		if len(q) == 0 {
+			return true
+		}
+		for _, term := range q {
+			if !strings.Contains(name, term) {
+				return false
+			}
+		}
+		return true
+	}
+
+	// Fill the array
 	for _, name := range iconsNames {
-		name = strings.TrimSuffix(name, ".svg")
-		icons = append(icons, bs.Col(
+		if !matches(name, q) {
+			continue
+		}
+		iconViews = append(iconViews, bs.Col(
 			bs.Container(bs.WithFlex(bs.Middle), mvc.WithClass("m-3", "p-2", "text-center"), bs.WithBorder(),
 				bs.Icon(name, mvc.WithClass("fs-1")),
 				bs.Smaller(name, mvc.WithClass("text-nowrap", "text-center")),
 			),
 		))
 	}
-	return bs.Row(icons...)
+	return iconViews
 }
 
 var (
+	iconViews  = make([]any, 0, len(iconsNames))
 	iconsNames = []string{
-		"0-circle-fill.svg",
-		"0-circle.svg",
-		"0-square-fill.svg",
-		"0-square.svg",
-		"1-circle-fill.svg",
-		"1-circle.svg",
-
-		"1-square-fill.svg",
-
-		"1-square.svg",
-
-		"123.svg",
-
-		"2-circle-fill.svg",
-
-		"2-circle.svg",
-
-		"2-square-fill.svg",
-
-		"2-square.svg",
-
-		"3-circle-fill.svg",
-
-		"3-circle.svg",
-
-		"3-square-fill.svg",
-
-		"3-square.svg",
-
-		"4-circle-fill.svg",
-
-		"4-circle.svg",
-
-		"4-square-fill.svg",
-
-		"4-square.svg",
-
-		"5-circle-fill.svg",
-
-		"5-circle.svg",
-
-		"5-square-fill.svg",
-
-		"5-square.svg",
-
-		"6-circle-fill.svg",
-
-		"6-circle.svg",
-
-		"6-square-fill.svg",
-
-		"6-square.svg",
-
-		"7-circle-fill.svg",
-
-		"7-circle.svg",
-
-		"7-square-fill.svg",
-
-		"7-square.svg",
-
-		"8-circle-fill.svg",
-
-		"8-circle.svg",
-
-		"8-square-fill.svg",
-
-		"8-square.svg",
-
-		"9-circle-fill.svg",
-
-		"9-circle.svg",
-
-		"9-square-fill.svg",
-
-		"9-square.svg",
-
-		"activity.svg",
-
-		"airplane-engines-fill.svg",
-
-		"airplane-engines.svg",
-
-		"airplane-fill.svg",
-
-		"airplane.svg",
-
-		"alarm-fill.svg",
-
-		"alarm.svg",
-
-		"alexa.svg",
-
-		"align-bottom.svg",
-
-		"align-center.svg",
-
-		"align-end.svg",
-
-		"align-middle.svg",
-
-		"align-start.svg",
-
-		"align-top.svg",
-
-		"alipay.svg",
-
-		"alphabet-uppercase.svg",
-
-		"alphabet.svg",
-
-		"alt.svg",
-
-		"amazon.svg",
-
-		"amd.svg",
-
-		"android.svg",
-
-		"android2.svg",
-
-		"anthropic.svg",
-
-		"app-indicator.svg",
-
-		"app.svg",
-
-		"apple-music.svg",
-
-		"apple.svg",
-
-		"archive-fill.svg",
-
-		"archive.svg",
-
-		"arrow-90deg-down.svg",
-
-		"arrow-90deg-left.svg",
-
-		"arrow-90deg-right.svg",
-
-		"arrow-90deg-up.svg",
-
-		"arrow-bar-down.svg",
-
-		"arrow-bar-left.svg",
-
-		"arrow-bar-right.svg",
-
-		"arrow-bar-up.svg",
-
-		"arrow-clockwise.svg",
-
-		"arrow-counterclockwise.svg",
-
-		"arrow-down-circle-fill.svg",
-
-		"arrow-down-circle.svg",
-
-		"arrow-down-left-circle-fill.svg",
-
-		"arrow-down-left-circle.svg",
-
-		"arrow-down-left-square-fill.svg",
-
-		"arrow-down-left-square.svg",
-
-		"arrow-down-left.svg",
-
-		"arrow-down-right-circle-fill.svg",
-
-		"arrow-down-right-circle.svg",
-
-		"arrow-down-right-square-fill.svg",
-
-		"arrow-down-right-square.svg",
-
-		"arrow-down-right.svg",
-
-		"arrow-down-short.svg",
-
-		"arrow-down-square-fill.svg",
-
-		"arrow-down-square.svg",
-
-		"arrow-down-up.svg",
-
-		"arrow-down.svg",
-
-		"arrow-left-circle-fill.svg",
-
-		"arrow-left-circle.svg",
-
-		"arrow-left-right.svg",
-
-		"arrow-left-short.svg",
-
-		"arrow-left-square-fill.svg",
-
-		"arrow-left-square.svg",
-
-		"arrow-left.svg",
-
-		"arrow-repeat.svg",
-
-		"arrow-return-left.svg",
-
-		"arrow-return-right.svg",
-
-		"arrow-right-circle-fill.svg",
-
-		"arrow-right-circle.svg",
-
-		"arrow-right-short.svg",
-
-		"arrow-right-square-fill.svg",
-
-		"arrow-right-square.svg",
-
-		"arrow-right.svg",
-
-		"arrow-through-heart-fill.svg",
-
-		"arrow-through-heart.svg",
-
-		"arrow-up-circle-fill.svg",
-
-		"arrow-up-circle.svg",
-
-		"arrow-up-left-circle-fill.svg",
-
-		"arrow-up-left-circle.svg",
-
-		"arrow-up-left-square-fill.svg",
-
-		"arrow-up-left-square.svg",
-
-		"arrow-up-left.svg",
-
-		"arrow-up-right-circle-fill.svg",
-
-		"arrow-up-right-circle.svg",
-
-		"arrow-up-right-square-fill.svg",
-
-		"arrow-up-right-square.svg",
-
-		"arrow-up-right.svg",
-
-		"arrow-up-short.svg",
-
-		"arrow-up-square-fill.svg",
-
-		"arrow-up-square.svg",
-
-		"arrow-up.svg",
-
-		"arrows-angle-contract.svg",
-
-		"arrows-angle-expand.svg",
-
-		"arrows-collapse-vertical.svg",
-
-		"arrows-collapse.svg",
-
-		"arrows-expand-vertical.svg",
-
-		"arrows-expand.svg",
-
-		"arrows-fullscreen.svg",
-
-		"arrows-move.svg",
-
-		"arrows-vertical.svg",
-
-		"arrows.svg",
-
-		"aspect-ratio-fill.svg",
-
-		"aspect-ratio.svg",
-
-		"asterisk.svg",
-
-		"at.svg",
-
-		"award-fill.svg",
-
-		"award.svg",
-
-		"back.svg",
-
-		"backpack-fill.svg",
-
-		"backpack.svg",
-
-		"backpack2-fill.svg",
-
-		"backpack2.svg",
-
-		"backpack3-fill.svg",
-
-		"backpack3.svg",
-
-		"backpack4-fill.svg",
-
-		"backpack4.svg",
-
-		"backspace-fill.svg",
-
-		"backspace-reverse-fill.svg",
-
-		"backspace-reverse.svg",
-
-		"backspace.svg",
-
-		"badge-3d-fill.svg",
-
-		"badge-3d.svg",
-
-		"badge-4k-fill.svg",
-
-		"badge-4k.svg",
-
-		"badge-8k-fill.svg",
-
-		"badge-8k.svg",
-
-		"badge-ad-fill.svg",
-
-		"badge-ad.svg",
-
-		"badge-ar-fill.svg",
-
-		"badge-ar.svg",
-
-		"badge-cc-fill.svg",
-
-		"badge-cc.svg",
-
-		"badge-hd-fill.svg",
-
-		"badge-hd.svg",
-
-		"badge-sd-fill.svg",
-
-		"badge-sd.svg",
-
-		"badge-tm-fill.svg",
-
-		"badge-tm.svg",
-
-		"badge-vo-fill.svg",
-
-		"badge-vo.svg",
-
-		"badge-vr-fill.svg",
-
-		"badge-vr.svg",
-
-		"badge-wc-fill.svg",
-
-		"badge-wc.svg",
-
-		"bag-check-fill.svg",
-
-		"bag-check.svg",
-
-		"bag-dash-fill.svg",
-
-		"bag-dash.svg",
-
-		"bag-fill.svg",
-
-		"bag-heart-fill.svg",
-
-		"bag-heart.svg",
-
-		"bag-plus-fill.svg",
-
-		"bag-plus.svg",
-
-		"bag-x-fill.svg",
-
-		"bag-x.svg",
-
-		"bag.svg",
-
-		"balloon-fill.svg",
-
-		"balloon-heart-fill.svg",
-
-		"balloon-heart.svg",
-
-		"balloon.svg",
-
-		"ban-fill.svg",
-
-		"ban.svg",
-
-		"bandaid-fill.svg",
-
-		"bandaid.svg",
-
-		"bank.svg",
-
-		"bank2.svg",
-
-		"bar-chart-fill.svg",
-
-		"bar-chart-line-fill.svg",
-
-		"bar-chart-line.svg",
-
-		"bar-chart-steps.svg",
-
-		"bar-chart.svg",
-
-		"basket-fill.svg",
-
-		"basket.svg",
-
-		"basket2-fill.svg",
-
-		"basket2.svg",
-
-		"basket3-fill.svg",
-		"basket3.svg",
-
-		"battery-charging.svg",
-
-		"battery-full.svg",
-
-		"battery-half.svg",
-
-		"battery-low.svg",
-
-		"battery.svg",
-
-		"beaker-fill.svg",
-
-		"beaker.svg",
-
-		"behance.svg",
-
-		"bell-fill.svg",
-
-		"bell-slash-fill.svg",
-
-		"bell-slash.svg",
-
-		"bell.svg",
-
-		"bezier.svg",
-
-		"bezier2.svg",
-
-		"bicycle.svg",
-
-		"bing.svg",
-
-		"binoculars-fill.svg",
-
-		"binoculars.svg",
-
-		"blockquote-left.svg",
-
-		"blockquote-right.svg",
-
-		"bluesky.svg",
-		"bluetooth.svg",
-
-		"body-text.svg",
-
-		"book-fill.svg",
-
-		"book-half.svg",
-
-		"book.svg",
-
-		"bookmark-check-fill.svg",
-
-		"bookmark-check.svg",
-
-		"bookmark-dash-fill.svg",
-
-		"bookmark-dash.svg",
-
-		"bookmark-fill.svg",
-
-		"bookmark-heart-fill.svg",
-
-		"bookmark-heart.svg",
-
-		"bookmark-plus-fill.svg",
-
-		"bookmark-plus.svg",
-
-		"bookmark-star-fill.svg",
-
-		"bookmark-star.svg",
-
-		"bookmark-x-fill.svg",
-
-		"bookmark-x.svg",
-
-		"bookmark.svg",
-
-		"bookmarks-fill.svg",
-
-		"bookmarks.svg",
-
-		"bookshelf.svg",
-
-		"boombox-fill.svg",
-
-		"boombox.svg",
-
-		"bootstrap-fill.svg",
-
-		"bootstrap-reboot.svg",
-
-		"bootstrap.svg",
-
-		"border-all.svg",
-
-		"border-bottom.svg",
-
-		"border-center.svg",
-
-		"border-inner.svg",
-
-		"border-left.svg",
-
-		"border-middle.svg",
-
-		"border-outer.svg",
-
-		"border-right.svg",
-
-		"border-style.svg",
-
-		"border-top.svg",
-
-		"border-width.svg",
-
-		"border.svg",
-
-		"bounding-box-circles.svg",
-
-		"bounding-box.svg",
-
-		"box-arrow-down-left.svg",
-
-		"box-arrow-down-right.svg",
-
-		"box-arrow-down.svg",
-
-		"box-arrow-in-down-left.svg",
-
-		"box-arrow-in-down-right.svg",
-
-		"box-arrow-in-down.svg",
-
-		"box-arrow-in-left.svg",
-
-		"box-arrow-in-right.svg",
-
-		"box-arrow-in-up-left.svg",
-
-		"box-arrow-in-up-right.svg",
-
-		"box-arrow-in-up.svg",
-
-		"box-arrow-left.svg",
-
-		"box-arrow-right.svg",
-
-		"box-arrow-up-left.svg",
-
-		"box-arrow-up-right.svg",
-
-		"box-arrow-up.svg",
-
-		"box-fill.svg",
-
-		"box-seam-fill.svg",
-
-		"box-seam.svg",
-
-		"box.svg",
-
-		"box2-fill.svg",
-
-		"box2-heart-fill.svg",
-
-		"box2-heart.svg",
-
-		"box2.svg",
-
-		"boxes.svg",
-
-		"braces-asterisk.svg",
-
-		"braces.svg",
-
-		"bricks.svg",
-
-		"briefcase-fill.svg",
-
-		"briefcase.svg",
-
-		"brightness-alt-high-fill.svg",
-
-		"brightness-alt-high.svg",
-
-		"brightness-alt-low-fill.svg",
-
-		"brightness-alt-low.svg",
-
-		"brightness-high-fill.svg",
-
-		"brightness-high.svg",
-
-		"brightness-low-fill.svg",
-
-		"brightness-low.svg",
-
-		"brilliance.svg",
-
-		"broadcast-pin.svg",
-
-		"broadcast.svg",
-
-		"browser-chrome.svg",
-
-		"browser-edge.svg",
-
-		"browser-firefox.svg",
-
-		"browser-safari.svg",
-
-		"brush-fill.svg",
-
-		"brush.svg",
-
-		"bucket-fill.svg",
-
-		"bucket.svg",
-
-		"bug-fill.svg",
-
-		"bug.svg",
-
-		"building-add.svg",
-
-		"building-check.svg",
-
-		"building-dash.svg",
-
-		"building-down.svg",
-
-		"building-exclamation.svg",
-
-		"building-fill-add.svg",
-
-		"building-fill-check.svg",
-
-		"building-fill-dash.svg",
-
-		"building-fill-down.svg",
-
-		"building-fill-exclamation.svg",
-
-		"building-fill-gear.svg",
-
-		"building-fill-lock.svg",
-
-		"building-fill-slash.svg",
-
-		"building-fill-up.svg",
-
-		"building-fill-x.svg",
-
-		"building-fill.svg",
-
-		"building-gear.svg",
-
-		"building-lock.svg",
-
-		"building-slash.svg",
-
-		"building-up.svg",
-
-		"building-x.svg",
-
-		"building.svg",
-
-		"buildings-fill.svg",
-
-		"buildings.svg",
-
-		"bullseye.svg",
-
-		"bus-front-fill.svg",
-
-		"bus-front.svg",
-
-		"c-circle-fill.svg",
-
-		"c-circle.svg",
-
-		"c-square-fill.svg",
-
-		"c-square.svg",
-
-		"cake-fill.svg",
-
-		"cake.svg",
-
-		"cake2-fill.svg",
-
-		"cake2.svg",
-
-		"calculator-fill.svg",
-
-		"calculator.svg",
-
-		"calendar-check-fill.svg",
-
-		"calendar-check.svg",
-
-		"calendar-date-fill.svg",
-
-		"calendar-date.svg",
-
-		"calendar-day-fill.svg",
-
-		"calendar-day.svg",
-
-		"calendar-event-fill.svg",
-
-		"calendar-event.svg",
-
-		"calendar-fill.svg",
-
-		"calendar-heart-fill.svg",
-
-		"calendar-heart.svg",
-
-		"calendar-minus-fill.svg",
-
-		"calendar-minus.svg",
-
-		"calendar-month-fill.svg",
-
-		"calendar-month.svg",
-
-		"calendar-plus-fill.svg",
-
-		"calendar-plus.svg",
-
-		"calendar-range-fill.svg",
-
-		"calendar-range.svg",
-
-		"calendar-week-fill.svg",
-
-		"calendar-week.svg",
-
-		"calendar-x-fill.svg",
-
-		"calendar-x.svg",
-
-		"calendar.svg",
-
-		"calendar2-check-fill.svg",
-
-		"calendar2-check.svg",
-
-		"calendar2-date-fill.svg",
-
-		"calendar2-date.svg",
-
-		"calendar2-day-fill.svg",
-
-		"calendar2-day.svg",
-
-		"calendar2-event-fill.svg",
-
-		"calendar2-event.svg",
-
-		"calendar2-fill.svg",
-
-		"calendar2-heart-fill.svg",
-
-		"calendar2-heart.svg",
-
-		"calendar2-minus-fill.svg",
-
-		"calendar2-minus.svg",
-
-		"calendar2-month-fill.svg",
-
-		"calendar2-month.svg",
-
-		"calendar2-plus-fill.svg",
-
-		"calendar2-plus.svg",
-
-		"calendar2-range-fill.svg",
-
-		"calendar2-range.svg",
-
-		"calendar2-week-fill.svg",
-
-		"calendar2-week.svg",
-
-		"calendar2-x-fill.svg",
-
-		"calendar2-x.svg",
-
-		"calendar2.svg",
-
-		"calendar3-event-fill.svg",
-		"calendar3-event.svg",
-
-		"calendar3-fill.svg",
-
-		"calendar3-range-fill.svg",
-		"calendar3-range.svg",
-
-		"calendar3-week-fill.svg",
-		"calendar3-week.svg",
-
-		"calendar3.svg",
-
-		"calendar4-event.svg",
-
-		"calendar4-range.svg",
-
-		"calendar4-week.svg",
-
-		"calendar4.svg",
-
-		"camera-fill.svg",
-
-		"camera-reels-fill.svg",
-
-		"camera-reels.svg",
-
-		"camera-video-fill.svg",
-
-		"camera-video-off-fill.svg",
-
-		"camera-video-off.svg",
-
-		"camera-video.svg",
-
-		"camera.svg",
-
-		"camera2.svg",
-
-		"capslock-fill.svg",
-
-		"capslock.svg",
-
-		"capsule-pill.svg",
-
-		"capsule.svg",
-
-		"car-front-fill.svg",
-
-		"car-front.svg",
-
-		"card-checklist.svg",
-
-		"card-heading.svg",
-
-		"card-image.svg",
-
-		"card-list.svg",
-
-		"card-text.svg",
-
-		"caret-down-fill.svg",
-		"caret-down-square-fill.svg",
-
-		"caret-down-square.svg",
-
-		"caret-down.svg",
-
-		"caret-left-fill.svg",
-		"caret-left-square-fill.svg",
-
-		"caret-left-square.svg",
-
-		"caret-left.svg",
-
-		"caret-right-fill.svg",
-		"caret-right-square-fill.svg",
-
-		"caret-right-square.svg",
-
-		"caret-right.svg",
-
-		"caret-up-fill.svg",
-		"caret-up-square-fill.svg",
-
-		"caret-up-square.svg",
-
-		"caret-up.svg",
-
-		"cart-check-fill.svg",
-
-		"cart-check.svg",
-
-		"cart-dash-fill.svg",
-
-		"cart-dash.svg",
-
-		"cart-fill.svg",
-
-		"cart-plus-fill.svg",
-
-		"cart-plus.svg",
-
-		"cart-x-fill.svg",
-
-		"cart-x.svg",
-
-		"cart.svg",
-
-		"cart2.svg",
-
-		"cart3.svg",
-
-		"cart4.svg",
-
-		"cash-coin.svg",
-
-		"cash-stack.svg",
-
-		"cash.svg",
-
-		"cassette-fill.svg",
-
-		"cassette.svg",
-
-		"cast.svg",
-
-		"cc-circle-fill.svg",
-
-		"cc-circle.svg",
-
-		"cc-square-fill.svg",
-
-		"cc-square.svg",
-
-		"chat-dots-fill.svg",
-
-		"chat-dots.svg",
-
-		"chat-fill.svg",
-
-		"chat-heart-fill.svg",
-
-		"chat-heart.svg",
-
-		"chat-left-dots-fill.svg",
-
-		"chat-left-dots.svg",
-
-		"chat-left-fill.svg",
-
-		"chat-left-heart-fill.svg",
-
-		"chat-left-heart.svg",
-
-		"chat-left-quote-fill.svg",
-
-		"chat-left-quote.svg",
-
-		"chat-left-text-fill.svg",
-
-		"chat-left-text.svg",
-
-		"chat-left.svg",
-
-		"chat-quote-fill.svg",
-
-		"chat-quote.svg",
-
-		"chat-right-dots-fill.svg",
-
-		"chat-right-dots.svg",
-
-		"chat-right-fill.svg",
-
-		"chat-right-heart-fill.svg",
-
-		"chat-right-heart.svg",
-
-		"chat-right-quote-fill.svg",
-
-		"chat-right-quote.svg",
-
-		"chat-right-text-fill.svg",
-
-		"chat-right-text.svg",
-
-		"chat-right.svg",
-
-		"chat-square-dots-fill.svg",
-
-		"chat-square-dots.svg",
-
-		"chat-square-fill.svg",
-
-		"chat-square-heart-fill.svg",
-
-		"chat-square-heart.svg",
-
-		"chat-square-quote-fill.svg",
-
-		"chat-square-quote.svg",
-
-		"chat-square-text-fill.svg",
-
-		"chat-square-text.svg",
-
-		"chat-square.svg",
-
-		"chat-text-fill.svg",
-
-		"chat-text.svg",
-
-		"chat.svg",
-
-		"check-all.svg",
-
-		"check-circle-fill.svg",
-
-		"check-circle.svg",
-
-		"check-lg.svg",
-
-		"check-square-fill.svg",
-
-		"check-square.svg",
-
-		"check.svg",
-
-		"check2-all.svg",
-
-		"check2-circle.svg",
-
-		"check2-square.svg",
-
-		"check2.svg",
-
-		"chevron-bar-contract.svg",
-
-		"chevron-bar-down.svg",
-
-		"chevron-bar-expand.svg",
-
-		"chevron-bar-left.svg",
-
-		"chevron-bar-right.svg",
-
-		"chevron-bar-up.svg",
-
-		"chevron-compact-down.svg",
-
-		"chevron-compact-left.svg",
-
-		"chevron-compact-right.svg",
-
-		"chevron-compact-up.svg",
-
-		"chevron-contract.svg",
-
-		"chevron-double-down.svg",
-
-		"chevron-double-left.svg",
-
-		"chevron-double-right.svg",
-
-		"chevron-double-up.svg",
-
-		"chevron-down.svg",
-
-		"chevron-expand.svg",
-
-		"chevron-left.svg",
-
-		"chevron-right.svg",
-
-		"chevron-up.svg",
-
-		"circle-fill.svg",
-		"circle-half.svg",
-
-		"circle-square.svg",
-
-		"circle.svg",
-
-		"claude.svg",
-		"clipboard-check-fill.svg",
-
-		"clipboard-check.svg",
-
-		"clipboard-data-fill.svg",
-
-		"clipboard-data.svg",
-
-		"clipboard-fill.svg",
-
-		"clipboard-heart-fill.svg",
-
-		"clipboard-heart.svg",
-
-		"clipboard-minus-fill.svg",
-
-		"clipboard-minus.svg",
-
-		"clipboard-plus-fill.svg",
-
-		"clipboard-plus.svg",
-
-		"clipboard-pulse.svg",
-
-		"clipboard-x-fill.svg",
-
-		"clipboard-x.svg",
-
-		"clipboard.svg",
-
-		"clipboard2-check-fill.svg",
-
-		"clipboard2-check.svg",
-
-		"clipboard2-data-fill.svg",
-
-		"clipboard2-data.svg",
-
-		"clipboard2-fill.svg",
-
-		"clipboard2-heart-fill.svg",
-
-		"clipboard2-heart.svg",
-
-		"clipboard2-minus-fill.svg",
-
-		"clipboard2-minus.svg",
-
-		"clipboard2-plus-fill.svg",
-
-		"clipboard2-plus.svg",
-
-		"clipboard2-pulse-fill.svg",
-
-		"clipboard2-pulse.svg",
-
-		"clipboard2-x-fill.svg",
-
-		"clipboard2-x.svg",
-
-		"clipboard2.svg",
-
-		"clock-fill.svg",
-
-		"clock-history.svg",
-
-		"clock.svg",
-
-		"cloud-arrow-down-fill.svg",
-
-		"cloud-arrow-down.svg",
-
-		"cloud-arrow-up-fill.svg",
-
-		"cloud-arrow-up.svg",
-
-		"cloud-check-fill.svg",
-
-		"cloud-check.svg",
-
-		"cloud-download-fill.svg",
-
-		"cloud-download.svg",
-
-		"cloud-drizzle-fill.svg",
-
-		"cloud-drizzle.svg",
-
-		"cloud-fill.svg",
-
-		"cloud-fog-fill.svg",
-
-		"cloud-fog.svg",
-
-		"cloud-fog2-fill.svg",
-
-		"cloud-fog2.svg",
-
-		"cloud-hail-fill.svg",
-
-		"cloud-hail.svg",
-
-		"cloud-haze-fill.svg",
-
-		"cloud-haze.svg",
-
-		"cloud-haze2-fill.svg",
-
-		"cloud-haze2.svg",
-
-		"cloud-lightning-fill.svg",
-
-		"cloud-lightning-rain-fill.svg",
-
-		"cloud-lightning-rain.svg",
-
-		"cloud-lightning.svg",
-
-		"cloud-minus-fill.svg",
-
-		"cloud-minus.svg",
-
-		"cloud-moon-fill.svg",
-
-		"cloud-moon.svg",
-
-		"cloud-plus-fill.svg",
-
-		"cloud-plus.svg",
-
-		"cloud-rain-fill.svg",
-
-		"cloud-rain-heavy-fill.svg",
-
-		"cloud-rain-heavy.svg",
-
-		"cloud-rain.svg",
-
-		"cloud-slash-fill.svg",
-
-		"cloud-slash.svg",
-
-		"cloud-sleet-fill.svg",
-
-		"cloud-sleet.svg",
-
-		"cloud-snow-fill.svg",
-
-		"cloud-snow.svg",
-
-		"cloud-sun-fill.svg",
-
-		"cloud-sun.svg",
-
-		"cloud-upload-fill.svg",
-
-		"cloud-upload.svg",
-
-		"cloud.svg",
-
-		"clouds-fill.svg",
-
-		"clouds.svg",
-
-		"cloudy-fill.svg",
-
-		"cloudy.svg",
-
-		"code-slash.svg",
-
-		"code-square.svg",
-
-		"code.svg",
-
-		"coin.svg",
-
-		"collection-fill.svg",
-
-		"collection-play-fill.svg",
-
-		"collection-play.svg",
-
-		"collection.svg",
-
-		"columns-gap.svg",
-
-		"columns.svg",
-
-		"command.svg",
-
-		"compass-fill.svg",
-
-		"compass.svg",
-
-		"cone-striped.svg",
-
-		"cone.svg",
-
-		"controller.svg",
-
-		"cookie.svg",
-
-		"copy.svg",
-
-		"cpu-fill.svg",
-
-		"cpu.svg",
-
-		"credit-card-2-back-fill.svg",
-
-		"credit-card-2-back.svg",
-
-		"credit-card-2-front-fill.svg",
-
-		"credit-card-2-front.svg",
-
-		"credit-card-fill.svg",
-
-		"credit-card.svg",
-
-		"crop.svg",
-
-		"crosshair.svg",
-
-		"crosshair2.svg",
-
-		"css.svg",
-		"cup-fill.svg",
-
-		"cup-hot-fill.svg",
-
-		"cup-hot.svg",
-
-		"cup-straw.svg",
-
-		"cup.svg",
-
-		"currency-bitcoin.svg",
-
-		"currency-dollar.svg",
-
-		"currency-euro.svg",
-
-		"currency-exchange.svg",
-
-		"currency-pound.svg",
-
-		"currency-rupee.svg",
-
-		"currency-yen.svg",
-		"cursor-fill.svg",
-		"cursor-text.svg",
-
-		"cursor.svg",
-
-		"dash-circle-dotted.svg",
-
-		"dash-circle-fill.svg",
-
-		"dash-circle.svg",
-
-		"dash-lg.svg",
-
-		"dash-square-dotted.svg",
-
-		"dash-square-fill.svg",
-
-		"dash-square.svg",
-
-		"dash.svg",
-
-		"database-add.svg",
-
-		"database-check.svg",
-
-		"database-dash.svg",
-
-		"database-down.svg",
-
-		"database-exclamation.svg",
-
-		"database-fill-add.svg",
-
-		"database-fill-check.svg",
-
-		"database-fill-dash.svg",
-
-		"database-fill-down.svg",
-
-		"database-fill-exclamation.svg",
-
-		"database-fill-gear.svg",
-
-		"database-fill-lock.svg",
-
-		"database-fill-slash.svg",
-
-		"database-fill-up.svg",
-
-		"database-fill-x.svg",
-
-		"database-fill.svg",
-
-		"database-gear.svg",
-
-		"database-lock.svg",
-
-		"database-slash.svg",
-
-		"database-up.svg",
-
-		"database-x.svg",
-
-		"database.svg",
-
-		"device-hdd-fill.svg",
-
-		"device-hdd.svg",
-
-		"device-ssd-fill.svg",
-
-		"device-ssd.svg",
-
-		"diagram-2-fill.svg",
-
-		"diagram-2.svg",
-
-		"diagram-3-fill.svg",
-
-		"diagram-3.svg",
-
-		"diamond-fill.svg",
-
-		"diamond-half.svg",
-
-		"diamond.svg",
-
-		"dice-1-fill.svg",
-
-		"dice-1.svg",
-
-		"dice-2-fill.svg",
-
-		"dice-2.svg",
-
-		"dice-3-fill.svg",
-
-		"dice-3.svg",
-
-		"dice-4-fill.svg",
-
-		"dice-4.svg",
-
-		"dice-5-fill.svg",
-
-		"dice-5.svg",
-
-		"dice-6-fill.svg",
-
-		"dice-6.svg",
-
-		"disc-fill.svg",
-
-		"disc.svg",
-
-		"discord.svg",
-
-		"display-fill.svg",
-
-		"display.svg",
-
-		"displayport-fill.svg",
-
-		"displayport.svg",
-
-		"distribute-horizontal.svg",
-
-		"distribute-vertical.svg",
-
-		"door-closed-fill.svg",
-
-		"door-closed.svg",
-
-		"door-open-fill.svg",
-
-		"door-open.svg",
-
-		"dot.svg",
-
-		"download.svg",
-
-		"dpad-fill.svg",
-
-		"dpad.svg",
-
-		"dribbble.svg",
-
-		"dropbox.svg",
-
-		"droplet-fill.svg",
-
-		"droplet-half.svg",
-
-		"droplet.svg",
-
-		"duffle-fill.svg",
-
-		"duffle.svg",
-
-		"ear-fill.svg",
-
-		"ear.svg",
-
-		"earbuds.svg",
-
-		"easel-fill.svg",
-
-		"easel.svg",
-
-		"easel2-fill.svg",
-
-		"easel2.svg",
-
-		"easel3-fill.svg",
-
-		"easel3.svg",
-
-		"egg-fill.svg",
-
-		"egg-fried.svg",
-
-		"egg.svg",
-
-		"eject-fill.svg",
-
-		"eject.svg",
-
-		"emoji-angry-fill.svg",
-
-		"emoji-angry.svg",
-
-		"emoji-astonished-fill.svg",
-
-		"emoji-astonished.svg",
-
-		"emoji-dizzy-fill.svg",
-
-		"emoji-dizzy.svg",
-
-		"emoji-expressionless-fill.svg",
-
-		"emoji-expressionless.svg",
-
-		"emoji-frown-fill.svg",
-
-		"emoji-frown.svg",
-
-		"emoji-grimace-fill.svg",
-
-		"emoji-grimace.svg",
-
-		"emoji-grin-fill.svg",
-
-		"emoji-grin.svg",
-
-		"emoji-heart-eyes-fill.svg",
-
-		"emoji-heart-eyes.svg",
-
-		"emoji-kiss-fill.svg",
-
-		"emoji-kiss.svg",
-
-		"emoji-laughing-fill.svg",
-
-		"emoji-laughing.svg",
-
-		"emoji-neutral-fill.svg",
-
-		"emoji-neutral.svg",
-
-		"emoji-smile-fill.svg",
-
-		"emoji-smile-upside-down-fill.svg",
-
-		"emoji-smile-upside-down.svg",
-
-		"emoji-smile.svg",
-
-		"emoji-sunglasses-fill.svg",
-
-		"emoji-sunglasses.svg",
-
-		"emoji-surprise-fill.svg",
-
-		"emoji-surprise.svg",
-
-		"emoji-tear-fill.svg",
-
-		"emoji-tear.svg",
-
-		"emoji-wink-fill.svg",
-
-		"emoji-wink.svg",
-
-		"envelope-arrow-down-fill.svg",
-
-		"envelope-arrow-down.svg",
-
-		"envelope-arrow-up-fill.svg",
-
-		"envelope-arrow-up.svg",
-
-		"envelope-at-fill.svg",
-
-		"envelope-at.svg",
-
-		"envelope-check-fill.svg",
-
-		"envelope-check.svg",
-
-		"envelope-dash-fill.svg",
-
-		"envelope-dash.svg",
-
-		"envelope-exclamation-fill.svg",
-
-		"envelope-exclamation.svg",
-
-		"envelope-fill.svg",
-
-		"envelope-heart-fill.svg",
-
-		"envelope-heart.svg",
-
-		"envelope-open-fill.svg",
-
-		"envelope-open-heart-fill.svg",
-
-		"envelope-open-heart.svg",
-
-		"envelope-open.svg",
-
-		"envelope-paper-fill.svg",
-
-		"envelope-paper-heart-fill.svg",
-
-		"envelope-paper-heart.svg",
-
-		"envelope-paper.svg",
-
-		"envelope-plus-fill.svg",
-
-		"envelope-plus.svg",
-
-		"envelope-slash-fill.svg",
-
-		"envelope-slash.svg",
-
-		"envelope-x-fill.svg",
-
-		"envelope-x.svg",
-
-		"envelope.svg",
-
-		"eraser-fill.svg",
-
-		"eraser.svg",
-
-		"escape.svg",
-
-		"ethernet.svg",
-
-		"ev-front-fill.svg",
-
-		"ev-front.svg",
-
-		"ev-station-fill.svg",
-
-		"ev-station.svg",
-
-		"exclamation-circle-fill.svg",
-
-		"exclamation-circle.svg",
-
-		"exclamation-diamond-fill.svg",
-
-		"exclamation-diamond.svg",
-
-		"exclamation-lg.svg",
-
-		"exclamation-octagon-fill.svg",
-
-		"exclamation-octagon.svg",
-
-		"exclamation-square-fill.svg",
-
-		"exclamation-square.svg",
-
-		"exclamation-triangle-fill.svg",
-
-		"exclamation-triangle.svg",
-
-		"exclamation.svg",
-
-		"exclude.svg",
-
-		"explicit-fill.svg",
-
-		"explicit.svg",
-
-		"exposure.svg",
-
-		"eye-fill.svg",
-
-		"eye-slash-fill.svg",
-
-		"eye-slash.svg",
-
-		"eye.svg",
-
-		"eyedropper.svg",
-
-		"eyeglasses.svg",
-
-		"facebook.svg",
-
-		"fan.svg",
-
-		"fast-forward-btn-fill.svg",
-
-		"fast-forward-btn.svg",
-
-		"fast-forward-circle-fill.svg",
-
-		"fast-forward-circle.svg",
-
-		"fast-forward-fill.svg",
-
-		"fast-forward.svg",
-
-		"feather.svg",
-
-		"feather2.svg",
-
-		"file-arrow-down-fill.svg",
-
-		"file-arrow-down.svg",
-
-		"file-arrow-up-fill.svg",
-
-		"file-arrow-up.svg",
-
-		"file-bar-graph-fill.svg",
-
-		"file-bar-graph.svg",
-
-		"file-binary-fill.svg",
-
-		"file-binary.svg",
-
-		"file-break-fill.svg",
-
-		"file-break.svg",
-
-		"file-check-fill.svg",
-
-		"file-check.svg",
-
-		"file-code-fill.svg",
-
-		"file-code.svg",
-
-		"file-diff-fill.svg",
-
-		"file-diff.svg",
-
-		"file-earmark-arrow-down-fill.svg",
-
-		"file-earmark-arrow-down.svg",
-
-		"file-earmark-arrow-up-fill.svg",
-
-		"file-earmark-arrow-up.svg",
-
-		"file-earmark-bar-graph-fill.svg",
-
-		"file-earmark-bar-graph.svg",
-
-		"file-earmark-binary-fill.svg",
-
-		"file-earmark-binary.svg",
-
-		"file-earmark-break-fill.svg",
-
-		"file-earmark-break.svg",
-
-		"file-earmark-check-fill.svg",
-
-		"file-earmark-check.svg",
-
-		"file-earmark-code-fill.svg",
-
-		"file-earmark-code.svg",
-
-		"file-earmark-diff-fill.svg",
-
-		"file-earmark-diff.svg",
-
-		"file-earmark-easel-fill.svg",
-
-		"file-earmark-easel.svg",
-
-		"file-earmark-excel-fill.svg",
-
-		"file-earmark-excel.svg",
-
-		"file-earmark-fill.svg",
-
-		"file-earmark-font-fill.svg",
-
-		"file-earmark-font.svg",
-
-		"file-earmark-image-fill.svg",
-
-		"file-earmark-image.svg",
-
-		"file-earmark-lock-fill.svg",
-
-		"file-earmark-lock.svg",
-
-		"file-earmark-lock2-fill.svg",
-
-		"file-earmark-lock2.svg",
-
-		"file-earmark-medical-fill.svg",
-
-		"file-earmark-medical.svg",
-
-		"file-earmark-minus-fill.svg",
-
-		"file-earmark-minus.svg",
-
-		"file-earmark-music-fill.svg",
-
-		"file-earmark-music.svg",
-
-		"file-earmark-pdf-fill.svg",
-
-		"file-earmark-pdf.svg",
-
-		"file-earmark-person-fill.svg",
-
-		"file-earmark-person.svg",
-
-		"file-earmark-play-fill.svg",
-
-		"file-earmark-play.svg",
-
-		"file-earmark-plus-fill.svg",
-
-		"file-earmark-plus.svg",
-
-		"file-earmark-post-fill.svg",
-
-		"file-earmark-post.svg",
-
-		"file-earmark-ppt-fill.svg",
-
-		"file-earmark-ppt.svg",
-
-		"file-earmark-richtext-fill.svg",
-
-		"file-earmark-richtext.svg",
-
-		"file-earmark-ruled-fill.svg",
-
-		"file-earmark-ruled.svg",
-
-		"file-earmark-slides-fill.svg",
-
-		"file-earmark-slides.svg",
-
-		"file-earmark-spreadsheet-fill.svg",
-
-		"file-earmark-spreadsheet.svg",
-
-		"file-earmark-text-fill.svg",
-
-		"file-earmark-text.svg",
-
-		"file-earmark-word-fill.svg",
-
-		"file-earmark-word.svg",
-
-		"file-earmark-x-fill.svg",
-
-		"file-earmark-x.svg",
-
-		"file-earmark-zip-fill.svg",
-
-		"file-earmark-zip.svg",
-
-		"file-earmark.svg",
-
-		"file-easel-fill.svg",
-
-		"file-easel.svg",
-
-		"file-excel-fill.svg",
-
-		"file-excel.svg",
-
-		"file-fill.svg",
-
-		"file-font-fill.svg",
-
-		"file-font.svg",
-
-		"file-image-fill.svg",
-
-		"file-image.svg",
-
-		"file-lock-fill.svg",
-
-		"file-lock.svg",
-
-		"file-lock2-fill.svg",
-
-		"file-lock2.svg",
-
-		"file-medical-fill.svg",
-
-		"file-medical.svg",
-
-		"file-minus-fill.svg",
-
-		"file-minus.svg",
-
-		"file-music-fill.svg",
-
-		"file-music.svg",
-
-		"file-pdf-fill.svg",
-
-		"file-pdf.svg",
-
-		"file-person-fill.svg",
-
-		"file-person.svg",
-
-		"file-play-fill.svg",
-
-		"file-play.svg",
-
-		"file-plus-fill.svg",
-
-		"file-plus.svg",
-
-		"file-post-fill.svg",
-
-		"file-post.svg",
-
-		"file-ppt-fill.svg",
-
-		"file-ppt.svg",
-
-		"file-richtext-fill.svg",
-
-		"file-richtext.svg",
-
-		"file-ruled-fill.svg",
+		"0-circle-fill",
+		"0-circle",
+		"0-square-fill",
+		"0-square",
+		"1-circle-fill",
+		"1-circle",
+		"1-square-fill",
+		"1-square",
+		"123",
+		"2-circle-fill",
+		"2-circle",
+		"2-square-fill",
+		"2-square",
+		"3-circle-fill",
+		"3-circle",
+		"3-square-fill",
+		"3-square",
+		"4-circle-fill",
+		"4-circle",
+		"4-square-fill",
+		"4-square",
+		"5-circle-fill",
+		"5-circle",
+		"5-square-fill",
+		"5-square",
+		"6-circle-fill",
+		"6-circle",
+		"6-square-fill",
+		"6-square",
+		"7-circle-fill",
+		"7-circle",
+		"7-square-fill",
+		"7-square",
+		"8-circle-fill",
+		"8-circle",
+		"8-square-fill",
+		"8-square",
+		"9-circle-fill",
+		"9-circle",
+		"9-square-fill",
+		"9-square",
+		"activity",
+		"airplane-engines-fill",
+		"airplane-engines",
+		"airplane-fill",
+		"airplane",
+		"alarm-fill",
+		"alarm",
+		"alexa",
+		"align-bottom",
+		"align-center",
+		"align-end",
+		"align-middle",
+		"align-start",
+		"align-top",
+		"alipay",
+		"alphabet-uppercase",
+		"alphabet",
+		"alt",
+		"amazon",
+		"amd",
+		"android",
+		"android2",
+		"anthropic",
+		"app-indicator",
+		"app",
+		"apple-music",
+		"apple",
+		"archive-fill",
+		"archive",
+		"arrow-90deg-down",
+		"arrow-90deg-left",
+		"arrow-90deg-right",
+		"arrow-90deg-up",
+		"arrow-bar-down",
+		"arrow-bar-left",
+		"arrow-bar-right",
+		"arrow-bar-up",
+		"arrow-clockwise",
+		"arrow-counterclockwise",
+		"arrow-down-circle-fill",
+		"arrow-down-circle",
+		"arrow-down-left-circle-fill",
+		"arrow-down-left-circle",
+		"arrow-down-left-square-fill",
+		"arrow-down-left-square",
+		"arrow-down-left",
+		"arrow-down-right-circle-fill",
+		"arrow-down-right-circle",
+		"arrow-down-right-square-fill",
+		"arrow-down-right-square",
+		"arrow-down-right",
+		"arrow-down-short",
+		"arrow-down-square-fill",
+		"arrow-down-square",
+		"arrow-down-up",
+		"arrow-down",
+		"arrow-left-circle-fill",
+		"arrow-left-circle",
+		"arrow-left-right",
+		"arrow-left-short",
+		"arrow-left-square-fill",
+		"arrow-left-square",
+		"arrow-left",
+		"arrow-repeat",
+		"arrow-return-left",
+		"arrow-return-right",
+		"arrow-right-circle-fill",
+		"arrow-right-circle",
+		"arrow-right-short",
+		"arrow-right-square-fill",
+		"arrow-right-square",
+		"arrow-right",
+		"arrow-through-heart-fill",
+		"arrow-through-heart",
+		"arrow-up-circle-fill",
+		"arrow-up-circle",
+		"arrow-up-left-circle-fill",
+		"arrow-up-left-circle",
+		"arrow-up-left-square-fill",
+		"arrow-up-left-square",
+		"arrow-up-left",
+		"arrow-up-right-circle-fill",
+		"arrow-up-right-circle",
+		"arrow-up-right-square-fill",
+		"arrow-up-right-square",
+		"arrow-up-right",
+		"arrow-up-short",
+		"arrow-up-square-fill",
+		"arrow-up-square",
+		"arrow-up",
+		"arrows-angle-contract",
+		"arrows-angle-expand",
+		"arrows-collapse-vertical",
+		"arrows-collapse",
+		"arrows-expand-vertical",
+		"arrows-expand",
+		"arrows-fullscreen",
+		"arrows-move",
+		"arrows-vertical",
+		"arrows",
+		"aspect-ratio-fill",
+		"aspect-ratio",
+		"asterisk",
+		"at",
+		"award-fill",
+		"award",
+		"back",
+		"backpack-fill",
+		"backpack",
+		"backpack2-fill",
+		"backpack2",
+		"backpack3-fill",
+		"backpack3",
+		"backpack4-fill",
+		"backpack4",
+		"backspace-fill",
+		"backspace-reverse-fill",
+		"backspace-reverse",
+		"backspace",
+		"badge-3d-fill",
+		"badge-3d",
+		"badge-4k-fill",
+		"badge-4k",
+		"badge-8k-fill",
+		"badge-8k",
+		"badge-ad-fill",
+		"badge-ad",
+		"badge-ar-fill",
+		"badge-ar",
+		"badge-cc-fill",
+		"badge-cc",
+		"badge-hd-fill",
+		"badge-hd",
+		"badge-sd-fill",
+		"badge-sd",
+		"badge-tm-fill",
+		"badge-tm",
+		"badge-vo-fill",
+		"badge-vo",
+		"badge-vr-fill",
+		"badge-vr",
+		"badge-wc-fill",
+		"badge-wc",
+		"bag-check-fill",
+		"bag-check",
+		"bag-dash-fill",
+		"bag-dash",
+		"bag-fill",
+		"bag-heart-fill",
+		"bag-heart",
+		"bag-plus-fill",
+		"bag-plus",
+		"bag-x-fill",
+		"bag-x",
+		"bag",
+		"balloon-fill",
+		"balloon-heart-fill",
+		"balloon-heart",
+		"balloon",
+		"ban-fill",
+		"ban",
+		"bandaid-fill",
+		"bandaid",
+		"bank",
+		"bank2",
+		"bar-chart-fill",
+		"bar-chart-line-fill",
+		"bar-chart-line",
+		"bar-chart-steps",
+		"bar-chart",
+		"basket-fill",
+		"basket",
+		"basket2-fill",
+		"basket2",
+		"basket3-fill",
+		"basket3",
+		"battery-charging",
+		"battery-full",
+		"battery-half",
+		"battery-low",
+		"battery",
+		"beaker-fill",
+		"beaker",
+		"behance",
+		"bell-fill",
+		"bell-slash-fill",
+		"bell-slash",
+		"bell",
+		"bezier",
+		"bezier2",
+		"bicycle",
+		"bing",
+		"binoculars-fill",
+		"binoculars",
+		"blockquote-left",
+		"blockquote-right",
+		"bluesky",
+		"bluetooth",
+		"body-text",
+		"book-fill",
+		"book-half",
+		"book",
+		"bookmark-check-fill",
+		"bookmark-check",
+		"bookmark-dash-fill",
+		"bookmark-dash",
+		"bookmark-fill",
+		"bookmark-heart-fill",
+		"bookmark-heart",
+		"bookmark-plus-fill",
+		"bookmark-plus",
+		"bookmark-star-fill",
+		"bookmark-star",
+		"bookmark-x-fill",
+		"bookmark-x",
+		"bookmark",
+		"bookmarks-fill",
+		"bookmarks",
+		"bookshelf",
+		"boombox-fill",
+		"boombox",
+		"bootstrap-fill",
+		"bootstrap-reboot",
+		"bootstrap",
+		"border-all",
+		"border-bottom",
+		"border-center",
+		"border-inner",
+		"border-left",
+		"border-middle",
+		"border-outer",
+		"border-right",
+		"border-style",
+		"border-top",
+		"border-width",
+		"border",
+		"bounding-box-circles",
+		"bounding-box",
+		"box-arrow-down-left",
+		"box-arrow-down-right",
+		"box-arrow-down",
+		"box-arrow-in-down-left",
+		"box-arrow-in-down-right",
+		"box-arrow-in-down",
+		"box-arrow-in-left",
+		"box-arrow-in-right",
+		"box-arrow-in-up-left",
+		"box-arrow-in-up-right",
+		"box-arrow-in-up",
+		"box-arrow-left",
+		"box-arrow-right",
+		"box-arrow-up-left",
+		"box-arrow-up-right",
+		"box-arrow-up",
+		"box-fill",
+		"box-seam-fill",
+		"box-seam",
+		"box",
+		"box2-fill",
+		"box2-heart-fill",
+		"box2-heart",
+		"box2",
+		"boxes",
+		"braces-asterisk",
+		"braces",
+		"bricks",
+		"briefcase-fill",
+		"briefcase",
+		"brightness-alt-high-fill",
+		"brightness-alt-high",
+		"brightness-alt-low-fill",
+		"brightness-alt-low",
+		"brightness-high-fill",
+		"brightness-high",
+		"brightness-low-fill",
+		"brightness-low",
+		"brilliance",
+		"broadcast-pin",
+		"broadcast",
+		"browser-chrome",
+		"browser-edge",
+		"browser-firefox",
+		"browser-safari",
+		"brush-fill",
+		"brush",
+		"bucket-fill",
+		"bucket",
+		"bug-fill",
+		"bug",
+		"building-add",
+		"building-check",
+		"building-dash",
+		"building-down",
+		"building-exclamation",
+		"building-fill-add",
+		"building-fill-check",
+		"building-fill-dash",
+		"building-fill-down",
+		"building-fill-exclamation",
+		"building-fill-gear",
+		"building-fill-lock",
+		"building-fill-slash",
+		"building-fill-up",
+		"building-fill-x",
+		"building-fill",
+		"building-gear",
+		"building-lock",
+		"building-slash",
+		"building-up",
+		"building-x",
+		"building",
+		"buildings-fill",
+		"buildings",
+		"bullseye",
+		"bus-front-fill",
+		"bus-front",
+		"c-circle-fill",
+		"c-circle",
+		"c-square-fill",
+		"c-square",
+		"cake-fill",
+		"cake",
+		"cake2-fill",
+		"cake2",
+		"calculator-fill",
+		"calculator",
+		"calendar-check-fill",
+		"calendar-check",
+		"calendar-date-fill",
+		"calendar-date",
+		"calendar-day-fill",
+		"calendar-day",
+		"calendar-event-fill",
+		"calendar-event",
+		"calendar-fill",
+		"calendar-heart-fill",
+		"calendar-heart",
+		"calendar-minus-fill",
+		"calendar-minus",
+		"calendar-month-fill",
+		"calendar-month",
+		"calendar-plus-fill",
+		"calendar-plus",
+		"calendar-range-fill",
+		"calendar-range",
+		"calendar-week-fill",
+		"calendar-week",
+		"calendar-x-fill",
+		"calendar-x",
+		"calendar",
+		"calendar2-check-fill",
+		"calendar2-check",
+		"calendar2-date-fill",
+		"calendar2-date",
+		"calendar2-day-fill",
+		"calendar2-day",
+		"calendar2-event-fill",
+		"calendar2-event",
+		"calendar2-fill",
+		"calendar2-heart-fill",
+		"calendar2-heart",
+		"calendar2-minus-fill",
+		"calendar2-minus",
+		"calendar2-month-fill",
+		"calendar2-month",
+		"calendar2-plus-fill",
+		"calendar2-plus",
+		"calendar2-range-fill",
+		"calendar2-range",
+		"calendar2-week-fill",
+		"calendar2-week",
+		"calendar2-x-fill",
+		"calendar2-x",
+		"calendar2",
+		"calendar3-event-fill",
+		"calendar3-event",
+		"calendar3-fill",
+		"calendar3-range-fill",
+		"calendar3-range",
+		"calendar3-week-fill",
+		"calendar3-week",
+		"calendar3",
+		"calendar4-event",
+		"calendar4-range",
+		"calendar4-week",
+		"calendar4",
+		"camera-fill",
+		"camera-reels-fill",
+		"camera-reels",
+		"camera-video-fill",
+		"camera-video-off-fill",
+		"camera-video-off",
+		"camera-video",
+		"camera",
+		"camera2",
+		"capslock-fill",
+		"capslock",
+		"capsule-pill",
+		"capsule",
+		"car-front-fill",
+		"car-front",
+		"card-checklist",
+		"card-heading",
+		"card-image",
+		"card-list",
+		"card-text",
+		"caret-down-fill",
+		"caret-down-square-fill",
+		"caret-down-square",
+		"caret-down",
+		"caret-left-fill",
+		"caret-left-square-fill",
+		"caret-left-square",
+		"caret-left",
+		"caret-right-fill",
+		"caret-right-square-fill",
+		"caret-right-square",
+		"caret-right",
+		"caret-up-fill",
+		"caret-up-square-fill",
+		"caret-up-square",
+		"caret-up",
+		"cart-check-fill",
+		"cart-check",
+		"cart-dash-fill",
+		"cart-dash",
+		"cart-fill",
+		"cart-plus-fill",
+		"cart-plus",
+		"cart-x-fill",
+		"cart-x",
+		"cart",
+		"cart2",
+		"cart3",
+		"cart4",
+		"cash-coin",
+		"cash-stack",
+		"cash",
+		"cassette-fill",
+		"cassette",
+		"cast",
+		"cc-circle-fill",
+		"cc-circle",
+		"cc-square-fill",
+		"cc-square",
+		"chat-dots-fill",
+		"chat-dots",
+		"chat-fill",
+		"chat-heart-fill",
+		"chat-heart",
+		"chat-left-dots-fill",
+		"chat-left-dots",
+		"chat-left-fill",
+		"chat-left-heart-fill",
+		"chat-left-heart",
+		"chat-left-quote-fill",
+		"chat-left-quote",
+		"chat-left-text-fill",
+		"chat-left-text",
+		"chat-left",
+		"chat-quote-fill",
+		"chat-quote",
+		"chat-right-dots-fill",
+		"chat-right-dots",
+		"chat-right-fill",
+		"chat-right-heart-fill",
+		"chat-right-heart",
+		"chat-right-quote-fill",
+		"chat-right-quote",
+		"chat-right-text-fill",
+		"chat-right-text",
+		"chat-right",
+		"chat-square-dots-fill",
+		"chat-square-dots",
+		"chat-square-fill",
+		"chat-square-heart-fill",
+		"chat-square-heart",
+		"chat-square-quote-fill",
+		"chat-square-quote",
+		"chat-square-text-fill",
+		"chat-square-text",
+		"chat-square",
+		"chat-text-fill",
+		"chat-text",
+		"chat",
+		"check-all",
+		"check-circle-fill",
+		"check-circle",
+		"check-lg",
+		"check-square-fill",
+		"check-square",
+		"check",
+		"check2-all",
+		"check2-circle",
+		"check2-square",
+		"check2",
+		"chevron-bar-contract",
+		"chevron-bar-down",
+		"chevron-bar-expand",
+		"chevron-bar-left",
+		"chevron-bar-right",
+		"chevron-bar-up",
+		"chevron-compact-down",
+		"chevron-compact-left",
+		"chevron-compact-right",
+		"chevron-compact-up",
+		"chevron-contract",
+		"chevron-double-down",
+		"chevron-double-left",
+		"chevron-double-right",
+		"chevron-double-up",
+		"chevron-down",
+		"chevron-expand",
+		"chevron-left",
+		"chevron-right",
+		"chevron-up",
+		"circle-fill",
+		"circle-half",
+		"circle-square",
+		"circle",
+		"claude",
+		"clipboard-check-fill",
+		"clipboard-check",
+		"clipboard-data-fill",
+		"clipboard-data",
+		"clipboard-fill",
+		"clipboard-heart-fill",
+		"clipboard-heart",
+		"clipboard-minus-fill",
+		"clipboard-minus",
+		"clipboard-plus-fill",
+		"clipboard-plus",
+		"clipboard-pulse",
+		"clipboard-x-fill",
+		"clipboard-x",
+		"clipboard",
+		"clipboard2-check-fill",
+		"clipboard2-check",
+		"clipboard2-data-fill",
+		"clipboard2-data",
+		"clipboard2-fill",
+		"clipboard2-heart-fill",
+		"clipboard2-heart",
+		"clipboard2-minus-fill",
+		"clipboard2-minus",
+		"clipboard2-plus-fill",
+		"clipboard2-plus",
+		"clipboard2-pulse-fill",
+		"clipboard2-pulse",
+		"clipboard2-x-fill",
+		"clipboard2-x",
+		"clipboard2",
+		"clock-fill",
+		"clock-history",
+		"clock",
+		"cloud-arrow-down-fill",
+		"cloud-arrow-down",
+		"cloud-arrow-up-fill",
+		"cloud-arrow-up",
+		"cloud-check-fill",
+		"cloud-check",
+		"cloud-download-fill",
+		"cloud-download",
+		"cloud-drizzle-fill",
+		"cloud-drizzle",
+		"cloud-fill",
+		"cloud-fog-fill",
+		"cloud-fog",
+		"cloud-fog2-fill",
+		"cloud-fog2",
+		"cloud-hail-fill",
+		"cloud-hail",
+		"cloud-haze-fill",
+		"cloud-haze",
+		"cloud-haze2-fill",
+		"cloud-haze2",
+		"cloud-lightning-fill",
+		"cloud-lightning-rain-fill",
+		"cloud-lightning-rain",
+		"cloud-lightning",
+		"cloud-minus-fill",
+		"cloud-minus",
+		"cloud-moon-fill",
+		"cloud-moon",
+		"cloud-plus-fill",
+		"cloud-plus",
+		"cloud-rain-fill",
+		"cloud-rain-heavy-fill",
+		"cloud-rain-heavy",
+		"cloud-rain",
+		"cloud-slash-fill",
+		"cloud-slash",
+		"cloud-sleet-fill",
+		"cloud-sleet",
+		"cloud-snow-fill",
+		"cloud-snow",
+		"cloud-sun-fill",
+		"cloud-sun",
+		"cloud-upload-fill",
+		"cloud-upload",
+		"cloud",
+		"clouds-fill",
+		"clouds",
+		"cloudy-fill",
+		"cloudy",
+		"code-slash",
+		"code-square",
+		"code",
+		"coin",
+		"collection-fill",
+		"collection-play-fill",
+		"collection-play",
+		"collection",
+		"columns-gap",
+		"columns",
+		"command",
+		"compass-fill",
+		"compass",
+		"cone-striped",
+		"cone",
+		"controller",
+		"cookie",
+		"copy",
+		"cpu-fill",
+		"cpu",
+		"credit-card-2-back-fill",
+		"credit-card-2-back",
+		"credit-card-2-front-fill",
+		"credit-card-2-front",
+		"credit-card-fill",
+		"credit-card",
+		"crop",
+		"crosshair",
+		"crosshair2",
+		"css",
+		"cup-fill",
+		"cup-hot-fill",
+		"cup-hot",
+		"cup-straw",
+		"cup",
+		"currency-bitcoin",
+		"currency-dollar",
+		"currency-euro",
+		"currency-exchange",
+		"currency-pound",
+		"currency-rupee",
+		"currency-yen",
+		"cursor-fill",
+		"cursor-text",
+		"cursor",
+		"dash-circle-dotted",
+		"dash-circle-fill",
+		"dash-circle",
+		"dash-lg",
+		"dash-square-dotted",
+		"dash-square-fill",
+		"dash-square",
+		"dash",
+		"database-add",
+		"database-check",
+		"database-dash",
+		"database-down",
+		"database-exclamation",
+		"database-fill-add",
+		"database-fill-check",
+		"database-fill-dash",
+		"database-fill-down",
+		"database-fill-exclamation",
+		"database-fill-gear",
+		"database-fill-lock",
+		"database-fill-slash",
+		"database-fill-up",
+		"database-fill-x",
+		"database-fill",
+		"database-gear",
+		"database-lock",
+		"database-slash",
+		"database-up",
+		"database-x",
+		"database",
+		"device-hdd-fill",
+		"device-hdd",
+		"device-ssd-fill",
+		"device-ssd",
+		"diagram-2-fill",
+		"diagram-2",
+		"diagram-3-fill",
+		"diagram-3",
+		"diamond-fill",
+		"diamond-half",
+		"diamond",
+		"dice-1-fill",
+		"dice-1",
+		"dice-2-fill",
+		"dice-2",
+		"dice-3-fill",
+		"dice-3",
+		"dice-4-fill",
+		"dice-4",
+		"dice-5-fill",
+		"dice-5",
+		"dice-6-fill",
+		"dice-6",
+		"disc-fill",
+		"disc",
+		"discord",
+		"display-fill",
+		"display",
+		"displayport-fill",
+		"displayport",
+		"distribute-horizontal",
+		"distribute-vertical",
+		"door-closed-fill",
+		"door-closed",
+		"door-open-fill",
+		"door-open",
+		"dot",
+		"download",
+		"dpad-fill",
+		"dpad",
+		"dribbble",
+		"dropbox",
+		"droplet-fill",
+		"droplet-half",
+		"droplet",
+		"duffle-fill",
+		"duffle",
+		"ear-fill",
+		"ear",
+		"earbuds",
+		"easel-fill",
+		"easel",
+		"easel2-fill",
+		"easel2",
+		"easel3-fill",
+		"easel3",
+		"egg-fill",
+		"egg-fried",
+		"egg",
+		"eject-fill",
+		"eject",
+		"emoji-angry-fill",
+		"emoji-angry",
+		"emoji-astonished-fill",
+		"emoji-astonished",
+		"emoji-dizzy-fill",
+		"emoji-dizzy",
+		"emoji-expressionless-fill",
+		"emoji-expressionless",
+		"emoji-frown-fill",
+		"emoji-frown",
+		"emoji-grimace-fill",
+		"emoji-grimace",
+		"emoji-grin-fill",
+		"emoji-grin",
+		"emoji-heart-eyes-fill",
+		"emoji-heart-eyes",
+		"emoji-kiss-fill",
+		"emoji-kiss",
+		"emoji-laughing-fill",
+		"emoji-laughing",
+		"emoji-neutral-fill",
+		"emoji-neutral",
+		"emoji-smile-fill",
+		"emoji-smile-upside-down-fill",
+		"emoji-smile-upside-down",
+		"emoji-smile",
+		"emoji-sunglasses-fill",
+		"emoji-sunglasses",
+		"emoji-surprise-fill",
+		"emoji-surprise",
+		"emoji-tear-fill",
+		"emoji-tear",
+		"emoji-wink-fill",
+		"emoji-wink",
+		"envelope-arrow-down-fill",
+		"envelope-arrow-down",
+		"envelope-arrow-up-fill",
+		"envelope-arrow-up",
+		"envelope-at-fill",
+		"envelope-at",
+		"envelope-check-fill",
+		"envelope-check",
+		"envelope-dash-fill",
+		"envelope-dash",
+		"envelope-exclamation-fill",
+		"envelope-exclamation",
+		"envelope-fill",
+		"envelope-heart-fill",
+		"envelope-heart",
+		"envelope-open-fill",
+		"envelope-open-heart-fill",
+		"envelope-open-heart",
+		"envelope-open",
+		"envelope-paper-fill",
+		"envelope-paper-heart-fill",
+		"envelope-paper-heart",
+		"envelope-paper",
+		"envelope-plus-fill",
+		"envelope-plus",
+		"envelope-slash-fill",
+		"envelope-slash",
+		"envelope-x-fill",
+		"envelope-x",
+		"envelope",
+		"eraser-fill",
+		"eraser",
+		"escape",
+		"ethernet",
+		"ev-front-fill",
+		"ev-front",
+		"ev-station-fill",
+		"ev-station",
+		"exclamation-circle-fill",
+		"exclamation-circle",
+		"exclamation-diamond-fill",
+		"exclamation-diamond",
+		"exclamation-lg",
+		"exclamation-octagon-fill",
+		"exclamation-octagon",
+		"exclamation-square-fill",
+		"exclamation-square",
+		"exclamation-triangle-fill",
+		"exclamation-triangle",
+		"exclamation",
+		"exclude",
+		"explicit-fill",
+		"explicit",
+		"exposure",
+		"eye-fill",
+		"eye-slash-fill",
+		"eye-slash",
+		"eye",
+		"eyedropper",
+		"eyeglasses",
+		"facebook",
+		"fan",
+		"fast-forward-btn-fill",
+		"fast-forward-btn",
+		"fast-forward-circle-fill",
+		"fast-forward-circle",
+		"fast-forward-fill",
+		"fast-forward",
+		"feather",
+		"feather2",
+		"file-arrow-down-fill",
+		"file-arrow-down",
+		"file-arrow-up-fill",
+		"file-arrow-up",
+		"file-bar-graph-fill",
+		"file-bar-graph",
+		"file-binary-fill",
+		"file-binary",
+		"file-break-fill",
+		"file-break",
+		"file-check-fill",
+		"file-check",
+		"file-code-fill",
+		"file-code",
+		"file-diff-fill",
+		"file-diff",
+		"file-earmark-arrow-down-fill",
+		"file-earmark-arrow-down",
+		"file-earmark-arrow-up-fill",
+		"file-earmark-arrow-up",
+		"file-earmark-bar-graph-fill",
+		"file-earmark-bar-graph",
+		"file-earmark-binary-fill",
+		"file-earmark-binary",
+		"file-earmark-break-fill",
+		"file-earmark-break",
+		"file-earmark-check-fill",
+		"file-earmark-check",
+		"file-earmark-code-fill",
+		"file-earmark-code",
+		"file-earmark-diff-fill",
+		"file-earmark-diff",
+		"file-earmark-easel-fill",
+		"file-earmark-easel",
+		"file-earmark-excel-fill",
+		"file-earmark-excel",
+		"file-earmark-fill",
+		"file-earmark-font-fill",
+		"file-earmark-font",
+		"file-earmark-image-fill",
+		"file-earmark-image",
+		"file-earmark-lock-fill",
+		"file-earmark-lock",
+		"file-earmark-lock2-fill",
+		"file-earmark-lock2",
+		"file-earmark-medical-fill",
+		"file-earmark-medical",
+		"file-earmark-minus-fill",
+		"file-earmark-minus",
+		"file-earmark-music-fill",
+		"file-earmark-music",
+		"file-earmark-pdf-fill",
+		"file-earmark-pdf",
+		"file-earmark-person-fill",
+		"file-earmark-person",
+		"file-earmark-play-fill",
+		"file-earmark-play",
+		"file-earmark-plus-fill",
+		"file-earmark-plus",
+		"file-earmark-post-fill",
+		"file-earmark-post",
+		"file-earmark-ppt-fill",
+		"file-earmark-ppt",
+		"file-earmark-richtext-fill",
+		"file-earmark-richtext",
+		"file-earmark-ruled-fill",
+		"file-earmark-ruled",
+		"file-earmark-slides-fill",
+		"file-earmark-slides",
+		"file-earmark-spreadsheet-fill",
+		"file-earmark-spreadsheet",
+		"file-earmark-text-fill",
+		"file-earmark-text",
+		"file-earmark-word-fill",
+		"file-earmark-word",
+		"file-earmark-x-fill",
+		"file-earmark-x",
+		"file-earmark-zip-fill",
+		"file-earmark-zip",
+		"file-earmark",
+		"file-easel-fill",
+		"file-easel",
+		"file-excel-fill",
+		"file-excel",
+		"file-fill",
+		"file-font-fill",
+		"file-font",
+		"file-image-fill",
+		"file-image",
+		"file-lock-fill",
+		"file-lock",
+		"file-lock2-fill",
+		"file-lock2",
+		"file-medical-fill",
+		"file-medical",
+		"file-minus-fill",
+		"file-minus",
+		"file-music-fill",
+		"file-music",
+		"file-pdf-fill",
+		"file-pdf",
+		"file-person-fill",
+		"file-person",
+		"file-play-fill",
+		"file-play",
+		"file-plus-fill",
+		"file-plus",
+		"file-post-fill",
+		"file-post",
+		"file-ppt-fill",
+		"file-ppt",
+		"file-richtext-fill",
+		"file-richtext",
+		"file-ruled-fill",
+		"file-ruled",
+		"file-slides-fill",
+		"file-slides",
+		"file-spreadsheet-fill",
+		"file-spreadsheet",
+		"file-text-fill",
+		"file-text",
+		"file-word-fill",
+		"file-word",
+		"file-x-fill",
+		"file-x",
+		"file-zip-fill",
+		"file-zip",
+		"file",
+		"files-alt",
+		"files",
+		"filetype-aac",
+		"filetype-ai",
+		"filetype-bmp",
+		"filetype-cs",
+		"filetype-css",
+		"filetype-csv",
+		"filetype-doc",
+		"filetype-docx",
+		"filetype-exe",
+		"filetype-gif",
+		"filetype-heic",
+		"filetype-html",
+		"filetype-java",
+		"filetype-jpg",
+		"filetype-js",
+		"filetype-json",
+		"filetype-jsx",
+		"filetype-key",
+		"filetype-m4p",
+		"filetype-md",
+		"filetype-mdx",
+		"filetype-mov",
+		"filetype-mp3",
+		"filetype-mp4",
+		"filetype-otf",
+		"filetype-pdf",
+		"filetype-php",
+		"filetype-png",
+		"filetype-ppt",
+		"filetype-pptx",
+		"filetype-psd",
+		"filetype-py",
+		"filetype-raw",
+		"filetype-rb",
+		"filetype-sass",
+		"filetype-scss",
+		"filetype-sh",
+		"filetype-sql",
+		"filetype-svg",
+		"filetype-tiff",
+		"filetype-tsx",
+		"filetype-ttf",
+		"filetype-txt",
+		"filetype-wav",
+		"filetype-woff",
+		"filetype-xls",
+		"filetype-xlsx",
+		"filetype-xml",
+		"filetype-yml",
+		"film",
+		"filter-circle-fill",
+		"filter-circle",
+		"filter-left",
+		"filter-right",
+		"filter-square-fill",
+		"filter-square",
+		"filter",
+		"fingerprint",
+		"fire",
+		"flag-fill",
+		"flag",
+		"flask-fill",
+		"flask-florence-fill",
+		"flask-florence",
+		"flask",
+		"floppy-fill",
+		"floppy",
+		"floppy2-fill",
+		"floppy2",
+		"flower1",
+		"flower2",
+		"flower3",
+		"folder-check",
+		"folder-fill",
+		"folder-minus",
+		"folder-plus",
+		"folder-symlink-fill",
+		"folder-symlink",
+		"folder-x",
+		"folder",
+		"folder2-open",
+		"folder2",
+		"fonts",
+		"fork-knife",
+		"forward-fill",
+		"forward",
+		"front",
+		"fuel-pump-diesel-fill",
+		"fuel-pump-diesel",
+		"fuel-pump-fill",
+		"fuel-pump",
+		"fullscreen-exit",
+		"fullscreen",
+		"funnel-fill",
+		"funnel",
+		"gear-fill",
+		"gear-wide-connected",
+		"gear-wide",
+		"gear",
+		"gem",
+		"gender-ambiguous",
+		"gender-female",
+		"gender-male",
+		"gender-neuter",
+		"gender-trans",
+		"geo-alt-fill",
+		"geo-alt",
+		"geo-fill",
+		"geo",
+		"gift-fill",
+		"gift",
+		"git",
+		"github",
+		"gitlab",
+		"globe-americas-fill",
+		"globe-americas",
+		"globe-asia-australia-fill",
+		"globe-asia-australia",
+		"globe-central-south-asia-fill",
+		"globe-central-south-asia",
+		"globe-europe-africa-fill",
+		"globe-europe-africa",
+		"globe",
+		"globe2",
+		"google-play",
+		"google",
+		"gpu-card",
+		"graph-down-arrow",
+		"graph-down",
+		"graph-up-arrow",
+		"graph-up",
+		"grid-1x2-fill",
+		"grid-1x2",
+		"grid-3x2-gap-fill",
+		"grid-3x2-gap",
+		"grid-3x2",
+		"grid-3x3-gap-fill",
+		"grid-3x3-gap",
+		"grid-3x3",
+		"grid-fill",
+		"grid",
+		"grip-horizontal",
+		"grip-vertical",
+		"h-circle-fill",
+		"h-circle",
+		"h-square-fill",
+		"h-square",
+		"hammer",
+		"hand-index-fill",
+		"hand-index-thumb-fill",
+		"hand-index-thumb",
+		"hand-index",
+		"hand-thumbs-down-fill",
+		"hand-thumbs-down",
+		"hand-thumbs-up-fill",
+		"hand-thumbs-up",
+		"handbag-fill",
+		"handbag",
+		"hash",
+		"hdd-fill",
+		"hdd-network-fill",
+		"hdd-network",
+		"hdd-rack-fill",
+		"hdd-rack",
+		"hdd-stack-fill",
+		"hdd-stack",
+		"hdd",
+		"hdmi-fill",
+		"hdmi",
+		"headphones",
+		"headset-vr",
+		"headset",
+		"heart-arrow",
+		"heart-fill",
+		"heart-half",
+		"heart-pulse-fill",
+		"heart-pulse",
+		"heart",
+		"heartbreak-fill",
+		"heartbreak",
+		"hearts",
+		"heptagon-fill",
+		"heptagon-half",
+		"heptagon",
+		"hexagon-fill",
+		"hexagon-half",
+		"hexagon",
+		"highlighter",
+		"highlights",
+		"hospital-fill",
+		"hospital",
+		"hourglass-bottom",
+		"hourglass-split",
+		"hourglass-top",
+		"hourglass",
+		"house-add-fill",
+		"house-add",
+		"house-check-fill",
+		"house-check",
+		"house-dash-fill",
+		"house-dash",
+		"house-door-fill",
+		"house-door",
+		"house-down-fill",
+		"house-down",
+		"house-exclamation-fill",
+		"house-exclamation",
+		"house-fill",
+		"house-gear-fill",
+		"house-gear",
+		"house-heart-fill",
+		"house-heart",
+		"house-lock-fill",
+		"house-lock",
+		"house-slash-fill",
+		"house-slash",
+		"house-up-fill",
+		"house-up",
+		"house-x-fill",
+		"house-x",
+		"house",
+		"houses-fill",
+		"houses",
+		"hr",
+		"hurricane",
+		"hypnotize",
+		"image-alt",
+		"image-fill",
+		"image",
+		"images",
+		"inbox-fill",
+		"inbox",
+		"inboxes-fill",
+		"inboxes",
+		"incognito",
+		"indent",
+		"infinity",
+		"info-circle-fill",
+		"info-circle",
+		"info-lg",
+		"info-square-fill",
+		"info-square",
+		"info",
+		"input-cursor-text",
+		"input-cursor",
+		"instagram",
+		"intersect",
+		"javascript",
+		"journal-album",
+		"journal-arrow-down",
+		"journal-arrow-up",
+		"journal-bookmark-fill",
+		"journal-bookmark",
+		"journal-check",
+		"journal-code",
+		"journal-medical",
+		"journal-minus",
+		"journal-plus",
+		"journal-richtext",
+		"journal-text",
+		"journal-x",
+		"journal",
+		"journals",
+		"joystick",
+		"justify-left",
+		"justify-right",
+		"justify",
+		"kanban-fill",
+		"kanban",
+		"key-fill",
+		"key",
+		"keyboard-fill",
+		"keyboard",
+		"ladder",
+		"lamp-fill",
+		"lamp",
+		"laptop-fill",
+		"laptop",
+		"layer-backward",
+		"layer-forward",
+		"layers-fill",
+		"layers-half",
+		"layers",
+		"layout-sidebar-inset-reverse",
+		"layout-sidebar-inset",
+		"layout-sidebar-reverse",
+		"layout-sidebar",
+		"layout-split",
+		"layout-text-sidebar-reverse",
+		"layout-text-sidebar",
+		"layout-text-window-reverse",
+		"layout-text-window",
+		"layout-three-columns",
+		"layout-wtf",
+		"leaf-fill",
+		"leaf",
+		"life-preserver",
+		"lightbulb-fill",
+		"lightbulb-off-fill",
+		"lightbulb-off",
+		"lightbulb",
+		"lightning-charge-fill",
+		"lightning-charge",
+		"lightning-fill",
+		"lightning",
+		"line",
+		"link-45deg",
+		"link",
+		"linkedin",
+		"list-check",
+		"list-columns-reverse",
+		"list-columns",
+		"list-nested",
+		"list-ol",
+		"list-stars",
+		"list-task",
+		"list-ul",
+		"list",
+		"lock-fill",
+		"lock",
+		"luggage-fill",
+		"luggage",
+		"lungs-fill",
+		"lungs",
+		"magic",
+		"magnet-fill",
+		"magnet",
+		"mailbox-flag",
+		"mailbox",
+		"mailbox2-flag",
+		"mailbox2",
+		"map-fill",
+		"map",
+		"markdown-fill",
+		"markdown",
+		"marker-tip",
+		"mask",
+		"mastodon",
+		"measuring-cup-fill",
+		"measuring-cup",
+		"medium",
+		"megaphone-fill",
+		"megaphone",
+		"memory",
+		"menu-app-fill",
+		"menu-app",
+		"menu-button-fill",
+		"menu-button-wide-fill",
+		"menu-button-wide",
+		"menu-button",
+		"menu-down",
+		"menu-up",
+		"messenger",
+		"meta",
+		"mic-fill",
+		"mic-mute-fill",
+		"mic-mute",
+		"mic",
+		"microsoft-teams",
+		"microsoft",
+		"minecart-loaded",
+		"minecart",
+		"modem-fill",
+		"modem",
+		"moisture",
+		"moon-fill",
+		"moon-stars-fill",
+		"moon-stars",
+		"moon",
+		"mortarboard-fill",
+		"mortarboard",
+		"motherboard-fill",
+		"motherboard",
+		"mouse-fill",
+		"mouse",
+		"mouse2-fill",
+		"mouse2",
+		"mouse3-fill",
+		"mouse3",
+		"music-note-beamed",
+		"music-note-list",
+		"music-note",
+		"music-player-fill",
+		"music-player",
+		"newspaper",
+		"nintendo-switch",
+		"node-minus-fill",
+		"node-minus",
+		"node-plus-fill",
+		"node-plus",
+		"noise-reduction",
+		"nut-fill",
+		"nut",
+		"nvidia",
+		"nvme-fill",
+		"nvme",
+		"octagon-fill",
+		"octagon-half",
+		"octagon",
+		"openai",
+		"opencollective",
+		"optical-audio-fill",
+		"optical-audio",
+		"option",
+		"outlet",
+		"p-circle-fill",
+		"p-circle",
+		"p-square-fill",
+		"p-square",
+		"paint-bucket",
+		"palette-fill",
+		"palette",
+		"palette2",
+		"paperclip",
+		"paragraph",
+		"pass-fill",
+		"pass",
+		"passport-fill",
+		"passport",
+		"patch-check-fill",
+		"patch-check",
+		"patch-exclamation-fill",
+		"patch-exclamation",
+		"patch-minus-fill",
+		"patch-minus",
+		"patch-plus-fill",
+		"patch-plus",
+		"patch-question-fill",
+		"patch-question",
+		"pause-btn-fill",
+		"pause-btn",
+		"pause-circle-fill",
+		"pause-circle",
+		"pause-fill",
+		"pause",
+		"paypal",
+		"pc-display-horizontal",
+		"pc-display",
+		"pc-horizontal",
+		"pc",
+		"pci-card-network",
+		"pci-card-sound",
+		"pci-card",
+		"peace-fill",
+		"peace",
+		"pen-fill",
+		"pen",
+		"pencil-fill",
+		"pencil-square",
+		"pencil",
+		"pentagon-fill",
+		"pentagon-half",
+		"pentagon",
+		"people-fill",
+		"people",
+		"percent",
+		"perplexity",
+		"person-add",
+		"person-arms-up",
+		"person-badge-fill",
+		"person-badge",
+		"person-bounding-box",
+		"person-check-fill",
+		"person-check",
+		"person-circle",
+		"person-dash-fill",
+		"person-dash",
+		"person-down",
+		"person-exclamation",
+		"person-fill-add",
+		"person-fill-check",
+		"person-fill-dash",
+		"person-fill-down",
+		"person-fill-exclamation",
+		"person-fill-gear",
+		"person-fill-lock",
+		"person-fill-slash",
+		"person-fill-up",
+		"person-fill-x",
+		"person-fill",
+		"person-gear",
+		"person-heart",
+		"person-hearts",
+		"person-lines-fill",
+		"person-lock",
+		"person-plus-fill",
+		"person-plus",
+		"person-raised-hand",
+		"person-rolodex",
+		"person-slash",
+		"person-square",
+		"person-standing-dress",
+		"person-standing",
+		"person-up",
+		"person-vcard-fill",
+		"person-vcard",
+		"person-video",
+		"person-video2",
+		"person-video3",
+		"person-walking",
+		"person-wheelchair",
+		"person-workspace",
+		"person-x-fill",
+		"person-x",
+		"person",
+		"phone-fill",
+		"phone-flip",
+		"phone-landscape-fill",
+		"phone-landscape",
+		"phone-vibrate-fill",
+		"phone-vibrate",
+		"phone",
+		"pie-chart-fill",
+		"pie-chart",
+		"piggy-bank-fill",
+		"piggy-bank",
+		"pin-angle-fill",
+		"pin-angle",
+		"pin-fill",
+		"pin-map-fill",
+		"pin-map",
+		"pin",
+		"pinterest",
+		"pip-fill",
+		"pip",
+		"play-btn-fill",
+		"play-btn",
+		"play-circle-fill",
+		"play-circle",
+		"play-fill",
+		"play",
+		"playstation",
+		"plug-fill",
+		"plug",
+		"plugin",
+		"plus-circle-dotted",
+		"plus-circle-fill",
+		"plus-circle",
+		"plus-lg",
+		"plus-slash-minus",
+		"plus-square-dotted",
+		"plus-square-fill",
+		"plus-square",
+		"plus",
+		"postage-fill",
+		"postage-heart-fill",
+		"postage-heart",
+		"postage",
+		"postcard-fill",
+		"postcard-heart-fill",
+		"postcard-heart",
+		"postcard",
+		"power",
+		"prescription",
+		"prescription2",
+		"printer-fill",
+		"printer",
+		"projector-fill",
+		"projector",
+		"puzzle-fill",
+		"puzzle",
+		"qr-code-scan",
+		"qr-code",
+		"question-circle-fill",
+		"question-circle",
+		"question-diamond-fill",
+		"question-diamond",
+		"question-lg",
+		"question-octagon-fill",
+		"question-octagon",
+		"question-square-fill",
+		"question-square",
+		"question",
+		"quora",
+		"quote",
+		"r-circle-fill",
+		"r-circle",
+		"r-square-fill",
+		"r-square",
+		"radar",
+		"radioactive",
+		"rainbow",
+		"receipt-cutoff",
+		"receipt",
+		"reception-0",
+		"reception-1",
+		"reception-2",
+		"reception-3",
+		"reception-4",
+		"record-btn-fill",
+		"record-btn",
+		"record-circle-fill",
+		"record-circle",
+		"record-fill",
+		"record",
+		"record2-fill",
+		"record2",
+		"recycle",
+		"reddit",
+		"regex",
+		"repeat-1",
+		"repeat",
+		"reply-all-fill",
+		"reply-all",
+		"reply-fill",
+		"reply",
+		"rewind-btn-fill",
+		"rewind-btn",
+		"rewind-circle-fill",
+		"rewind-circle",
+		"rewind-fill",
+		"rewind",
+		"robot",
+		"rocket-fill",
+		"rocket-takeoff-fill",
+		"rocket-takeoff",
+		"rocket",
+		"router-fill",
+		"router",
+		"rss-fill",
+		"rss",
+		"rulers",
+		"safe-fill",
+		"safe",
+		"safe2-fill",
+		"safe2",
+		"save-fill",
+		"save",
+		"save2-fill",
+		"save2",
+		"scissors",
+		"scooter",
+		"screwdriver",
+		"sd-card-fill",
+		"sd-card",
+		"search-heart-fill",
+		"search-heart",
+		"search",
+		"segmented-nav",
+		"send-arrow-down-fill",
+		"send-arrow-down",
+		"send-arrow-up-fill",
+		"send-arrow-up",
+		"send-check-fill",
+		"send-check",
+		"send-dash-fill",
+		"send-dash",
+		"send-exclamation-fill",
+		"send-exclamation",
+		"send-fill",
+		"send-plus-fill",
+		"send-plus",
+		"send-slash-fill",
+		"send-slash",
+		"send-x-fill",
+		"send-x",
+		"send",
+		"server",
+		"shadows",
+		"share-fill",
+		"share",
+		"shield-check",
+		"shield-exclamation",
+		"shield-fill-check",
+		"shield-fill-exclamation",
+		"shield-fill-minus",
+		"shield-fill-plus",
+		"shield-fill-x",
+		"shield-fill",
+		"shield-lock-fill",
+		"shield-lock",
+		"shield-minus",
+		"shield-plus",
+		"shield-shaded",
+		"shield-slash-fill",
+		"shield-slash",
+		"shield-x",
+		"shield",
+		"shift-fill",
+		"shift",
+		"shop-window",
+		"shop",
+		"shuffle",
+		"sign-dead-end-fill",
+		"sign-dead-end",
+		"sign-do-not-enter-fill",
+		"sign-do-not-enter",
+		"sign-intersection-fill",
+		"sign-intersection-side-fill",
+		"sign-intersection-side",
+		"sign-intersection-t-fill",
+		"sign-intersection-t",
+		"sign-intersection-y-fill",
+		"sign-intersection-y",
+		"sign-intersection",
+		"sign-merge-left-fill",
+		"sign-merge-left",
+		"sign-merge-right-fill",
+		"sign-merge-right",
+		"sign-no-left-turn-fill",
+		"sign-no-left-turn",
+		"sign-no-parking-fill",
+		"sign-no-parking",
+		"sign-no-right-turn-fill",
+		"sign-no-right-turn",
+		"sign-railroad-fill",
+		"sign-railroad",
+		"sign-stop-fill",
+		"sign-stop-lights-fill",
+		"sign-stop-lights",
+		"sign-stop",
+		"sign-turn-left-fill",
+		"sign-turn-left",
+		"sign-turn-right-fill",
+		"sign-turn-right",
+		"sign-turn-slight-left-fill",
+		"sign-turn-slight-left",
+		"sign-turn-slight-right-fill",
+		"sign-turn-slight-right",
+		"sign-yield-fill",
+		"sign-yield",
+		"signal",
+		"signpost-2-fill",
+		"signpost-2",
+		"signpost-fill",
+		"signpost-split-fill",
+		"signpost-split",
+		"signpost",
+		"sim-fill",
+		"sim-slash-fill",
+		"sim-slash",
+		"sim",
+		"sina-weibo",
+		"skip-backward-btn-fill",
+		"skip-backward-btn",
+		"skip-backward-circle-fill",
+		"skip-backward-circle",
+		"skip-backward-fill",
+		"skip-backward",
+		"skip-end-btn-fill",
+		"skip-end-btn",
+		"skip-end-circle-fill",
+		"skip-end-circle",
+		"skip-end-fill",
+		"skip-end",
+		"skip-forward-btn-fill",
+		"skip-forward-btn",
+		"skip-forward-circle-fill",
+		"skip-forward-circle",
+		"skip-forward-fill",
+		"skip-forward",
+		"skip-start-btn-fill",
+		"skip-start-btn",
+		"skip-start-circle-fill",
+		"skip-start-circle",
+		"skip-start-fill",
+		"skip-start",
+		"skype",
+		"slack",
+		"slash-circle-fill",
+		"slash-circle",
+		"slash-lg",
+		"slash-square-fill",
+		"slash-square",
+		"slash",
+		"sliders",
+		"sliders2-vertical",
+		"sliders2",
+		"smartwatch",
+		"snapchat",
+		"snow",
+		"snow2",
+		"snow3",
+		"sort-alpha-down-alt",
+		"sort-alpha-down",
+		"sort-alpha-up-alt",
+		"sort-alpha-up",
+		"sort-down-alt",
+		"sort-down",
+		"sort-numeric-down-alt",
+		"sort-numeric-down",
+		"sort-numeric-up-alt",
+		"sort-numeric-up",
+		"sort-up-alt",
+		"sort-up",
+		"soundwave",
+		"sourceforge",
+		"speaker-fill",
+		"speaker",
+		"speedometer",
+		"speedometer2",
+		"spellcheck",
+		"spotify",
+		"square-fill",
+		"square-half",
+		"square",
+		"stack-overflow",
+		"stack",
+		"star-fill",
+		"star-half",
+		"star",
+		"stars",
+		"steam",
+		"stickies-fill",
+		"stickies",
+		"sticky-fill",
+		"sticky",
+		"stop-btn-fill",
+		"stop-btn",
+		"stop-circle-fill",
+		"stop-circle",
+		"stop-fill",
+		"stop",
+		"stoplights-fill",
+		"stoplights",
+		"stopwatch-fill",
+		"stopwatch",
+		"strava",
+		"stripe",
+		"subscript",
+		"substack",
+		"subtract",
+		"suit-club-fill",
+		"suit-club",
+		"suit-diamond-fill",
+		"suit-diamond",
+		"suit-heart-fill",
+		"suit-heart",
+		"suit-spade-fill",
+		"suit-spade",
+		"suitcase-fill",
+		"suitcase-lg-fill",
+		"suitcase-lg",
+		"suitcase",
+		"suitcase2-fill",
+		"suitcase2",
+		"sun-fill",
+		"sun",
+		"sunglasses",
+		"sunrise-fill",
+		"sunrise",
+		"sunset-fill",
+		"sunset",
+		"superscript",
+		"symmetry-horizontal",
+		"symmetry-vertical",
+		"table",
+		"tablet-fill",
+		"tablet-landscape-fill",
+		"tablet-landscape",
+		"tablet",
+		"tag-fill",
+		"tag",
+		"tags-fill",
+		"tags",
+		"taxi-front-fill",
+		"taxi-front",
+		"telegram",
+		"telephone-fill",
+		"telephone-forward-fill",
+		"telephone-forward",
+		"telephone-inbound-fill",
+		"telephone-inbound",
+		"telephone-minus-fill",
+		"telephone-minus",
+		"telephone-outbound-fill",
+		"telephone-outbound",
+		"telephone-plus-fill",
+		"telephone-plus",
+		"telephone-x-fill",
+		"telephone-x",
+		"telephone",
+		"tencent-qq",
+		"terminal-dash",
+		"terminal-fill",
+		"terminal-plus",
+		"terminal-split",
+		"terminal-x",
+		"terminal",
+		"text-center",
+		"text-indent-left",
+		"text-indent-right",
+		"text-left",
+		"text-paragraph",
+		"text-right",
+		"text-wrap",
+		"textarea-resize",
+		"textarea-t",
+		"textarea",
+		"thermometer-half",
+		"thermometer-high",
+		"thermometer-low",
+		"thermometer-snow",
+		"thermometer-sun",
+		"thermometer",
+		"threads-fill",
+		"threads",
+		"three-dots-vertical",
+		"three-dots",
+		"thunderbolt-fill",
+		"thunderbolt",
+		"ticket-detailed-fill",
+		"ticket-detailed",
+		"ticket-fill",
+		"ticket-perforated-fill",
+		"ticket-perforated",
+		"ticket",
+		"tiktok",
+		"toggle-off",
+		"toggle-on",
+		"toggle2-off",
+		"toggle2-on",
+		"toggles",
+		"toggles2",
+		"tools",
+		"tornado",
+		"train-freight-front-fill",
+		"train-freight-front",
+		"train-front-fill",
+		"train-front",
+		"train-lightrail-front-fill",
+		"train-lightrail-front",
+		"translate",
+		"transparency",
+		"trash-fill",
+		"trash",
+		"trash2-fill",
+		"trash2",
+		"trash3-fill",
+		"trash3",
+		"tree-fill",
+		"tree",
+		"trello",
+		"triangle-fill",
+		"triangle-half",
+		"triangle",
+		"trophy-fill",
+		"trophy",
+		"tropical-storm",
+		"truck-flatbed",
+		"truck-front-fill",
+		"truck-front",
+		"truck",
+		"tsunami",
+		"tux",
+		"tv-fill",
+		"tv",
+		"twitch",
+		"twitter-x",
+		"twitter",
+		"type-bold",
+		"type-h1",
+		"type-h2",
+		"type-h3",
+		"type-h4",
+		"type-h5",
+		"type-h6",
+		"type-italic",
+		"type-strikethrough",
+		"type-underline",
+		"type",
+		"typescript",
+		"ubuntu",
+		"ui-checks-grid",
+		"ui-checks",
+		"ui-radios-grid",
+		"ui-radios",
+		"umbrella-fill",
+		"umbrella",
+		"unindent",
+		"union",
+		"unity",
+		"universal-access-circle",
+		"universal-access",
+		"unlock-fill",
+		"unlock",
+		"unlock2-fill",
+		"unlock2",
+		"upc-scan",
+		"upc",
+		"upload",
+		"usb-c-fill",
+		"usb-c",
+		"usb-drive-fill",
+		"usb-drive",
+		"usb-fill",
+		"usb-micro-fill",
+		"usb-micro",
+		"usb-mini-fill",
+		"usb-mini",
+		"usb-plug-fill",
+		"usb-plug",
+		"usb-symbol",
+		"usb",
+		"valentine",
+		"valentine2",
+		"vector-pen",
+		"view-list",
+		"view-stacked",
+		"vignette",
+		"vimeo",
+		"vinyl-fill",
+		"vinyl",
+		"virus",
+		"virus2",
+		"voicemail",
+		"volume-down-fill",
+		"volume-down",
+		"volume-mute-fill",
+		"volume-mute",
+		"volume-off-fill",
+		"volume-off",
+		"volume-up-fill",
+		"volume-up",
+		"vr",
+		"wallet-fill",
+		"wallet",
+		"wallet2",
+		"watch",
+		"water",
+		"webcam-fill",
+		"webcam",
+		"wechat",
+		"whatsapp",
+		"wifi-1",
+		"wifi-2",
+		"wifi-off",
+		"wifi",
+		"wikipedia",
+		"wind",
+		"window-dash",
+		"window-desktop",
+		"window-dock",
+		"window-fullscreen",
+		"window-plus",
+		"window-sidebar",
+		"window-split",
+		"window-stack",
+		"window-x",
+		"window",
+		"windows",
+		"wordpress",
+		"wrench-adjustable-circle-fill",
+		"wrench-adjustable-circle",
+		"wrench-adjustable",
+		"wrench",
+		"x-circle-fill",
+		"x-circle",
+		"x-diamond-fill",
+		"x-diamond",
+		"x-lg",
+		"x-octagon-fill",
+		"x-octagon",
+		"x-square-fill",
+		"x-square",
+		"x",
+		"xbox",
+		"yelp",
+		"yin-yang",
+		"youtube",
+		"zoom-in",
+		"zoom-out",
 	}
 )
