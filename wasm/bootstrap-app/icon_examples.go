@@ -14,9 +14,39 @@ func IconExamples() mvc.View {
 	return bs.Container(
 		mvc.WithClass("my-3"),
 		Markdown("icon_examples.md"),
-		bs.HRule(),
+		bs.Heading(3, "Examples", mvc.WithClass("mt-5")),
+		bs.Heading(4, "Common Icons", mvc.WithClass("mt-4")), Example(Example_Icon_001),
+		bs.Heading(4, "Color", mvc.WithClass("mt-4")), Example(Example_Icon_002),
+		bs.Heading(4, "Buttons and Links", mvc.WithClass("mt-4")), Example(Example_Icon_003),
+		bs.Heading(3, "Icon Search"),
 		AllIcons(),
 	)
+}
+
+func Example_Icon_001() (mvc.View, string) {
+	classes := []string{"fs-1", "me-3"}
+	return bs.Container(
+		bs.Icon("alarm", mvc.WithClass(classes...)),
+		bs.Icon("award", mvc.WithClass(classes...)),
+		bs.Icon("bell", mvc.WithClass(classes...)),
+		bs.Icon("chat-dots", mvc.WithClass(classes...)),
+		bs.Icon("cloud", mvc.WithClass("fs-1")),
+	), sourcecode()
+}
+
+func Example_Icon_002() (mvc.View, string) {
+	classes := []string{"fs-1", "me-3"}
+	return bs.Container(
+		bs.Icon("heart-fill", bs.WithColor(bs.Danger), mvc.WithClass(classes...)),
+		bs.Icon("sun-fill", bs.WithColor(bs.Warning), mvc.WithClass(classes...)),
+		bs.Icon("moon-stars", bs.WithColor(bs.Primary), mvc.WithClass(classes...)),
+		bs.Icon("toggle2-on", bs.WithColor(bs.Success), mvc.WithClass(classes...)),
+		bs.Icon("wifi", bs.WithColor(bs.Info), mvc.WithClass(classes...)),
+	), sourcecode()
+}
+
+func Example_Icon_003() (mvc.View, string) {
+	return bs.Container(), sourcecode()
 }
 
 func AllIcons() mvc.View {
@@ -24,8 +54,13 @@ func AllIcons() mvc.View {
 	iconRow := bs.Row(Icons()...)
 
 	// Return the container with search and icon row
-	return bs.Container(
-		bs.SearchInput("q", bs.WithPlaceholder("Search for an icon")),
+	return bs.Container(bs.WithColor(bs.Light), bs.WithBorder(), mvc.WithClass("p-3"),
+		bs.Row(
+			bs.Col8(), bs.Col(
+				mvc.WithClass("m-1"),
+				bs.SearchInput("q", bs.WithPlaceholder("Search for an icon"), mvc.WithClass("rounded-pill")),
+			),
+		),
 		iconRow,
 	).AddEventListener("input", func(e dom.Event) {
 		view := mvc.ViewFromEvent(e)
@@ -59,14 +94,18 @@ func Icons(q ...string) []any {
 		if !matches(name, q) {
 			continue
 		}
-		iconViews = append(iconViews, bs.Col(
-			bs.Container(bs.WithFlex(bs.Middle), mvc.WithClass("m-3", "p-2", "text-center"), bs.WithBorder(),
-				bs.Icon(name, mvc.WithClass("fs-1")),
-				bs.Smaller(name, mvc.WithClass("text-nowrap", "text-center")),
-			),
-		))
+		iconViews = append(iconViews, IconCol(name))
 	}
 	return iconViews
+}
+
+func IconCol(name string) mvc.View {
+	return bs.Col(
+		bs.Container(bs.WithFlex(bs.Middle), mvc.WithClass("m-1", "p-1", "text-center"), bs.WithBorder(), bs.WithColor(bs.White),
+			bs.Icon(name, mvc.WithClass("fs-1")),
+			bs.Smaller(name, mvc.WithClass("text-nowrap", "text-center")),
+		),
+	)
 }
 
 var (
