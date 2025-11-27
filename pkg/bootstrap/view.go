@@ -1,6 +1,10 @@
 package bootstrap
 
-import mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
+import (
+	"fmt"
+
+	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
+)
 
 // The view names for Bootstrap components
 const (
@@ -13,6 +17,7 @@ const (
 	ViewCard           = "mvc-bs-card"
 	ViewCardGroup      = "mvc-bs-cardgroup"
 	ViewCarousel       = "mvc-bs-carousel"
+	ViewCarouselItem   = "mvc-bs-carouselitem"
 	ViewCheckboxGroup  = "mvc-bs-checkboxgroup"
 	ViewCodeBlock      = "mvc-bs-codeblock"
 	ViewContainer      = "mvc-bs-container"
@@ -57,6 +62,8 @@ func setView(self mvc.View, child mvc.View) {
 	switch list := self.(type) {
 	case *carousel:
 		list.View = child
+	case *carouselitem:
+		list.View = child
 	case *list:
 		list.View = child
 	case *deflist:
@@ -65,5 +72,7 @@ func setView(self mvc.View, child mvc.View) {
 		list.View = child
 	case *img:
 		list.View = child
+	default:
+		panic(fmt.Sprintf("setView: unsupported view type %T", self))
 	}
 }

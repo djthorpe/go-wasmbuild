@@ -13,6 +13,10 @@ type carousel struct {
 	mvc.View
 }
 
+type carouselitem struct {
+	mvc.View
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // GLOBALS
 
@@ -20,48 +24,32 @@ func init() {
 	mvc.RegisterView(ViewCarousel, func(element dom.Element) mvc.View {
 		return mvc.NewViewWithElement(new(carousel), element, setView)
 	})
+	mvc.RegisterView(ViewCarouselItem, func(element dom.Element) mvc.View {
+		return mvc.NewViewWithElement(new(carouselitem), element, setView)
+	})
 }
 
 const (
 	templateCarousel = `
 		<div class="carousel slide">
-			<div class="carousel-indicators">
-				<button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
-				<button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="1" aria-label="Slide 2"></button>
-				<button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="2" aria-label="Slide 3"></button>
-			</div>
-			<div class="carousel-inner">
-				<div class="carousel-item active">
-				<img src="..." class="d-block w-100" alt="...">
-				<div class="carousel-caption d-none d-md-block">
-					<h5>First slide label</h5>
-					<p>Some representative placeholder content for the first slide.</p>
-				</div>
-				</div>
-				<div class="carousel-item">
-				<img src="..." class="d-block w-100" alt="...">
-				<div class="carousel-caption d-none d-md-block">
-					<h5>Second slide label</h5>
-					<p>Some representative placeholder content for the second slide.</p>
-				</div>
-				</div>
-				<div class="carousel-item">
-				<img src="..." class="d-block w-100" alt="...">
-				<div class="carousel-caption d-none d-md-block">
-					<h5>Third slide label</h5>
-					<p>Some representative placeholder content for the third slide.</p>
-				</div>
-				</div>
-			</div>
-			<button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide="prev">
+			<div class="carousel-inner" data-slot="body"></div>
+			<button class="carousel-control-prev" type="button" data-slot="prev" data-bs-slide="prev">
 				<span class="carousel-control-prev-icon" aria-hidden="true"></span>
 				<span class="visually-hidden">Previous</span>
 			</button>
-			<button class="carousel-control-next" type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide="next">
+			<button class="carousel-control-next" type="button" data-slot="next" data-bs-slide="next">
 				<span class="carousel-control-next-icon" aria-hidden="true"></span>
 				<span class="visually-hidden">Next</span>
 			</button>
 		</div>
+	`
+	templateCarouselItem = `
+		<div class="carousel-item" data-slot="body">
+			<slot name="label"></slot>
+		</div>
+	`
+	templateCarouselItemLabel = `
+		<div class="carousel-caption d-none d-md-block" data-slot="body"></div>
 	`
 )
 
@@ -69,5 +57,44 @@ const (
 // LIFECYCLE
 
 func Carousel(id string, args ...any) *carousel {
-	return mvc.NewView(new(carousel), ViewCarousel, templateCarousel, setView, mvc.WithAttr("id", id), args).(*carousel)
+	// Create the view
+	view := mvc.NewView(new(carousel), ViewCarousel, templateCarousel, setView, mvc.WithAttr("id", id), args).(*carousel)
+
+	// Set prev/next targets
+	view.Slot("prev").SetAttribute("data-bs-target", "#"+id)
+	view.Slot("next").SetAttribute("data-bs-target", "#"+id)
+
+	// Return self
+	return view.Self().(*carousel)
+}
+
+func CarouselItem(args ...any) *carouselitem {
+	return mvc.NewView(new(carouselitem), ViewCarouselItem, templateCarouselItem, setView, args).(*carouselitem)
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS
+
+func (carousel *carousel) Content(args ...any) mvc.View {
+	// Convert strings to CarouselItems, make the first one active
+	for i, arg := range args {
+		switch arg := arg.(type) {
+		case string:
+			args[i] = CarouselItem(Image(arg))
+		}
+	}
+
+	// Always make the first item active
+	for _, arg := range args {
+		if view, ok := arg.(*carouselitem); ok {
+			view.Root().ClassList().Add("active")
+			break
+		}
+	}
+
+	return carousel.View.Content(args...)
+}
+
+func (carouselitem *carouselitem) Label(args ...any) mvc.View {
+	return carouselitem.ReplaceSlot("label", mvc.HTML(templateCarouselItemLabel))
 }
