@@ -2,10 +2,8 @@ package bootstrap
 
 import (
 	// Packages
+	dom "github.com/djthorpe/go-wasmbuild"
 	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
-
-	// Namespace imports
-	. "github.com/djthorpe/go-wasmbuild"
 )
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -19,30 +17,22 @@ type img struct {
 // GLOBALS
 
 func init() {
-	mvc.RegisterView(ViewImage, newImgFromElement)
+	mvc.RegisterView(ViewImage, func(element dom.Element) mvc.View {
+		return mvc.NewViewWithElement(new(img), element, setView)
+	})
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
 func Image(href string, args ...any) *img {
-	// Return the img
-	return mvc.NewView(
-		new(img), ViewImage, "IMG",
-		mvc.WithAttr("src", href), mvc.WithClass("img-fluid"), args,
-	).(*img)
-}
-
-func newImgFromElement(element Element) mvc.View {
-	if element.TagName() != "IMG" {
-		return nil
-	}
-	return mvc.NewViewWithElement(new(img), element)
+	return mvc.NewView(new(img), ViewImage, "IMG", setView, mvc.WithAttr("src", href), mvc.WithClass("img-fluid"), args).(*img)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
 
-func (img *img) SetView(view mvc.View) {
-	img.View = view
+func (img *img) Label(args ...any) mvc.View {
+	// TODO
+	return img
 }

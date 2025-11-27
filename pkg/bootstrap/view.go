@@ -1,5 +1,7 @@
 package bootstrap
 
+import mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
+
 // The view names for Bootstrap components
 const (
 	ViewAccordion      = "mvc-bs-accordion"
@@ -10,6 +12,7 @@ const (
 	ViewButtonToolbar  = "mvc-bs-buttontoolbar"
 	ViewCard           = "mvc-bs-card"
 	ViewCardGroup      = "mvc-bs-cardgroup"
+	ViewCarousel       = "mvc-bs-carousel"
 	ViewCheckboxGroup  = "mvc-bs-checkboxgroup"
 	ViewCodeBlock      = "mvc-bs-codeblock"
 	ViewContainer      = "mvc-bs-container"
@@ -26,6 +29,7 @@ const (
 	ViewListGroup      = "mvc-bs-listgroup"
 	ViewMarkdown       = "mvc-bs-markdown"
 	ViewModal          = "mvc-bs-modal"
+	ViewMedia          = "mvc-bs-media"
 	ViewNavBar         = "mvc-bs-navbar"
 	ViewNavDropdown    = "mvc-bs-navdropdown"
 	ViewNavItem        = "mvc-bs-navitem"
@@ -47,3 +51,19 @@ const (
 	// The prefix class for outline buttons
 	viewOutlineButtonClassPrefix = "btn-outline"
 )
+
+// Set the view element's child view
+func setView(self mvc.View, child mvc.View) {
+	switch list := self.(type) {
+	case *carousel:
+		list.View = child
+	case *list:
+		list.View = child
+	case *deflist:
+		list.View = child
+	case *badge:
+		list.View = child
+	case *img:
+		list.View = child
+	}
+}

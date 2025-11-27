@@ -31,6 +31,9 @@ type OptSet interface {
 
 	// Return the classes of the view
 	Classes() []string
+
+	// Return an attribute value
+	Attr(key string) string
 }
 
 // Ensure that opt implements OptSet interface
@@ -128,6 +131,14 @@ func (o *opt) Name() string {
 // Return array of non-empty class names
 func (o *opt) Classes() []string {
 	return slices.Compact(o.class)
+}
+
+// Return an attribute value
+func (o *opt) Attr(key string) string {
+	if o.attr == nil {
+		return ""
+	}
+	return o.attr[key]
 }
 
 /////////////////////////////////////////////////////////////////////////////////
