@@ -2,10 +2,8 @@ package bootstrap
 
 import (
 	// Packages
+	dom "github.com/djthorpe/go-wasmbuild"
 	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
-
-	// Namespace imports
-	. "github.com/djthorpe/go-wasmbuild"
 )
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -23,65 +21,42 @@ type deflist struct {
 // GLOBALS
 
 func init() {
-	mvc.RegisterView(ViewList, newListFromElement)
-	mvc.RegisterView(ViewListGroup, newListGroupFromElement)
-	mvc.RegisterView(ViewDefinitionList, newDefinitionListFromElement)
+	mvc.RegisterView(ViewList, func(element dom.Element) mvc.View {
+		return mvc.NewViewWithElement(new(list), element, setView)
+	})
+	mvc.RegisterView(ViewListGroup, func(element dom.Element) mvc.View {
+		return mvc.NewViewWithElement(new(list), element, setView)
+	})
+	mvc.RegisterView(ViewDefinitionList, func(element dom.Element) mvc.View {
+		return mvc.NewViewWithElement(new(deflist), element, setView)
+	})
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
 func List(args ...any) mvc.View {
-	return mvc.NewView(new(list), ViewList, "OL", args...)
-}
-
-func ListGroup(args ...any) mvc.View {
-	return mvc.NewView(new(list), ViewListGroup, "UL", mvc.WithClass("list-group"), args)
-}
-
-func DefinitionList(args ...any) mvc.View {
-	return mvc.NewView(new(deflist), ViewDefinitionList, "DL", mvc.WithClass("row"), args)
+	return mvc.NewView(new(list), ViewList, "OL", setView, args)
 }
 
 func BulletList(args ...any) mvc.View {
-	return mvc.NewView(new(list), ViewList, "UL", args...)
+	return mvc.NewView(new(list), ViewList, "UL", setView, args)
 }
 
 func UnstyledList(args ...any) mvc.View {
-	return mvc.NewView(new(list), ViewList, "UL", mvc.WithClass("list-unstyled"), args)
+	return mvc.NewView(new(list), ViewList, "UL", setView, mvc.WithClass("list-unstyled"), args)
 }
 
-func newListFromElement(element Element) mvc.View {
-	if element.TagName() != "UL" {
-		return nil
-	}
-	return mvc.NewViewWithElement(new(list), element)
+func ListGroup(args ...any) mvc.View {
+	return mvc.NewView(new(list), ViewListGroup, "UL", setView, mvc.WithClass("list-group"), args)
 }
 
-func newListGroupFromElement(element Element) mvc.View {
-	if element.TagName() != "UL" {
-		return nil
-	}
-	return mvc.NewViewWithElement(new(list), element)
-}
-
-func newDefinitionListFromElement(element Element) mvc.View {
-	if element.TagName() != "DL" {
-		return nil
-	}
-	return mvc.NewViewWithElement(new(deflist), element)
+func DefinitionList(args ...any) mvc.View {
+	return mvc.NewView(new(deflist), ViewDefinitionList, "DL", setView, mvc.WithClass("row"), args)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
-
-func (list *list) SetView(view mvc.View) {
-	list.View = view
-}
-
-func (deflist *deflist) SetView(view mvc.View) {
-	deflist.View = view
-}
 
 func (list *list) Content(args ...any) mvc.View {
 	nodes := make([]any, 0, len(args))
@@ -100,7 +75,7 @@ func (deflist *deflist) Content(args ...any) mvc.View {
 	nodes := make([]any, 0, len(args))
 	for _, child := range args {
 		switch child := child.(type) {
-		case *inputoption:
+		case *option:
 			nodes = append(nodes, mvc.HTML("DT", mvc.WithClass("col-3"), mvc.WithInnerText(child.Name)))
 			nodes = append(nodes, mvc.HTML("DD", mvc.WithClass("col-9"), mvc.WithInnerText(child.Value)))
 		default:

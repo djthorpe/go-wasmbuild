@@ -200,7 +200,7 @@ func positionPrefixForView(name string, position Position) string {
 		} else {
 			return "fixed-"
 		}
-	case ViewText, ViewHeading:
+	case ViewText, ViewHeading, ViewGrid:
 		return "text-"
 	default:
 		return ""
@@ -223,7 +223,7 @@ func allPositionClassNamesForView(name string) []string {
 			Top.className("sticky-"),
 			Bottom.className("sticky-"),
 		}
-	case ViewText, ViewHeading:
+	case ViewText, ViewHeading, ViewGrid:
 		return []string{
 			Start.className("text-"),
 			Center.className("text-"),

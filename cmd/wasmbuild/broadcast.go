@@ -8,6 +8,7 @@ import (
 ///////////////////////////////////////////////////////////////////////////////
 // TYPES
 
+// ServeBroadcaster manages broadcasting messages to SSE clients
 type ServeBroadcaster struct {
 	mu      sync.Mutex
 	clients map[chan ServeMessage]bool
