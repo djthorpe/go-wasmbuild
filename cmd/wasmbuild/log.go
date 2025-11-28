@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"os"
@@ -18,8 +17,9 @@ import (
 type Logger struct {
 	infoLogger  *log.Logger
 	errorLogger *log.Logger
-	verbose     bool
+	debugLogger *log.Logger
 	infoColor   *color.Color
+	debugColor  *color.Color
 	errorColor  *color.Color
 }
 
@@ -28,44 +28,40 @@ type Logger struct {
 
 // NewLogger creates a new logger instance
 func NewLogger(verbose bool) *Logger {
-	flags := 0
-
-	l := &Logger{
-		errorLogger: log.New(os.Stderr, "", flags),
-		verbose:     verbose,
+	flags := log.Lmsgprefix
+	logger := &Logger{
+		errorLogger: log.New(os.Stderr, "ERROR: ", flags),
+		infoLogger:  log.New(os.Stdout, "", flags),
 		infoColor:   color.New(color.Bold),
+		debugColor:  color.New(color.FgCyan),
 		errorColor:  color.New(color.FgRed),
 	}
-
 	if verbose {
-		l.infoLogger = log.New(os.Stderr, "", flags)
-	} else {
-		// Discard info logs when not verbose
-		l.infoLogger = log.New(io.Discard, "", 0)
+		logger.debugLogger = log.New(os.Stdout, "DEBUG: ", flags)
 	}
-
-	return l
+	return logger
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
 
-// Info logs informational messages (only when verbose)
-func (l *Logger) Info(v ...interface{}) {
-	if l.verbose {
-		l.infoColor.Fprint(os.Stderr, v...)
-		fmt.Fprintln(os.Stderr)
+// Debug logs debug messages (only when verbose)
+func (l *Logger) Debug(v ...interface{}) {
+	if l.debugLogger != nil {
+		l.debugColor.Fprint(os.Stdout, v...)
+		fmt.Fprintln(os.Stdout)
 	}
+}
+
+// Info logs informational messages (always shown)
+func (l *Logger) Info(v ...interface{}) {
+	l.infoColor.Fprint(os.Stdout, v...)
+	fmt.Fprintln(os.Stdout)
 }
 
 // Infof logs formatted informational messages (only when verbose)
 func (l *Logger) Infof(format string, v ...interface{}) {
-	if l.verbose {
-		l.infoColor.Fprintf(os.Stderr, format, v...)
-		if format[len(format)-1] != '\n' {
-			fmt.Fprintln(os.Stderr)
-		}
-	}
+	l.infoColor.Fprintf(os.Stdout, format, v...)
 }
 
 // Error logs error messages (always shown)
@@ -77,9 +73,6 @@ func (l *Logger) Error(v ...interface{}) {
 // Errorf logs formatted error messages (always shown)
 func (l *Logger) Errorf(format string, v ...interface{}) {
 	l.errorColor.Fprintf(os.Stderr, format, v...)
-	if format[len(format)-1] != '\n' {
-		fmt.Fprintln(os.Stderr)
-	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////
