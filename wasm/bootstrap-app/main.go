@@ -14,8 +14,18 @@ func main() {
 	// Run the application
 	mvc.New(
 		controller.Views()[0],
-		Text(),
+		router(),
 	).Run()
+}
+
+func router() mvc.View {
+	return mvc.Router(mvc.WithClass("container-fluid", "my-2")).
+		Page("#text", TextExamples()).
+		Page("#lists", ListExamples()).
+		Page("#badges", BadgeExamples()).
+		Page("#icons", IconExamples()).
+		Page("#media", MediaExamples()).
+		Page("#images", ImageExamples())
 }
 
 func navbar() mvc.View {
@@ -23,9 +33,9 @@ func navbar() mvc.View {
 		bs.WithPosition(bs.Sticky|bs.Top), bs.WithTheme(bs.Dark), bs.WithSize(bs.Medium),
 		bs.NavDropdown(
 			bs.NavItem("#text", "Text"),
-			bs.NavItem("#list", "Lists"),
-			bs.NavItem("#badge", "Badges"),
-			bs.NavItem("#icon", "Icons"),
+			bs.NavItem("#lists", "Lists"),
+			bs.NavItem("#badges", "Badges"),
+			bs.NavItem("#icons", "Icons"),
 		).Label("Typography"),
 		bs.NavDropdown(
 			bs.NavItem("#button", "Buttons"),
@@ -37,6 +47,10 @@ func navbar() mvc.View {
 		bs.NavDropdown(
 			bs.NavItem("#input", "Input"),
 		).Label("Forms & Controls"),
+		bs.NavDropdown(
+			bs.NavItem("#media", "Audio & Video"),
+			bs.NavItem("#images", "Images"),
+		).Label("Media"),
 		bs.NavDropdown(
 			bs.NavItem("#navbar", "Navbar"),
 			bs.NavItem("#nav", "Accordion"),
@@ -52,6 +66,6 @@ func navbar() mvc.View {
 		).Label("Data"),
 		bs.NavItem("https://github.com/djthorpe/go-wasmbuild", bs.Icon("github"), mvc.WithClass("ms-auto")),
 	).Label(
-		bs.Icon("bootstrap-fill"),
+		bs.Icon("bootstrap-fill"), bs.Smaller(Version(), mvc.WithClass("ms-2")),
 	)
 }

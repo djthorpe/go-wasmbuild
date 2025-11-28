@@ -6,7 +6,7 @@ import (
 	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
 )
 
-func Text() mvc.View {
+func TextExamples() mvc.View {
 	return bs.Container(
 		mvc.WithClass("my-3"),
 		Markdown("text_examples.md"),
