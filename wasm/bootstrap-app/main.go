@@ -66,6 +66,6 @@ func navbar() mvc.View {
 		).Label("Data"),
 		bs.NavItem("https://github.com/djthorpe/go-wasmbuild", bs.Icon("github"), mvc.WithClass("ms-auto")),
 	).Label(
-		bs.Icon("bootstrap-fill"),
+		bs.Icon("bootstrap-fill"), bs.Smaller(Version(), mvc.WithClass("ms-2")),
 	)
 }

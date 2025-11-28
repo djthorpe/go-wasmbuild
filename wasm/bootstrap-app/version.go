@@ -1,5 +1,7 @@
 package main
 
+import "runtime"
+
 ///////////////////////////////////////////////////////////////////////////////
 // GLOBALS
 
@@ -25,4 +27,8 @@ func Version() string {
 		return GitHash
 	}
 	return "dev"
+}
+
+func Compiler() string {
+	return runtime.Compiler + "/" + runtime.Version()
 }
