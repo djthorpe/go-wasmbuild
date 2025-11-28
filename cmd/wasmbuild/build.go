@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 	"text/template"
+	"unicode"
 
 	// Packages
 	"github.com/djthorpe/go-wasmbuild/etc"
@@ -46,6 +47,70 @@ type BuildContext struct {
 	WasmExecJS   *File `json:"wasm_exec_js,omitempty"`
 	WasmExecHTML *File `json:"wasm_exec_html,omitempty"`
 	FavIcon      *File `json:"favicon,omitempty"`
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// PRIVATE METHODS
+
+// formatSize formats a byte count as a human-readable string (bytes, KB, or MB)
+func formatSize(bytes int64) string {
+	const (
+		KB = 1024
+		MB = 1024 * KB
+	)
+	switch {
+	case bytes >= MB:
+		return fmt.Sprintf("%.2f MB", float64(bytes)/float64(MB))
+	case bytes >= KB:
+		return fmt.Sprintf("%.2f KB", float64(bytes)/float64(KB))
+	default:
+		return fmt.Sprintf("%d bytes", bytes)
+	}
+}
+
+// splitArgs splits a string into arguments, respecting quoted strings.
+// Similar to shell argument parsing.
+func splitArgs(s string) []string {
+	var args []string
+	var current strings.Builder
+	var inQuote rune
+	var escaped bool
+
+	for _, r := range s {
+		if escaped {
+			current.WriteRune(r)
+			escaped = false
+			continue
+		}
+		if r == '\\' {
+			escaped = true
+			continue
+		}
+		if inQuote != 0 {
+			if r == inQuote {
+				inQuote = 0
+			} else {
+				current.WriteRune(r)
+			}
+			continue
+		}
+		if r == '"' || r == '\'' {
+			inQuote = r
+			continue
+		}
+		if unicode.IsSpace(r) {
+			if current.Len() > 0 {
+				args = append(args, current.String())
+				current.Reset()
+			}
+			continue
+		}
+		current.WriteRune(r)
+	}
+	if current.Len() > 0 {
+		args = append(args, current.String())
+	}
+	return args
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -103,7 +168,7 @@ func (c Config) BuildContext(ctx *Context, path, output string, watch bool) (*Bu
 	context.GoRoot = goroot
 
 	// goargs
-	context.GoArgs = append([]string{"build"}, strings.Fields(ctx.GoFlags)...)
+	context.GoArgs = append([]string{"build"}, splitArgs(ctx.GoFlags)...)
 
 	// goenv
 	context.GoEnv = []string{"GOOS=js", "GOARCH=wasm"}
@@ -206,6 +271,9 @@ func (c *BuildCmd) Run(ctx *Context) error {
 		return err
 	}
 
+	// Track total size
+	var totalSize int64
+
 	// Copy files to output directory
 	for _, files := range []*File{
 		file,
@@ -217,7 +285,8 @@ func (c *BuildCmd) Run(ctx *Context) error {
 		if sz, err := files.WriteTo(buildContext.Output); err != nil {
 			return fmt.Errorf("failed to copy %s: %w", files.Path, err)
 		} else {
-			ctx.log.Info("cp ", files.Path, " ", buildContext.Output, " (", sz, " bytes)")
+			totalSize += sz
+			ctx.log.Info(files.Path, " (", formatSize(sz), ")")
 		}
 	}
 
@@ -245,7 +314,7 @@ func (c *BuildCmd) Run(ctx *Context) error {
 
 			destPath := filepath.Join(dest, relPath)
 			if info.Mode().IsDir() {
-				ctx.log.Info("mkdir ", destPath)
+				ctx.log.Info("mkdir ", filepath.Join(filepath.Base(dest), relPath))
 				if err := os.MkdirAll(destPath, 0755); err != nil {
 					return err
 				}
@@ -257,7 +326,8 @@ func (c *BuildCmd) Run(ctx *Context) error {
 			if sz, err := CopyFile(path, destPath); err != nil {
 				return err
 			} else {
-				ctx.log.Info("cp ", path, " ", filepath.Dir(destPath), " (", sz, " bytes)")
+				totalSize += sz
+				ctx.log.Info(filepath.Join(filepath.Base(dest), relPath), " (", formatSize(sz), ")")
 			}
 
 			// Return success
@@ -267,6 +337,9 @@ func (c *BuildCmd) Run(ctx *Context) error {
 			return fmt.Errorf("failed to copy asset %s: %w", asset, err)
 		}
 	}
+
+	// Print total size
+	ctx.log.Info("Total: ", formatSize(totalSize))
 
 	// Print out the destination to stdout
 	fmt.Println(buildContext.Output)
@@ -305,8 +378,8 @@ func (c *BuildContext) CompileExec(ctx *Context) (*File, error) {
 		}
 	}
 
-	// Log the compile
-	ctx.log.Info(cmd.String())
+	// Log the compile command (verbose only)
+	ctx.log.Debug(cmd.String())
 
 	// Capture stderr for error messages
 	var stderrBuf bytes.Buffer
