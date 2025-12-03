@@ -3,8 +3,14 @@ package bootstrap
 import (
 	"fmt"
 
+	// Packages
 	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
 )
+
+type DataView interface {
+	// Return the value associated with the view
+	Value() any
+}
 
 // The view names for Bootstrap components
 const (

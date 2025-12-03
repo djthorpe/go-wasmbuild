@@ -36,7 +36,7 @@ type View interface {
 	// Replace a named slot with a node amnd apply options to the slot
 	ReplaceSlot(string, any, ...Opt) View
 
-	// Replace the children of a named slot with views, elememts or text and apply options to the slot
+	// Replace the children of a named slot with views, elements or text and apply options to the slot
 	ReplaceSlotChildren(name string, args ...any) View
 
 	// Apply class and attribute options to the root element
@@ -292,14 +292,21 @@ func (v *view) ReplaceSlotChildren(name string, args ...any) View {
 
 	// Apply options and content to the view
 	opts, children := gatherOpts(args...)
+
+	// Apply options to the slot element
 	if len(opts) > 0 {
-		v.Apply(opts...)
+		if err := applyOpts(slot, opts...); err != nil {
+			panic(err)
+		}
 	}
 
+	// Insert content into the slot
 	slot.SetInnerHTML("")
 	for _, child := range children {
 		slot.AppendChild(NodeFromAny(child))
 	}
+
+	// Return self
 	return v.Self()
 }
 

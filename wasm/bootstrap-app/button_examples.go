@@ -2,6 +2,8 @@ package main
 
 import (
 	// Packages
+	"fmt"
+
 	dom "github.com/djthorpe/go-wasmbuild"
 	bs "github.com/djthorpe/go-wasmbuild/pkg/bootstrap"
 	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
@@ -71,9 +73,15 @@ func Example_Buttons_004() (mvc.View, string) {
 			bs.Button("Inbox", mvc.WithClass("m-3")).Label(response),
 		),
 		bs.Col(
-			bs.RangeInput("value").Label("Change Unread Count"),
+			bs.RangeInput("value", bs.WithMinMax(0, 10)).Label("Change Unread Count"),
 		),
-	), sourcecode()
+	).AddEventListener("input", func(e dom.Event) {
+		input := mvc.ViewFromEvent(e, bs.ViewInput)
+		if input != nil {
+			fmt.Println("Input value:", input.(bs.DataView).Value())
+		}
+
+	}), sourcecode()
 }
 
 func Example_Buttons_005() (mvc.View, string) {

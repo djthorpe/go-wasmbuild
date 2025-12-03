@@ -1,6 +1,8 @@
 package bootstrap
 
 import (
+	"fmt"
+
 	dom "github.com/djthorpe/go-wasmbuild"
 	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
 )
@@ -20,8 +22,8 @@ var _ mvc.View = (*input)(nil)
 const (
 	templateInput = `
 		<span>		
-			<slot name="label"></slot>
-			<input type="text" class="form-control"></input>
+			<script data-slot="label"></script>
+			<input type="text" class="form-control" data-slot="input"></input>
 		</span>
 	`
 	templateLabel = `<label class="form-label"></label>`
@@ -37,9 +39,7 @@ func init() {
 // LIFECYCLE
 
 func Input(name string, args ...any) *input {
-	view := mvc.NewView(new(input), ViewInput, templateInput, setView)
-	// TODO: Set attributes on input element
-	return view.(*input)
+	return mvc.NewView(new(input), ViewInput, templateInput, setView).ReplaceSlotChildren("input", args...).(*input)
 }
 
 func SearchInput(name string, args ...any) *input {
@@ -64,12 +64,20 @@ func (input *input) Label(children ...any) mvc.View {
 	*/
 }
 
+func (input *input) Value() any {
+	elem := input.Slot("input")
+	if elem == nil || elem.TagName() != "INPUT" {
+		panic("Value: input slot is not INPUT" + fmt.Sprintf("%v", input))
+	}
+	return elem.Value()
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // OPTIONS
 
 func WithPlaceholder(placeholder string) mvc.Opt {
 	return func(o mvc.OptSet) error {
-		if o.Name() != "INPUT" && o.Name() != "TEXTAREA" && o.Name() != ViewInput {
+		if o.Name() != "INPUT" {
 			return dom.ErrInternalAppError.Withf("WithPlaceholder: not supported for view type %q", o.Name())
 		}
 		if err := mvc.WithAttr("placeholder", placeholder)(o); err != nil {
@@ -79,5 +87,20 @@ func WithPlaceholder(placeholder string) mvc.Opt {
 			return err
 		}
 		return nil
+	}
+}
+
+func WithMinMax(min, max int) mvc.Opt {
+	return func(o mvc.OptSet) error {
+		if o.Name() != "INPUT" {
+			return dom.ErrInternalAppError.Withf("WithMinMax: not supported for view type %q", o.Name())
+		}
+		if min > max {
+			return dom.ErrBadParameter.Withf("WithMinMax: min (%d) must be less than or equal to max (%d)", min, max)
+		}
+		if err := mvc.WithAttr("min", fmt.Sprintf("%d", min))(o); err != nil {
+			return err
+		}
+		return mvc.WithAttr("max", fmt.Sprintf("%d", max))(o)
 	}
 }

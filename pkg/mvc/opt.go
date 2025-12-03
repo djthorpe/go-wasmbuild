@@ -142,7 +142,7 @@ func (o *opt) Attr(key string) string {
 }
 
 /////////////////////////////////////////////////////////////////////////////////
-// PUBLIC OPTIONS
+// OPTIONS
 
 func WithClass(classes ...string) Opt {
 	return func(o OptSet) error {
