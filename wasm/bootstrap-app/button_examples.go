@@ -87,7 +87,7 @@ func Example_Buttons_006() (mvc.View, string) {
 			mvc.WithClass("m-1"),
 			bs.Button(bs.Icon("align-start", mvc.WithClass("me-1")), "Start"),
 			bs.Button(bs.Icon("align-center", mvc.WithClass("me-1")), "Center"),
-			bs.Button(bs.Icon("align-end", mvc.WithClass("me-1")), "End"),
+			bs.Button("End", bs.Icon("align-end", mvc.WithClass("ms-1"))),
 		),
 	).AddEventListener("click", func(event dom.Event) {
 		button := mvc.ViewFromEvent(event, bs.ViewButton)
