@@ -78,6 +78,8 @@ func setView(self mvc.View, child mvc.View) {
 		list.View = child
 	case *img:
 		list.View = child
+	case *input:
+		list.View = child
 	default:
 		panic(fmt.Sprintf("setView: unsupported view type %T", self))
 	}

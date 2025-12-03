@@ -66,8 +66,13 @@ func Example_Buttons_003() (mvc.View, string) {
 
 func Example_Buttons_004() (mvc.View, string) {
 	response := mvc.Text("50")
-	return bs.Container(
-		bs.Button("Inbox", mvc.WithClass("m-3")).Label(response),
+	return bs.Row(
+		bs.Col(
+			bs.Button("Inbox", mvc.WithClass("m-3")).Label(response),
+		),
+		bs.Col(
+			bs.RangeInput("value").Label("Change Unread Count"),
+		),
 	), sourcecode()
 }
 
