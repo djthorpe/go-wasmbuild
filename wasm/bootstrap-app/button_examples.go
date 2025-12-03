@@ -13,27 +13,34 @@ func ButtonExamples() mvc.View {
 	return bs.Container(
 		mvc.WithClass("my-3"),
 		Markdown("button_examples.md"),
-		bs.HRule(),
-		bs.Heading(4, "Buttons with Color"), Example(Example_Buttons_001),
-		bs.Heading(4, "Outline Buttons"), Example(Example_Buttons_002),
+		bs.Container(
+			bs.WithBorder(), bs.WithColor(bs.Light), mvc.WithClass("my-3"), mvc.WithClass("p-3"),
+			bs.Heading(4, "Buttons with Color"), Example(Example_Buttons_001),
+		),
+		bs.Container(
+			bs.WithBorder(), bs.WithColor(bs.Light), mvc.WithClass("my-3"), mvc.WithClass("p-3"),
+			bs.Heading(4, "Outline Buttons"), Example(Example_Buttons_002),
+		),
 		bs.Heading(4, "Close Button"), Example(Example_Buttons_003),
 		bs.Heading(4, "Button with Indicator"), Example(Example_Buttons_004),
 		bs.Heading(4, "Button Sizes"), Example(Example_Buttons_005),
 		bs.Heading(4, "Button Group"), Example(Example_Buttons_006),
+		bs.Heading(4, "Radio Button Group"), Example(Example_Buttons_007),
+		bs.Heading(4, "Checkbox Button Group"), Example(Example_Buttons_008),
 	)
 }
 
 func Example_Buttons_001() (mvc.View, string) {
-	response := bs.Para("Click a button")
+	response := bs.Strong("Click a button", mvc.WithClass("m-3"))
 	return bs.Container(
-		response,
 		bs.Button("Default Button", mvc.WithClass("m-1")),
 		bs.Button("Secondary Button", bs.WithColor(bs.Secondary), mvc.WithClass("m-1")),
 		bs.Button("Danger Button", bs.WithColor(bs.Danger), mvc.WithClass("m-1")),
+		response,
 	).AddEventListener("click", func(event dom.Event) {
 		button := mvc.ViewFromEvent(event)
 		if button.Name() == bs.ViewButton {
-			response.Content("Button clicked: ", button.Root().TextContent())
+			response.Content("Clicked: ", button.Root().TextContent())
 		}
 	}), sourcecode()
 }
@@ -93,6 +100,42 @@ func Example_Buttons_005() (mvc.View, string) {
 }
 
 func Example_Buttons_006() (mvc.View, string) {
+	response := bs.Para("Click a button")
+	return bs.Container(
+		response,
+		bs.ButtonGroup(
+			mvc.WithClass("m-1"),
+			bs.Button(bs.Icon("align-start", mvc.WithClass("me-1")), "Start"),
+			bs.Button(bs.Icon("align-center", mvc.WithClass("me-1")), "Center"),
+			bs.Button("End", bs.Icon("align-end", mvc.WithClass("ms-1"))),
+		),
+	).AddEventListener("click", func(event dom.Event) {
+		button := mvc.ViewFromEvent(event, bs.ViewButton)
+		if button != nil {
+			response.Content("Button clicked: ", button.Root().TextContent())
+		}
+	}), sourcecode()
+}
+
+func Example_Buttons_007() (mvc.View, string) {
+	response := bs.Para("Click a button")
+	return bs.Container(
+		response,
+		bs.ButtonGroup(
+			mvc.WithClass("m-1"),
+			bs.Button(bs.Icon("align-start", mvc.WithClass("me-1")), "Start"),
+			bs.Button(bs.Icon("align-center", mvc.WithClass("me-1")), "Center"),
+			bs.Button("End", bs.Icon("align-end", mvc.WithClass("ms-1"))),
+		),
+	).AddEventListener("click", func(event dom.Event) {
+		button := mvc.ViewFromEvent(event, bs.ViewButton)
+		if button != nil {
+			response.Content("Button clicked: ", button.Root().TextContent())
+		}
+	}), sourcecode()
+}
+
+func Example_Buttons_008() (mvc.View, string) {
 	response := bs.Para("Click a button")
 	return bs.Container(
 		response,
