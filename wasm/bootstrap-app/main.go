@@ -24,6 +24,7 @@ func router() mvc.View {
 		Page("#lists", ListExamples()).
 		Page("#badges", BadgeExamples()).
 		Page("#icons", IconExamples()).
+		Page("#buttons", ButtonExamples()).
 		Page("#media", MediaExamples()).
 		Page("#images", ImageExamples())
 }
@@ -38,7 +39,7 @@ func navbar() mvc.View {
 			bs.NavItem("#icons", "Icons"),
 		).Label("Typography"),
 		bs.NavDropdown(
-			bs.NavItem("#button", "Buttons"),
+			bs.NavItem("#buttons", "Buttons"),
 			bs.NavItem("#modal", "Modal"),
 			bs.NavItem("#alert", "Alerts"),
 			bs.NavDivider(),

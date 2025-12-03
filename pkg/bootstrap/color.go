@@ -134,7 +134,7 @@ func colorPrefixForView(name string) string {
 		return "text-bg"
 	case ViewLink:
 		return "link"
-	case ViewButton:
+	case ViewButton, ViewButtonGroup:
 		return "btn"
 	case ViewIcon:
 		return "text"

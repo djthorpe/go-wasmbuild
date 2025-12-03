@@ -60,6 +60,12 @@ const (
 // Set the view element's child view
 func setView(self mvc.View, child mvc.View) {
 	switch list := self.(type) {
+	case *button:
+		list.View = child
+	case *buttongroup:
+		list.View = child
+	case *buttontoolbar:
+		list.View = child
 	case *carousel:
 		list.View = child
 	case *carouselitem:

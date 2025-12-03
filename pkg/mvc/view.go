@@ -3,6 +3,7 @@ package mvc
 import (
 	"fmt"
 	"os"
+	"slices"
 	"strings"
 
 	// Packages
@@ -324,7 +325,9 @@ func (v *view) RemoveEventListener(event string) View {
 // UTILITY METHODS
 
 // ViewFromEvent returns a View from an Event, or nil if the type is unsupported
-func ViewFromEvent(e dom.Event) View {
+// or not found. If one or more view names are provided, only views with those names
+// are returned.
+func ViewFromEvent(e dom.Event, views ...string) View {
 	if e == nil {
 		return nil
 	}
@@ -336,7 +339,9 @@ func ViewFromEvent(e dom.Event) View {
 				fmt.Fprintf(os.Stderr, "ViewFromEvent: %v\n", err)
 				return nil
 			} else if view != nil {
-				return view
+				if len(views) == 0 || slices.Contains(views, view.Name()) {
+					return view
+				}
 			}
 			element = element.ParentElement()
 			if element == nil {
