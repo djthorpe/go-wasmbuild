@@ -44,6 +44,13 @@ var (
 		Large,
 		XLarge,
 	}
+	allOffcanvasSizes = []Size{
+		Small,
+		Medium,
+		Large,
+		XLarge,
+		XXLarge,
+	}
 	allTableSizes = []Size{
 		Small,
 	}
@@ -124,6 +131,8 @@ func sizePrefixForView(name string) string {
 		return "navbar-expand"
 	case ViewModal:
 		return "modal"
+	case ViewOffcanvas:
+		return "offcanvas"
 	default:
 		return ""
 	}
@@ -141,6 +150,9 @@ func allSizesForView(name string) []Size {
 	}
 	if name == ViewModal {
 		return allModalSizes
+	}
+	if name == ViewOffcanvas {
+		return append(allOffcanvasSizes, "")
 	}
 	return allSizes
 }

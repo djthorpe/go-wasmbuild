@@ -16,6 +16,7 @@ type DataView interface {
 const (
 	ViewAccordion      = "mvc-bs-accordion"
 	ViewAccordionItem  = "mvc-bs-accordionitem"
+	ViewAlert          = "mvc-bs-alert"
 	ViewBadge          = "mvc-bs-badge"
 	ViewButton         = "mvc-bs-button"
 	ViewButtonGroup    = "mvc-bs-buttongroup"
@@ -66,6 +67,8 @@ const (
 // Set the view element's child view
 func setView(self mvc.View, child mvc.View) {
 	switch list := self.(type) {
+	case *alert:
+		list.View = child
 	case *button:
 		list.View = child
 	case *buttongroup:

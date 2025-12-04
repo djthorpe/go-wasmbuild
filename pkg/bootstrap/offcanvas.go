@@ -44,6 +44,11 @@ func Offcanvas(id string, args ...any) *offcanvas {
 	return mvc.NewView(new(offcanvas), ViewOffcanvas, templateOffcanvas, setView, mvc.WithAttr("id", id), mvc.WithAttr("aria-labelledby", id+"-label"), args).(*offcanvas)
 }
 
+func StickyOffcanvas(id string, args ...any) *offcanvas {
+	// When modal is set to sticky. modal will not close when clicking outside of it.
+	return Offcanvas(id, mvc.WithAttr("data-bs-backdrop", "static"), mvc.WithAttr("data-bs-keyboard", "false"), args)
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
 

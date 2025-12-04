@@ -126,6 +126,8 @@ func allColorClassNames(prefix string) []string {
 
 func colorPrefixForView(name string) string {
 	switch name {
+	case ViewAlert:
+		return "alert"
 	case ViewBadge:
 		return "text-bg"
 	case ViewCard:
