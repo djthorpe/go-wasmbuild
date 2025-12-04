@@ -4,7 +4,7 @@ GO=$(shell which go)
 BUILDDIR=build
 WASM=$(wildcard wasm/*)
 GOROOT=$(shell go env GOROOT)
-CC ?= go
+GOCC ?= go
 
 # Build flags
 BUILD_MODULE = $(shell cat go.mod | head -1 | cut -d ' ' -f 2)
@@ -16,8 +16,8 @@ all: wasmbuild $(WASM)
 # Rules for building
 .PHONY: $(WASM)
 $(WASM): wasmbuild
-	@echo 'Building $@ with ${CC}'
-	@$(BUILDDIR)/wasmbuild build --go=${CC} --go-flags='-ldflags "$(LD_FLAGS)"' -o ${BUILDDIR}/$(shell basename $@).wasm ./$@
+	@echo 'Building $@ with ${GOCC}'
+	@$(BUILDDIR)/wasmbuild build --go=${GOCC} --go-flags='-ldflags "$(LD_FLAGS)"' -o ${BUILDDIR}/$(shell basename $@).wasm ./$@
 
 .PHONY: wasmbuild
 wasmbuild: mkdir
