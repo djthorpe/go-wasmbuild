@@ -4,10 +4,9 @@ import (
 	"fmt"
 
 	// Packages
+	dom "github.com/djthorpe/go-wasmbuild"
+	js "github.com/djthorpe/go-wasmbuild/pkg/js"
 	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
-
-	// Namespace imports
-	. "github.com/djthorpe/go-wasmbuild"
 )
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -15,6 +14,7 @@ import (
 
 type modal struct {
 	mvc.View
+	instance js.Value
 }
 
 var _ mvc.View = (*modal)(nil)
@@ -37,14 +37,16 @@ const (
 )
 
 func init() {
-	mvc.RegisterView(ViewModal, newModalFromElement)
+	mvc.RegisterView(ViewModal, func(element dom.Element) mvc.View {
+		return mvc.NewViewWithElement(new(modal), element, setView)
+	})
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
 func Modal(id string, args ...any) *modal {
-	return mvc.NewViewExEx(new(modal), ViewModal, templateModal, mvc.WithAttr("id", id), mvc.WithClass("modal-dialog-scrollable"), args).(*modal)
+	return mvc.NewView(new(modal), ViewModal, templateModal, setView, mvc.WithAttr("id", id), mvc.WithClass("modal-dialog-scrollable"), args).(*modal)
 }
 
 func StickyModal(id string, args ...any) *modal {
@@ -52,36 +54,44 @@ func StickyModal(id string, args ...any) *modal {
 	return Modal(id, mvc.WithAttr("data-bs-backdrop", "static"), mvc.WithAttr("data-bs-keyboard", "false"), args)
 }
 
-func newModalFromElement(element Element) mvc.View {
-	tagName := element.TagName()
-	if tagName != "DIV" {
-		panic(fmt.Sprintf("newModalFromElement: invalid tag name %q", tagName))
-	}
-	return mvc.NewViewWithElement(new(modal), element)
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
 
-func (modal *modal) SetView(view mvc.View) {
-	modal.View = view
+func (modal *modal) Header(children ...any) *modal {
+	modal.ReplaceSlot("header", mvc.HTML("DIV", mvc.WithClass("modal-header"), children))
+	return modal
 }
 
-func (modal *modal) Header(children ...any) mvc.View {
-	return modal.View.ReplaceSlot("header", mvc.HTML("DIV", mvc.WithClass("modal-header"), children))
-}
-
-func (modal *modal) Footer(children ...any) mvc.View {
-	return modal.View.ReplaceSlot("footer", mvc.HTML("DIV", mvc.WithClass("modal-footer"), children))
+func (modal *modal) Footer(children ...any) *modal {
+	modal.ReplaceSlot("footer", mvc.HTML("DIV", mvc.WithClass("modal-footer"), children))
+	return modal
 }
 
 func (modal *modal) Content(children ...any) mvc.View {
-	return modal.View.ReplaceSlot("", mvc.HTML("DIV", mvc.WithClass("modal-body"), children))
+	modal.ReplaceSlot("", mvc.HTML("DIV", mvc.WithClass("modal-body"), children))
+	return modal
+}
+
+func (modal *modal) Show() *modal {
+	if modal.instance.IsUndefined() {
+		modal.instance = js.GetProto("bootstrap.Modal").New("#" + modal.ID())
+	}
+	modal.instance.Call("show")
+	return modal
+}
+
+func (modal *modal) Hide() *modal {
+	if modal.instance.IsUndefined() {
+		modal.instance = js.GetProto("bootstrap.Modal").New("#" + modal.ID())
+	}
+	modal.instance.Call("hide")
+	return modal
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // OPTIONS
 
+// WithModal returns an option which configures a button to open the modal with the given ID
 func WithModal(id string) mvc.Opt {
 	return func(opts mvc.OptSet) error {
 		if opts.Name() != ViewButton {

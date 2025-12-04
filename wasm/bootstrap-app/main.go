@@ -25,6 +25,8 @@ func router() mvc.View {
 		Page("#badges", BadgeExamples()).
 		Page("#icons", IconExamples()).
 		Page("#buttons", ButtonExamples()).
+		Page("#modals", ModalExamples()).
+		Page("#offcanvas", OffcanvasExamples()).
 		Page("#media", MediaExamples()).
 		Page("#images", ImageExamples())
 }
@@ -40,9 +42,9 @@ func navbar() mvc.View {
 		).Label("Typography"),
 		bs.NavDropdown(
 			bs.NavItem("#buttons", "Buttons"),
-			bs.NavItem("#modal", "Modal"),
+			bs.NavItem("#modals", "Modal Dialogs"),
+			bs.NavItem("#offcanvas", "Offcanvas Dialogs"),
 			bs.NavItem("#alert", "Alerts"),
-			bs.NavDivider(),
 			bs.NavItem("#toast", "Toasts"),
 		).Label("Interactivity"),
 		bs.NavDropdown(

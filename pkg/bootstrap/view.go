@@ -86,6 +86,10 @@ func setView(self mvc.View, child mvc.View) {
 		list.View = child
 	case *input:
 		list.View = child
+	case *modal:
+		list.View = child
+	case *offcanvas:
+		list.View = child
 	default:
 		panic(fmt.Sprintf("setView: unsupported view type %T", self))
 	}

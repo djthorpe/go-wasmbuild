@@ -69,15 +69,13 @@ func ButtonGroup(args ...any) mvc.View {
 	return mvc.NewView(new(buttongroup), ViewButtonGroup, "DIV", setView, mvc.WithAttr("role", "group"), mvc.WithClass("btn-group"), args)
 }
 
-/*
-func ButtonToolbar(args ...any) mvc.View {
-	return mvc.NewView(new(buttontoolbar), ViewButtonToolbar, "DIV", mvc.WithAttr("role", "toolbar"), mvc.WithClass("btn-toolbar"), args)
+func VButtonGroup(args ...any) mvc.View {
+	return mvc.NewView(new(buttongroup), ViewButtonGroup, "DIV", setView, mvc.WithAttr("role", "group"), mvc.WithClass("btn-group-vertical"), args)
 }
 
-func VButtonGroup(args ...any) mvc.View {
-	return mvc.NewView(new(buttongroup), ViewButtonGroup, "DIV", mvc.WithAttr("role", "group"), mvc.WithClass("btn-group-vertical"), args)
+func ButtonToolbar(args ...any) mvc.View {
+	return mvc.NewView(new(buttontoolbar), ViewButtonToolbar, "DIV", setView, mvc.WithAttr("role", "toolbar"), mvc.WithClass("btn-toolbar"), args)
 }
-*/
 
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
@@ -90,6 +88,15 @@ func (b *button) Label(children ...any) mvc.View {
 
 ///////////////////////////////////////////////////////////////////////////////
 // OPTIONS
+
+func WithToggle() mvc.Opt {
+	return func(o mvc.OptSet) error {
+		if o.Name() != ViewButton {
+			return dom.ErrInternalAppError.With("WithToggle: option only valid for button views")
+		}
+		return mvc.WithAttr("data-bs-toggle", "button")(o)
+	}
+}
 
 func WithSubmit() mvc.Opt {
 	return func(o mvc.OptSet) error {

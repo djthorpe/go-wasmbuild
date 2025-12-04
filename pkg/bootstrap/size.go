@@ -1,7 +1,6 @@
 package bootstrap
 
 import (
-	"fmt"
 	"slices"
 
 	// Packages
@@ -39,6 +38,11 @@ var (
 	allInputSizes = []Size{
 		Small,
 		Large,
+	}
+	allModalSizes = []Size{
+		Small,
+		Large,
+		XLarge,
 	}
 	allTableSizes = []Size{
 		Small,
@@ -118,6 +122,8 @@ func sizePrefixForView(name string) string {
 		return "table"
 	case ViewNavBar:
 		return "navbar-expand"
+	case ViewModal:
+		return "modal"
 	default:
 		return ""
 	}
@@ -131,8 +137,10 @@ func allSizesForView(name string) []Size {
 		return allInputSizes
 	}
 	if name == ViewTable {
-		fmt.Println("allTableSizes:", allTableSizes)
 		return append(allTableSizes, "")
+	}
+	if name == ViewModal {
+		return allModalSizes
 	}
 	return allSizes
 }
