@@ -1,6 +1,9 @@
 package main
 
 import (
+	"fmt"
+
+	dom "github.com/djthorpe/go-wasmbuild"
 	bs "github.com/djthorpe/go-wasmbuild/pkg/bootstrap"
 	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
 )
@@ -20,5 +23,8 @@ func Example_Form_001() (mvc.View, string) {
 	).Footer(
 		bs.WithPosition(bs.End),
 		bs.Button(bs.WithSubmit(), "Submit"),
-	)), sourcecode()
+	)).AddEventListener("submit", func(evt dom.Event) {
+		form := mvc.ViewFromEvent(evt, bs.ViewForm).(bs.DataView)
+		fmt.Println("Form submitted", form.Value())
+	}), sourcecode()
 }

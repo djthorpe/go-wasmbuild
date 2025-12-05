@@ -31,12 +31,18 @@ const (
 			<input type="text" class="form-control" data-slot="input"></input>
 		</div>
 	`
+	templateRangeInput = `
+		<div>		
+			<script data-slot="label"></script>
+			<input type="range" class="form-range" data-slot="input"></input>
+		</div>
+	`
 	templateSecureInput = `
 		<div>
 			<script data-slot="label"></script>
 			<div class="position-relative">
 				<input type="password" class="form-control pe-5" data-slot="input">			
-				<i class="bi-key-fill fs-5 position-absolute top-50 end-0 translate-middle-y me-2 text-muted"></i>
+				<i class="bi-key-fill fs-5 position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
 			</div>
 		</div>
 	`
@@ -60,19 +66,19 @@ func Form(name string, args ...any) *form {
 }
 
 func Input(name string, args ...any) *input {
-	return mvc.NewView(new(input), ViewInput, templateInput, setView, mvc.WithCounter(name), args).(*input)
+	return mvc.NewView(new(input), ViewInput, templateInput, setView, withInputID(name), args).(*input)
 }
 
 func SearchInput(name string, args ...any) *input {
-	return Input(name, mvc.WithAttr("type", "search"), mvc.WithCounter(name), args)
+	return Input(name, mvc.WithAttr("type", "search"), withInputID(name), args)
 }
 
 func SecureInput(name string, args ...any) *input {
-	return mvc.NewView(new(input), ViewInput, templateSecureInput, setView, mvc.WithCounter(name), args).(*input)
+	return mvc.NewView(new(input), ViewInput, templateSecureInput, setView, withInputID(name), args).(*input)
 }
 
 func RangeInput(name string, args ...any) *input {
-	return Input(name, mvc.WithAttr("type", "range"), mvc.WithClass("form-range"), mvc.WithoutClass("form-control"), mvc.WithCounter(name), args)
+	return mvc.NewView(new(input), ViewInput, templateRangeInput, setView, withInputID(name), args).(*input)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -95,18 +101,38 @@ func (input *input) Value() any {
 	return elem.Value()
 }
 
+func (form *form) Value() any {
+	// TODO: Get the form data
+	return form.Root().Data()
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // OPTIONS
+
+func withInputID(name string) mvc.Opt {
+	return func(o mvc.OptSet) error {
+		if o.Name() != ViewInput {
+			return dom.ErrInternalAppError.Withf("WithInputID: not supported for view type %q", o.Name())
+		}
+		if err := mvc.WithSlotAttr("input", "name", name)(o); err != nil {
+			return err
+		}
+		if err := mvc.WithSlotAttr("input", "id", mvc.Counter(name))(o); err != nil {
+			return err
+		}
+		return nil
+	}
+}
 
 func WithPlaceholder(placeholder string) mvc.Opt {
 	return func(o mvc.OptSet) error {
 		if o.Name() != ViewInput {
 			return dom.ErrInternalAppError.Withf("WithPlaceholder: not supported for view type %q", o.Name())
 		}
-		if err := mvc.WithAttr("placeholder", placeholder)(o); err != nil {
+		if err := mvc.WithSlotAttr("input", "placeholder", placeholder)(o); err != nil {
 			return err
 		}
-		if err := mvc.WithAttr("aria-label", placeholder)(o); err != nil {
+		if err := mvc.WithSlotAttr("input", "aria-label", placeholder)(o); err != nil {
 			return err
 		}
 		return nil
@@ -122,9 +148,9 @@ func WithMinMax(min, max int) mvc.Opt {
 		if min >= max {
 			return dom.ErrBadParameter.Withf("WithMinMax: min (%d) must be less than max (%d)", min, max)
 		}
-		if err := mvc.WithAttr("min", fmt.Sprintf("%d", min))(o); err != nil {
+		if err := mvc.WithSlotAttr("input", "min", fmt.Sprintf("%d", min))(o); err != nil {
 			return err
 		}
-		return mvc.WithAttr("max", fmt.Sprintf("%d", max))(o)
+		return mvc.WithSlotAttr("input", "max", fmt.Sprintf("%d", max))(o)
 	}
 }

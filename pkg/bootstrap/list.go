@@ -76,8 +76,8 @@ func (deflist *deflist) Content(args ...any) mvc.View {
 	for _, child := range args {
 		switch child := child.(type) {
 		case *option:
-			nodes = append(nodes, mvc.HTML("DT", mvc.WithClass("col-3"), mvc.WithInnerText(child.Name)))
-			nodes = append(nodes, mvc.HTML("DD", mvc.WithClass("col-9"), mvc.WithInnerText(child.Value)))
+			nodes = append(nodes, mvc.HTML("DT", mvc.WithClass("col-3"), child.Name))
+			nodes = append(nodes, mvc.HTML("DD", mvc.WithClass("col-9"), child.Value))
 		default:
 			panic("Content[deflist]: child must be of type Option")
 		}

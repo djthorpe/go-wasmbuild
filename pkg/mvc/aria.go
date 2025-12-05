@@ -14,20 +14,21 @@ var (
 )
 
 ///////////////////////////////////////////////////////////////////////////////
-// OPTIONS
+// PUBLIC METHODS
 
-// WithCounter adds an id attribute with an incrementing counter to a view
-func WithCounter(label string) Opt {
-	return func(o OptSet) error {
-		counterLock.Lock()
-		defer counterLock.Unlock()
-		counter++
-		if label == "" {
-			label = "id"
-		}
-		return WithAttr("id", fmt.Sprintf("%s-%d", label, counter))(o)
+// Counter returns an attribute value function which generates unique IDs
+func Counter(label string) string {
+	counterLock.Lock()
+	defer counterLock.Unlock()
+	counter++
+	if label == "" {
+		label = "id"
 	}
+	return fmt.Sprintf("%s-%d", label, counter)
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// OPTIONS
 
 // WithAriaLabel adds an aria-label attribute to a view
 func WithAriaLabel(label string) Opt {
