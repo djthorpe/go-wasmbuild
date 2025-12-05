@@ -10,10 +10,10 @@ import (
 func MediaExamples() mvc.View {
 	return bs.Container(
 		mvc.WithClass("my-3"),
-		bs.Heading(3, "Media Examples"),
-		bs.Heading(4, "YouTube Video Embedding", mvc.WithClass("mt-4")), Example(Example_Media_001),
-		bs.Heading(4, "Without Controls", mvc.WithClass("mt-4")), Example(Example_Media_002),
-		bs.Heading(4, "Native Video", mvc.WithClass("mt-4")), Example(Example_Media_003),
+		Markdown("media_examples.md"),
+		ExampleCard("YouTube Video Embedding", Example_Media_001),
+		ExampleCard("Without Controls", Example_Media_002),
+		ExampleCard("Native Video", Example_Media_003),
 	)
 }
 

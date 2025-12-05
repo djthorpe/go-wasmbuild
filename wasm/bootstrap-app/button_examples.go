@@ -13,31 +13,14 @@ func ButtonExamples() mvc.View {
 	return bs.Container(
 		mvc.WithClass("my-3"),
 		Markdown("button_examples.md"),
-		bs.Container(
-			bs.WithBorder(), bs.WithColor(bs.Light), mvc.WithClass("my-3"), mvc.WithClass("p-3"),
-			bs.Heading(4, "Buttons with Color"), Example(Example_Buttons_001),
-		), bs.Container(
-			bs.WithBorder(), bs.WithColor(bs.Light), mvc.WithClass("my-3"), mvc.WithClass("p-3"),
-			bs.Heading(4, "Outline Buttons"), Example(Example_Buttons_002),
-		), bs.Container(
-			bs.WithBorder(), bs.WithColor(bs.Light), mvc.WithClass("my-3"), mvc.WithClass("p-3"),
-			bs.Heading(4, "Close Button"), Example(Example_Buttons_003),
-		), bs.Container(
-			bs.WithBorder(), bs.WithColor(bs.Light), mvc.WithClass("my-3"), mvc.WithClass("p-3"),
-			bs.Heading(4, "Button with Indicator"), Example(Example_Buttons_004),
-		), bs.Container(
-			bs.WithBorder(), bs.WithColor(bs.Light), mvc.WithClass("my-3"), mvc.WithClass("p-3"),
-			bs.Heading(4, "Button Sizes"), Example(Example_Buttons_005),
-		), bs.Container(
-			bs.WithBorder(), bs.WithColor(bs.Light), mvc.WithClass("my-3"), mvc.WithClass("p-3"),
-			bs.Heading(4, "Button Group"), Example(Example_Buttons_006),
-		), bs.Container(
-			bs.WithBorder(), bs.WithColor(bs.Light), mvc.WithClass("my-3"), mvc.WithClass("p-3"),
-			bs.Heading(4, "Vertical Button Group"), Example(Example_Buttons_007),
-		), bs.Container(
-			bs.WithBorder(), bs.WithColor(bs.Light), mvc.WithClass("my-3"), mvc.WithClass("p-3"),
-			bs.Heading(4, "Button Toolbar Group"), Example(Example_Buttons_008),
-		),
+		ExampleCard("Buttons with Color", Example_Buttons_001),
+		ExampleCard("Outline Buttons", Example_Buttons_002),
+		ExampleCard("Close Button", Example_Buttons_003),
+		ExampleCard("Button with Indicator", Example_Buttons_004),
+		ExampleCard("Button Sizes", Example_Buttons_005),
+		ExampleCard("Button Group", Example_Buttons_006),
+		ExampleCard("Vertical Button Group", Example_Buttons_007),
+		ExampleCard("Button Toolbar Group", Example_Buttons_008),
 	)
 }
 

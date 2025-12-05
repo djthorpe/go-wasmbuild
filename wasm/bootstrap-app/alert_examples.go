@@ -10,14 +10,8 @@ func AlertExamples() mvc.View {
 	return bs.Container(
 		mvc.WithClass("my-3"),
 		Markdown("alert_examples.md"),
-		bs.Container(
-			bs.WithBorder(), bs.WithColor(bs.Light), mvc.WithClass("my-3"), mvc.WithClass("p-3"),
-			bs.Heading(4, "Alerts with Color"), Example(Example_Alerts_001),
-		),
-		bs.Container(
-			bs.WithBorder(), bs.WithColor(bs.Light), mvc.WithClass("my-3"), mvc.WithClass("p-3"),
-			bs.Heading(4, "Dismissable Alert"), Example(Example_Alerts_002),
-		),
+		ExampleCard("Alerts with Color", Example_Alerts_001),
+		ExampleCard("Dismissable Alert", Example_Alerts_002),
 	)
 }
 

@@ -10,19 +10,10 @@ func OffcanvasExamples() mvc.View {
 	return bs.Container(
 		mvc.WithClass("my-3"),
 		Markdown("offcanvas_examples.md"),
-		bs.Container(
-			bs.WithBorder(), mvc.WithClass("my-2"), bs.WithColor(bs.Light), mvc.WithClass("p-3"),
-			bs.Heading(3, "Offcanvas Dialog"), Example(Example_Offcanvas_001),
-		), bs.Container(
-			bs.WithBorder(), mvc.WithClass("my-2"), bs.WithColor(bs.Light), mvc.WithClass("p-3"),
-			bs.Heading(3, "Offcanvas Color and Theme"), Example(Example_Offcanvas_002),
-		), bs.Container(
-			bs.WithBorder(), mvc.WithClass("my-2"), bs.WithColor(bs.Light), mvc.WithClass("p-3"),
-			bs.Heading(3, "Sticky Offcanvas"), Example(Example_Offcanvas_003),
-		), bs.Container(
-			bs.WithBorder(), mvc.WithClass("my-2"), bs.WithColor(bs.Light), mvc.WithClass("p-3"),
-			bs.Heading(3, "Responsive Offcanvas"), Example(Example_Offcanvas_004),
-		),
+		ExampleCard("Offcanvas Dialog", Example_Offcanvas_001),
+		ExampleCard("Offcanvas Color and Theme", Example_Offcanvas_002),
+		ExampleCard("Sticky Offcanvas", Example_Offcanvas_003),
+		ExampleCard("Responsive Offcanvas", Example_Offcanvas_004),
 	)
 }
 

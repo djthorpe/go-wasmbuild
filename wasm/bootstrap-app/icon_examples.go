@@ -14,10 +14,9 @@ func IconExamples() mvc.View {
 	return bs.Container(
 		mvc.WithClass("my-3"),
 		Markdown("icon_examples.md"),
-		bs.Heading(3, "Examples", mvc.WithClass("mt-5")),
-		bs.Heading(4, "Common Icons", mvc.WithClass("mt-4")), Example(Example_Icon_001),
-		bs.Heading(4, "Color", mvc.WithClass("mt-4")), Example(Example_Icon_002),
-		bs.Heading(4, "Buttons and Links", mvc.WithClass("mt-4")), Example(Example_Icon_003),
+		ExampleCard("Common Icons", Example_Icon_001),
+		ExampleCard("Color", Example_Icon_002),
+		ExampleCard("Buttons and Links", Example_Icon_003),
 		bs.Heading(3, "Icon Search"),
 		AllIcons(),
 	)

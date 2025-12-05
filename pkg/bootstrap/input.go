@@ -10,6 +10,10 @@ import (
 ///////////////////////////////////////////////////////////////////////////////
 // TYPES
 
+type form struct {
+	mvc.View
+}
+
 type input struct {
 	mvc.View
 }
@@ -23,13 +27,16 @@ const (
 	templateInput = `
 		<span>		
 			<script data-slot="label"></script>
-			<input type="text" class="form-control" data-slot="input"></input>
+			<input type="text" class="form-control" data-slot="body"></input>
 		</span>
 	`
 	templateLabel = `<label class="form-label"></label>`
 )
 
 func init() {
+	mvc.RegisterView(ViewForm, func(element dom.Element) mvc.View {
+		return mvc.NewViewWithElement(new(form), element, setView)
+	})
 	mvc.RegisterView(ViewInput, func(element dom.Element) mvc.View {
 		return mvc.NewViewWithElement(new(input), element, setView)
 	})
@@ -38,12 +45,20 @@ func init() {
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
+func Form(name string, args ...any) *form {
+	return mvc.NewView(new(form), ViewForm, "FORM", setView, mvc.WithAttr("name", name), args).(*form)
+}
+
 func Input(name string, args ...any) *input {
-	return mvc.NewView(new(input), ViewInput, templateInput, setView).ReplaceSlotChildren("input", args...).(*input)
+	return mvc.NewView(new(input), ViewInput, templateInput, setView).ReplaceSlotChildren("body", args...).(*input)
 }
 
 func SearchInput(name string, args ...any) *input {
 	return Input(name, mvc.WithAttr("type", "search"), args)
+}
+
+func SecureInput(name string, args ...any) *input {
+	return Input(name, mvc.WithAttr("type", "password"), args)
 }
 
 func RangeInput(name string, args ...any) *input {
@@ -54,18 +69,12 @@ func RangeInput(name string, args ...any) *input {
 // METHODS
 
 func (input *input) Label(children ...any) mvc.View {
+	// TODO: Add "for" attribute to label
 	return input.ReplaceSlot("label", mvc.HTML(templateLabel, children...))
-	/*
-		if elem := input.Slot(""); elem == nil || (elem.TagName() != "INPUT" && elem.TagName() != "TEXTAREA") {
-			panic("Label: input body slot is not INPUT or TEXTAREA" + fmt.Sprintf("%v", input))
-		} else {
-			input.ReplaceSlot("label", mvc.HTML("LABEL", mvc.WithClass("form-label"), mvc.WithAttr("for", elem.ID()), children))
-		}
-	*/
 }
 
 func (input *input) Value() any {
-	elem := input.Slot("input")
+	elem := input.Slot("body")
 	if elem == nil || elem.TagName() != "INPUT" {
 		panic("Value: input slot is not INPUT" + fmt.Sprintf("%v", input))
 	}
@@ -90,13 +99,14 @@ func WithPlaceholder(placeholder string) mvc.Opt {
 	}
 }
 
+// Range inputs can set a minimum and maximum value
 func WithMinMax(min, max int) mvc.Opt {
 	return func(o mvc.OptSet) error {
 		if o.Name() != "INPUT" {
 			return dom.ErrInternalAppError.Withf("WithMinMax: not supported for view type %q", o.Name())
 		}
-		if min > max {
-			return dom.ErrBadParameter.Withf("WithMinMax: min (%d) must be less than or equal to max (%d)", min, max)
+		if min >= max {
+			return dom.ErrBadParameter.Withf("WithMinMax: min (%d) must be less than max (%d)", min, max)
 		}
 		if err := mvc.WithAttr("min", fmt.Sprintf("%d", min))(o); err != nil {
 			return err

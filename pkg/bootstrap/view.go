@@ -75,9 +75,15 @@ func setView(self mvc.View, child mvc.View) {
 		list.View = child
 	case *buttontoolbar:
 		list.View = child
+	case *card:
+		list.View = child
+	case *cardgroup:
+		list.View = child
 	case *carousel:
 		list.View = child
 	case *carouselitem:
+		list.View = child
+	case *form:
 		list.View = child
 	case *list:
 		list.View = child

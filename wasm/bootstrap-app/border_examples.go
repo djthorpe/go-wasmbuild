@@ -7,20 +7,17 @@ import (
 
 func BorderExamples() mvc.View {
 	return bs.Container(
-		mvc.WithClass("my-4"),
-		bs.Heading(2, "Border Examples"),
-		bs.HRule(),
-		Example(Example_Borders_001),
+		mvc.WithClass("my-3"),
+		Markdown("border_examples.md"),
+		ExampleCard("Border Colors", Example_Borders_001),
 	)
 }
 
-// Example_Borders_001 demonstrates borders around containers of
-// different colours
 func Example_Borders_001() (mvc.View, string) {
 	classes := []mvc.Opt{
 		mvc.WithAttr("style", "width: 7rem; height: 7rem;"), mvc.WithClass("m-3"), mvc.WithClass("shadow-lg"),
 	}
-	return bs.Grid(
+	return bs.Row(
 		bs.Container(bs.WithBorder(), "Default Border", classes),
 		bs.Container(bs.WithBorder(bs.Primary), "Primary Border", classes),
 		bs.Container(bs.WithBorder(bs.Secondary), "Secondary Border", classes),

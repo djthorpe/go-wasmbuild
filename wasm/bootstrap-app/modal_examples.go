@@ -11,16 +11,9 @@ func ModalExamples() mvc.View {
 	return bs.Container(
 		mvc.WithClass("my-3"),
 		Markdown("modal_examples.md"),
-		bs.Container(
-			bs.WithBorder(), bs.WithColor(bs.Light), mvc.WithClass("p-3"),
-			bs.Heading(3, "Modal Dialog"), Example(Example_Dialog_001),
-		), bs.Container(
-			bs.WithBorder(), bs.WithColor(bs.Light), mvc.WithClass("my-3"), mvc.WithClass("p-3"),
-			bs.Heading(3, "Sticky Modal Dialog"), Example(Example_Dialog_002),
-		), bs.Container(
-			bs.WithBorder(), bs.WithColor(bs.Light), mvc.WithClass("my-3"), mvc.WithClass("p-3"),
-			bs.Heading(3, "Dialog Size"), Example(Example_Dialog_003),
-		),
+		ExampleCard("Modal Dialog", Example_Dialog_001),
+		ExampleCard("Sticky Modal Dialog", Example_Dialog_002),
+		ExampleCard("Dialog Size", Example_Dialog_003),
 	)
 }
 
