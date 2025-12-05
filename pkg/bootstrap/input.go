@@ -26,19 +26,19 @@ var _ mvc.View = (*input)(nil)
 
 const (
 	templateInput = `
-		<span>		
+		<div>		
 			<script data-slot="label"></script>
 			<input type="text" class="form-control" data-slot="input"></input>
-		</span>
+		</div>
 	`
 	templateSecureInput = `
-		<span>
+		<div>
 			<script data-slot="label"></script>
-			<div class="d-flex align-items-center">
-				<input type="password" class="form-control" data-slot="input">			
-				<i class="bi-key-fill fs-5 m-2"></i>
+			<div class="position-relative">
+				<input type="password" class="form-control pe-5" data-slot="input">			
+				<i class="bi-key-fill fs-5 position-absolute top-50 end-0 translate-middle-y me-2 text-muted"></i>
 			</div>
-		</span>
+		</div>
 	`
 	templateLabel = `<label class="form-label"></label>`
 )
@@ -60,31 +60,35 @@ func Form(name string, args ...any) *form {
 }
 
 func Input(name string, args ...any) *input {
-	return mvc.NewView(new(input), ViewInput, templateInput, setView, args).(*input)
+	return mvc.NewView(new(input), ViewInput, templateInput, setView, mvc.WithCounter(name), args).(*input)
 }
 
 func SearchInput(name string, args ...any) *input {
-	return Input(name, mvc.WithAttr("type", "search"), args)
+	return Input(name, mvc.WithAttr("type", "search"), mvc.WithCounter(name), args)
 }
 
 func SecureInput(name string, args ...any) *input {
-	return mvc.NewView(new(input), ViewInput, templateSecureInput, setView, args).(*input)
+	return mvc.NewView(new(input), ViewInput, templateSecureInput, setView, mvc.WithCounter(name), args).(*input)
 }
 
 func RangeInput(name string, args ...any) *input {
-	return Input(name, mvc.WithAttr("type", "range"), mvc.WithClass("form-range"), mvc.WithoutClass("form-control"), args)
+	return Input(name, mvc.WithAttr("type", "range"), mvc.WithClass("form-range"), mvc.WithoutClass("form-control"), mvc.WithCounter(name), args)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // METHODS
 
 func (input *input) Label(children ...any) mvc.View {
-	// TODO: Add "for" attribute to label
-	return input.ReplaceSlot("label", mvc.HTML(templateLabel, children...))
+	// TODO: Use the input slot
+	id := input.ID()
+	if id == "" {
+		panic("Label: input has no ID" + fmt.Sprintf("%v", input))
+	}
+	return input.ReplaceSlot("label", mvc.HTML(templateLabel, mvc.WithAttr("for", id), children))
 }
 
 func (input *input) Value() any {
-	elem := input.Slot("body")
+	elem := input.Slot("input")
 	if elem == nil || elem.TagName() != "INPUT" {
 		panic("Value: input slot is not INPUT" + fmt.Sprintf("%v", input))
 	}
@@ -96,7 +100,7 @@ func (input *input) Value() any {
 
 func WithPlaceholder(placeholder string) mvc.Opt {
 	return func(o mvc.OptSet) error {
-		if o.Name() != "INPUT" {
+		if o.Name() != ViewInput {
 			return dom.ErrInternalAppError.Withf("WithPlaceholder: not supported for view type %q", o.Name())
 		}
 		if err := mvc.WithAttr("placeholder", placeholder)(o); err != nil {
@@ -112,7 +116,7 @@ func WithPlaceholder(placeholder string) mvc.Opt {
 // Range inputs can set a minimum and maximum value
 func WithMinMax(min, max int) mvc.Opt {
 	return func(o mvc.OptSet) error {
-		if o.Name() != "INPUT" {
+		if o.Name() != ViewInput {
 			return dom.ErrInternalAppError.Withf("WithMinMax: not supported for view type %q", o.Name())
 		}
 		if min >= max {
