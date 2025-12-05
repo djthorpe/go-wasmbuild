@@ -3,6 +3,7 @@ package bootstrap
 import (
 	"fmt"
 
+	// Packages
 	dom "github.com/djthorpe/go-wasmbuild"
 	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
 )
@@ -27,7 +28,16 @@ const (
 	templateInput = `
 		<span>		
 			<script data-slot="label"></script>
-			<input type="text" class="form-control" data-slot="body"></input>
+			<input type="text" class="form-control" data-slot="input"></input>
+		</span>
+	`
+	templateSecureInput = `
+		<span>
+			<script data-slot="label"></script>
+			<div class="d-flex align-items-center">
+				<input type="password" class="form-control" data-slot="input">			
+				<i class="bi-key-fill fs-5 m-2"></i>
+			</div>
 		</span>
 	`
 	templateLabel = `<label class="form-label"></label>`
@@ -50,7 +60,7 @@ func Form(name string, args ...any) *form {
 }
 
 func Input(name string, args ...any) *input {
-	return mvc.NewView(new(input), ViewInput, templateInput, setView).ReplaceSlotChildren("body", args...).(*input)
+	return mvc.NewView(new(input), ViewInput, templateInput, setView, args).(*input)
 }
 
 func SearchInput(name string, args ...any) *input {
@@ -58,7 +68,7 @@ func SearchInput(name string, args ...any) *input {
 }
 
 func SecureInput(name string, args ...any) *input {
-	return Input(name, mvc.WithAttr("type", "password"), args)
+	return mvc.NewView(new(input), ViewInput, templateSecureInput, setView, args).(*input)
 }
 
 func RangeInput(name string, args ...any) *input {
