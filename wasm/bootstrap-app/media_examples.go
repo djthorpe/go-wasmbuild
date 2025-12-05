@@ -3,6 +3,9 @@ package main
 import (
 	// Packages
 
+	"fmt"
+
+	dom "github.com/djthorpe/go-wasmbuild"
 	bs "github.com/djthorpe/go-wasmbuild/pkg/bootstrap"
 	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
 )
@@ -33,5 +36,8 @@ func Example_Media_003() (mvc.View, string) {
 func Example_Media_004() (mvc.View, string) {
 	return bs.MediaControl(
 		bs.WithColor(bs.Dark), bs.WithTheme(bs.Dark), bs.WithBorder(),
-	), sourcecode()
+	).AddEventListener(bs.EventMediaPlayPause, func(evt dom.Event) {
+		view := mvc.ViewFromEvent(evt, bs.ViewMediaControl)
+		fmt.Println("Media Play/Pause event from view:", view.ID())
+	}), sourcecode()
 }

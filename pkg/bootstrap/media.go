@@ -44,18 +44,25 @@ const (
 	`
 	templateMediaControl = `
 		<div class="d-flex align-items-center gap-2 my-2 p-1 container-fluid">
-			<button type="button" class="btn btn-sm btn-outline-secondary" data-slot="playpause" data-action="playpause">
+			<button type="button" class="btn btn-sm btn-outline-secondary" data-slot="playpause" data-action="media-playpause">
 				<i class="bi bi-play-fill"></i>
 			</button>
-			<button type="button" class="btn btn-sm btn-outline-secondary" data-slot="stop" data-action="stop">
+			<button type="button" class="btn btn-sm btn-outline-secondary" data-slot="stop" data-action="media-stop">
 				<i class="bi bi-stop-fill"></i>
 			</button>
-			<div class="progress flex-grow-1" role="progressbar" data-slot="progress" style="height: 8px; cursor: pointer;">
+			<div class="progress flex-grow-1 d-none d-md-flex" role="progressbar" data-slot="progress" data-action="media-seek" style="height: 8px; cursor: pointer;">
 				<div class="progress-bar" data-slot="progressbar" style="width: 0%;"></div>
 			</div>
-			<small class="text-muted font-monospace" data-slot="time" style="min-width: 5em;">-:--:--</small>
+			<small class="text-muted font-monospace user-select-none ms-auto ms-md-0" data-slot="time" data-action="media-time" style="min-width: 5em;">-:--:--</small>
 		</div>
 	`
+)
+
+const (
+	EventMediaPlayPause = "media-playpause"
+	EventMediaStop      = "media-stop"
+	EventMediaSeek      = "media-seek"
+	EventMediaTime      = "media-time"
 )
 
 func init() {
@@ -97,7 +104,26 @@ func Video(src string, args ...any) *media {
 }
 
 func MediaControl(args ...any) *mediacontrol {
-	view := mvc.NewView(new(mediacontrol), ViewMediaControl, templateMediaControl, setView, args)
+	view := mvc.NewView(new(mediacontrol), ViewMediaControl, templateMediaControl, setView, args).AddEventListener("click", func(evt dom.Event) {
+		var action string
+		target := evt.Target()
+		for {
+			if target_, ok := target.(dom.Element); ok {
+				if attr := target_.GetAttribute("data-action"); attr != "" {
+					action = attr
+					break
+				} else {
+					target = target_.ParentElement()
+					continue
+				}
+			}
+			break
+		}
+		if action != "" {
+			// TODO: Dispatch event
+			fmt.Printf("TODO: MediaControl: action=%q\n", action)
+		}
+	})
 	return view.Self().(*mediacontrol)
 }
 
