@@ -158,7 +158,7 @@ func colorPrefixForView(name string) string {
 		return "bg"
 	case ViewModal:
 		return "bg"
-	case ViewMedia:
+	case ViewMedia, ViewMediaControl:
 		return "bg"
 	case "TR": // Table row
 		return "table"

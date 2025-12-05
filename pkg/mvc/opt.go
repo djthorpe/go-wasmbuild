@@ -41,6 +41,7 @@ var _ OptSet = (*opt)(nil)
 /////////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
+// Apply options to an element
 func applyOpts(element dom.Element, opts ...Opt) error {
 	var o opt
 

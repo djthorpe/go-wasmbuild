@@ -4,13 +4,21 @@ import (
 	"fmt"
 
 	// Packages
+	dom "github.com/djthorpe/go-wasmbuild"
+	js "github.com/djthorpe/go-wasmbuild/pkg/js"
 	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
 )
 
+///////////////////////////////////////////////////////////////////////////////
+// TYPES
+
+// Return the value associated with the view
 type DataView interface {
-	// Return the value associated with the view
 	Value() any
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// GLOBALS
 
 // The view names for Bootstrap components
 const (
@@ -42,6 +50,7 @@ const (
 	ViewMarkdown       = "mvc-bs-markdown"
 	ViewModal          = "mvc-bs-modal"
 	ViewMedia          = "mvc-bs-media"
+	ViewMediaControl   = "mvc-bs-mediacontrol"
 	ViewNavBar         = "mvc-bs-navbar"
 	ViewNavDropdown    = "mvc-bs-navdropdown"
 	ViewNavItem        = "mvc-bs-navitem"
@@ -63,6 +72,9 @@ const (
 	// The prefix class for outline buttons
 	viewOutlineButtonClassPrefix = "btn-outline"
 )
+
+///////////////////////////////////////////////////////////////////////////////
+// PRIVATE METHODS
 
 // Set the view element's child view
 func setView(self mvc.View, child mvc.View) {
@@ -95,11 +107,27 @@ func setView(self mvc.View, child mvc.View) {
 		list.View = child
 	case *input:
 		list.View = child
+	case *media:
+		list.View = child
+	case *mediacontrol:
+		list.View = child
 	case *modal:
 		list.View = child
 	case *offcanvas:
 		list.View = child
+	case *toast:
+		list.View = child
+	case *toastgroup:
+		list.View = child
 	default:
 		panic(fmt.Sprintf("setView: unsupported view type %T", self))
 	}
+}
+
+func jsinstance(elem dom.Element, class string) js.Value {
+	proto := js.GetProto(class)
+	if proto.IsUndefined() {
+		panic(fmt.Sprintf("jsinstance: unknown class %q", class))
+	}
+	return proto.Call("getOrCreateInstance", elem.JSValue())
 }

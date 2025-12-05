@@ -32,7 +32,8 @@ func router() mvc.View {
 		Page("#media", MediaExamples()).
 		Page("#modals", ModalExamples()).
 		Page("#offcanvas", OffcanvasExamples()).
-		Page("#text", TextExamples())
+		Page("#text", TextExamples()).
+		Page("#toasts", ToastExamples())
 }
 
 func navbar() mvc.View {
@@ -53,7 +54,7 @@ func navbar() mvc.View {
 			bs.NavItem("#modals", "Modal Dialogs"),
 			bs.NavItem("#offcanvas", "Offcanvas Dialogs"),
 			bs.NavItem("#alerts", "Alerts"),
-			bs.NavItem("#toast", "Toasts"),
+			bs.NavItem("#toasts", "Toasts"),
 		).Label("Interactivity"),
 		bs.NavDropdown(
 			bs.NavItem("#forms", "Basic Forms"),

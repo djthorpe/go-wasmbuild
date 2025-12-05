@@ -35,6 +35,9 @@ type Node interface {
 	AppendChild(Node) Node
 	InsertBefore(Node, Node) Node
 	RemoveChild(Node)
+
+	// JSValue returns the underlying JavaScript value (WASM only)
+	JSValue() any
 }
 
 // Event implements https://developer.mozilla.org/en-US/docs/Web/API/Event
