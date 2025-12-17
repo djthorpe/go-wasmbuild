@@ -58,7 +58,7 @@ func (offcanvas *offcanvas) Header(children ...any) *offcanvas {
 }
 
 func (offcanvas *offcanvas) Content(children ...any) mvc.View {
-	offcanvas.View.ReplaceSlot("body", mvc.HTML("DIV", mvc.WithClass("offcanvas-body"), children))
+	offcanvas.View.ReplaceSlot("", mvc.HTML("DIV", mvc.WithClass("offcanvas-body"), children))
 	return offcanvas
 }
 
