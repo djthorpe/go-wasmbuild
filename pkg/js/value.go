@@ -2,6 +2,8 @@
 
 package js
 
+import "fmt"
+
 ///////////////////////////////////////////////////////////////////////////////
 // TYPES
 
@@ -100,15 +102,12 @@ func Null() Value {
 	}
 }
 
-// ToString converts a Value to a Go string.
-func ToString(v Value) string {
-	if v.v == nil {
-		return ""
+// ValueOf wraps any Go value in a Value.
+func ValueOf(v any) Value {
+	return Value{
+		t: ObjectProto,
+		v: v,
 	}
-	if s, ok := v.v.(string); ok {
-		return s
-	}
-	return ""
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -141,4 +140,15 @@ func (v Value) Get(key string) Value {
 
 // Set is a stub that does nothing in non-WASM builds.
 func (v Value) Set(key string, value any) {
+}
+
+// String returns the value as a string.
+func (v Value) String() string {
+	if v.v == nil {
+		return ""
+	}
+	if s, ok := v.v.(string); ok {
+		return s
+	}
+	return fmt.Sprint(v.v)
 }

@@ -144,9 +144,3 @@ func Undefined() Value {
 func Null() Value {
 	return js.Null()
 }
-
-// ToString converts a JavaScript Value to a Go string.
-// This works for JavaScript strings and other types that can be converted to string.
-func ToString(v Value) string {
-	return v.String()
-}
