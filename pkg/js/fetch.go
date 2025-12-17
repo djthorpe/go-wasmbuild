@@ -221,10 +221,11 @@ func (r *FetchResponse) Text() *Promise {
 }
 
 // Blob returns a Promise that resolves to the response body as a Blob.
-// Note: Blob is a browser-specific type and is not available in native Go.
+// Note: In native Go, this returns the raw body as a []byte wrapped in a Value,
+// since the Blob type is browser-specific and not available here.
 func (r *FetchResponse) Blob() *Promise {
 	return NewPromise(func() (Value, error) {
-		return Undefined(), fmt.Errorf("FetchResponse.Blob is only available in WASM builds")
+		return ValueOf(r.bodyData), nil
 	})
 }
 
