@@ -10,8 +10,7 @@ func BadgeExamples() mvc.View {
 	return bs.Container(
 		mvc.WithClass("my-3"),
 		Markdown("badge_examples.md"),
-		bs.HRule(),
-		Example(Example_Badges_001),
+		ExampleCard("Badges in Headings", Example_Badges_001),
 	)
 }
 

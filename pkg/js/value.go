@@ -110,3 +110,35 @@ func ToString(v Value) string {
 	}
 	return ""
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// VALUE METHODS (stubs for non-WASM builds)
+
+// IsUndefined returns true if the value is undefined.
+func (v Value) IsUndefined() bool {
+	return v.t == UndefinedProto
+}
+
+// IsNull returns true if the value is null.
+func (v Value) IsNull() bool {
+	return v.t == NullProto
+}
+
+// Call is a stub that returns undefined in non-WASM builds.
+func (v Value) Call(method string, args ...any) Value {
+	return Undefined()
+}
+
+// New is a stub that returns undefined in non-WASM builds.
+func (v Value) New(args ...any) Value {
+	return Undefined()
+}
+
+// Get is a stub that returns undefined in non-WASM builds.
+func (v Value) Get(key string) Value {
+	return Undefined()
+}
+
+// Set is a stub that does nothing in non-WASM builds.
+func (v Value) Set(key string, value any) {
+}

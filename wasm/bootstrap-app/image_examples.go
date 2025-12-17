@@ -10,13 +10,12 @@ func ImageExamples() mvc.View {
 	return bs.Container(
 		mvc.WithClass("my-3"),
 		Markdown("image_examples.md"),
-		bs.Heading(3, "Examples"),
-		bs.Heading(4, "Carousel (TODO)", mvc.WithClass("mt-4")), Example(Example_Image_005),
-		bs.Heading(4, "Carousel Item Labels", mvc.WithClass("mt-4")), Example(Example_Image_006),
-		bs.Heading(4, "Responsive Image", mvc.WithClass("mt-4")), Example(Example_Image_001),
-		bs.Heading(4, "Thumbnails", mvc.WithClass("mt-4")), Example(Example_Image_002),
-		bs.Heading(4, "Rounded", mvc.WithClass("mt-4")), Example(Example_Image_003),
-		bs.Heading(4, "With Label (TODO)", mvc.WithClass("mt-4")), Example(Example_Image_004),
+		ExampleCard("Carousel (TODO)", Example_Image_005),
+		ExampleCard("Carousel Item Labels", Example_Image_006),
+		ExampleCard("Responsive Image", Example_Image_001),
+		ExampleCard("Thumbnails", Example_Image_002),
+		ExampleCard("Rounded", Example_Image_003),
+		ExampleCard("With Label (TODO)", Example_Image_004),
 	)
 }
 

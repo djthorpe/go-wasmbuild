@@ -33,7 +33,7 @@ jobs:
 
             - name: Compile WASM application
               run: |
-                  CC=go make wasm/bootstrap-app 
+                  make wasm/bootstrap-app 
                   mv ./build/bootstrap-app.wasm/wasm_exec.html ./build/bootstrap-app.wasm/index.html
 
             - name: Upload artifact

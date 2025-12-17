@@ -1,12 +1,11 @@
 package bootstrap
 
 import (
-	// Packages
-
 	"fmt"
 	"net/url"
 	"strings"
 
+	// Packages
 	dom "github.com/djthorpe/go-wasmbuild"
 	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
 )
@@ -19,7 +18,13 @@ type media struct {
 	mvc.View
 }
 
+// mediacontrol is a set of buttons to interact with media elements
+type mediacontrol struct {
+	mvc.View
+}
+
 var _ mvc.View = (*media)(nil)
+var _ mvc.View = (*mediacontrol)(nil)
 
 ///////////////////////////////////////////////////////////////////////////////
 // GLOBALS
@@ -37,13 +42,35 @@ const (
 		  <video data-slot="body" frameborder="0" allowfullscreen></video>
 		</div>
 	`
+	templateMediaControl = `
+		<div class="d-flex align-items-center gap-2 my-2 p-1 container-fluid">
+			<button type="button" class="btn btn-sm btn-outline-secondary" data-slot="playpause" data-action="media-playpause">
+				<i class="bi bi-play-fill"></i>
+			</button>
+			<button type="button" class="btn btn-sm btn-outline-secondary" data-slot="stop" data-action="media-stop">
+				<i class="bi bi-stop-fill"></i>
+			</button>
+			<div class="progress flex-grow-1 d-none d-md-flex" role="progressbar" data-slot="progress" data-action="media-seek" style="height: 8px; cursor: pointer;">
+				<div class="progress-bar" data-slot="progressbar" style="width: 0%;"></div>
+			</div>
+			<small class="text-muted font-monospace user-select-none ms-auto ms-md-0" data-slot="time" data-action="media-time" style="min-width: 5em;">-:--:--</small>
+		</div>
+	`
+)
+
+const (
+	EventMediaPlayPause = "media-playpause"
+	EventMediaStop      = "media-stop"
+	EventMediaSeek      = "media-seek"
+	EventMediaTime      = "media-time"
 )
 
 func init() {
 	mvc.RegisterView(ViewMedia, func(element dom.Element) mvc.View {
-		return mvc.NewViewWithElement(new(media), element, func(self, child mvc.View) {
-			self.(*media).View = child
-		})
+		return mvc.NewViewWithElement(new(media), element, setView)
+	})
+	mvc.RegisterView(ViewMediaControl, func(element dom.Element) mvc.View {
+		return mvc.NewViewWithElement(new(mediacontrol), element, setView)
 	})
 }
 
@@ -53,9 +80,7 @@ func init() {
 func YouTube(id string, args ...any) *media {
 	// TODO: If the id is a full URL, extract the video ID
 	// TODO: If the URL is a playlist, handle that too
-	view := mvc.NewView(new(media), ViewMedia, templateYouTube, func(self, child mvc.View) {
-		self.(*media).View = child
-	}, WithColor(Light), mvc.WithAttr(youtubeAttr, "enablejsapi=1"), args)
+	view := mvc.NewView(new(media), ViewMedia, templateYouTube, setView, WithColor(Light), mvc.WithAttr(youtubeAttr, "enablejsapi=1"), args)
 
 	// TODO: Add the fullscreen and other attributes to the player and URL
 
@@ -69,9 +94,7 @@ func YouTube(id string, args ...any) *media {
 }
 
 func Video(src string, args ...any) *media {
-	view := mvc.NewView(new(media), ViewMedia, templateVideo, func(self, child mvc.View) {
-		self.(*media).View = child
-	}, WithColor(Light), mvc.WithAttr("src", src), args)
+	view := mvc.NewView(new(media), ViewMedia, templateVideo, setView, WithColor(Light), mvc.WithAttr("src", src), args)
 
 	view.Slot("body").SetAttribute("src", src)
 	view.Slot("body").SetAttribute("controls", "controls")
@@ -80,8 +103,116 @@ func Video(src string, args ...any) *media {
 	return view.Self().(*media)
 }
 
+func MediaControl(args ...any) *mediacontrol {
+	view := mvc.NewView(new(mediacontrol), ViewMediaControl, templateMediaControl, setView, args).AddEventListener("click", func(evt dom.Event) {
+		var action string
+		target := evt.Target()
+		for {
+			if target_, ok := target.(dom.Element); ok {
+				if attr := target_.GetAttribute("data-action"); attr != "" {
+					action = attr
+					break
+				} else {
+					target = target_.ParentElement()
+					continue
+				}
+			}
+			break
+		}
+		if action != "" {
+			// TODO: Dispatch event
+			fmt.Printf("TODO: MediaControl: action=%q\n", action)
+		}
+	})
+	return view.Self().(*mediacontrol)
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// MEDIA CONTROL METHODS
+
+// SetPlaying updates the play/pause button icon based on playing state
+func (mc *mediacontrol) SetPlaying(playing bool) *mediacontrol {
+	btn := mc.Slot("playpause")
+	if btn == nil {
+		return mc
+	}
+	icon := btn.QuerySelector("i")
+	if icon == nil {
+		return mc
+	}
+	if playing {
+		icon.SetClassName("bi bi-pause-fill")
+	} else {
+		icon.SetClassName("bi bi-play-fill")
+	}
+	return mc
+}
+
+// SetProgress updates the progress bar (0.0 to 1.0)
+func (mc *mediacontrol) SetProgress(progress float64) *mediacontrol {
+	bar := mc.Slot("progressbar")
+	if bar == nil {
+		return mc
+	}
+	if progress < 0 {
+		progress = 0
+	}
+	if progress > 1 {
+		progress = 1
+	}
+	bar.SetAttribute("style", fmt.Sprintf("width: %.1f%%;", progress*100))
+	return mc
+}
+
+// SetTime updates the time display
+func (mc *mediacontrol) SetTime(seconds float64) *mediacontrol {
+	timeEl := mc.Slot("time")
+	if timeEl == nil {
+		return mc
+	}
+	timeEl.SetInnerHTML(formatDuration(seconds))
+	return mc
+}
+
+// OnPlayPause sets the click handler for the play/pause button
+func (mc *mediacontrol) OnPlayPause(handler func(dom.Event)) *mediacontrol {
+	if btn := mc.Slot("playpause"); btn != nil {
+		btn.AddEventListener("click", handler)
+	}
+	return mc
+}
+
+// OnStop sets the click handler for the stop button
+func (mc *mediacontrol) OnStop(handler func(dom.Event)) *mediacontrol {
+	if btn := mc.Slot("stop"); btn != nil {
+		btn.AddEventListener("click", handler)
+	}
+	return mc
+}
+
+// OnSeek sets the click handler for the progress bar (seeking)
+func (mc *mediacontrol) OnSeek(handler func(dom.Event)) *mediacontrol {
+	if progress := mc.Slot("progress"); progress != nil {
+		progress.AddEventListener("click", handler)
+	}
+	return mc
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // PRIVATE METHODS
+
+// formatDuration formats seconds into H:MM:SS or M:SS format
+func formatDuration(seconds float64) string {
+	totalSeconds := int(seconds)
+	hours := totalSeconds / 3600
+	minutes := (totalSeconds % 3600) / 60
+	secs := totalSeconds % 60
+
+	if hours > 0 {
+		return fmt.Sprintf("%d:%02d:%02d", hours, minutes, secs)
+	}
+	return fmt.Sprintf("%d:%02d", minutes, secs)
+}
 
 func youtubeUrl(id string, attrs ...string) string {
 	url, err := url.Parse(youtubeEmbedURL + id)

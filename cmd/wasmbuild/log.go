@@ -81,7 +81,7 @@ func (l *Logger) Errorf(format string, v ...interface{}) {
 // logging middleware
 func logging(next http.Handler, logger *Logger) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		logger.Infof("%s %s %s", r.Method, r.URL.Path, r.RemoteAddr)
+		logger.Infof("%s %s %s\n", r.Method, r.URL.Path, r.RemoteAddr)
 		next.ServeHTTP(w, r)
 	})
 }

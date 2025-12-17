@@ -82,6 +82,22 @@ func Markdown(filename string) mvc.View {
 	return bs.Markdown(markdown(filename))
 }
 
+func ExampleCard(title string, fn func() (mvc.View, string)) mvc.View {
+	view, source := fn()
+	source = strings.ReplaceAll(source, ", sourcecode()", "")
+	source = strings.ReplaceAll(source, "(mvc.View, string)", "mvc.View")
+	source = strings.ReplaceAll(source, "\t", "  ")
+	return bs.Card(
+		mvc.WithClass("my-3"),
+		bs.Row(
+			bs.Col6(view),
+			bs.Col6(
+				bs.CodeBlock(source, mvc.WithClass("p-2"), mvc.WithStyle("font-size: 0.75em; overflow-x: auto")),
+			),
+		),
+	).Header(bs.Heading(4, title))
+}
+
 func Example(fn func() (mvc.View, string)) mvc.View {
 	view, source := fn()
 	source = strings.ReplaceAll(source, ", sourcecode()", "")
@@ -89,6 +105,6 @@ func Example(fn func() (mvc.View, string)) mvc.View {
 	source = strings.ReplaceAll(source, "\t", "  ")
 	return bs.Row(
 		bs.Col6(view),
-		bs.Col6(bs.CodeBlock(source, bs.WithBorder(), mvc.WithClass("p-2"), mvc.WithStyle("font-size: 0.75em; overflow-x: auto"))),
+		bs.Col6(bs.CodeBlock(source, bs.WithColor(bs.White), bs.WithBorder(), mvc.WithClass("p-2"), mvc.WithStyle("font-size: 0.75em; overflow-x: auto"))),
 	)
 }

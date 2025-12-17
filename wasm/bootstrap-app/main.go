@@ -20,12 +20,20 @@ func main() {
 
 func router() mvc.View {
 	return mvc.Router(mvc.WithClass("container-fluid", "my-2")).
-		Page("#text", TextExamples()).
-		Page("#lists", ListExamples()).
+		Page("#alerts", AlertExamples()).
 		Page("#badges", BadgeExamples()).
+		Page("#borders", BorderExamples()).
+		Page("#buttons", ButtonExamples()).
+		Page("#cards", CardExamples()).
+		Page("#forms", FormExamples()).
 		Page("#icons", IconExamples()).
+		Page("#images", ImageExamples()).
+		Page("#lists", ListExamples()).
 		Page("#media", MediaExamples()).
-		Page("#images", ImageExamples())
+		Page("#modals", ModalExamples()).
+		Page("#offcanvas", OffcanvasExamples()).
+		Page("#text", TextExamples()).
+		Page("#toasts", ToastExamples())
 }
 
 func navbar() mvc.View {
@@ -38,13 +46,18 @@ func navbar() mvc.View {
 			bs.NavItem("#icons", "Icons"),
 		).Label("Typography"),
 		bs.NavDropdown(
-			bs.NavItem("#button", "Buttons"),
-			bs.NavItem("#modal", "Modal"),
-			bs.NavItem("#alert", "Alerts"),
-			bs.NavDivider(),
-			bs.NavItem("#toast", "Toasts"),
+			bs.NavItem("#borders", "Borders"),
+			bs.NavItem("#cards", "Cards"),
+		).Label("Decoration"),
+		bs.NavDropdown(
+			bs.NavItem("#buttons", "Buttons"),
+			bs.NavItem("#modals", "Modal Dialogs"),
+			bs.NavItem("#offcanvas", "Offcanvas Dialogs"),
+			bs.NavItem("#alerts", "Alerts"),
+			bs.NavItem("#toasts", "Toasts"),
 		).Label("Interactivity"),
 		bs.NavDropdown(
+			bs.NavItem("#forms", "Basic Forms"),
 			bs.NavItem("#input", "Input"),
 		).Label("Forms & Controls"),
 		bs.NavDropdown(
@@ -57,10 +70,6 @@ func navbar() mvc.View {
 			bs.NavItem("#nav", "Navigation"),
 			bs.NavItem("#pagination", "Pagination"),
 		).Label("Navigation"),
-		bs.NavDropdown(
-			bs.NavItem("#border", "Borders"),
-			bs.NavItem("#card", "Cards"),
-		).Label("Decoration"),
 		bs.NavDropdown(
 			bs.NavItem("#table", "Tables"),
 		).Label("Data"),

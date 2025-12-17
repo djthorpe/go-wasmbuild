@@ -10,18 +10,16 @@ func TextExamples() mvc.View {
 	return bs.Container(
 		mvc.WithClass("my-3"),
 		Markdown("text_examples.md"),
-		bs.HRule(),
-		bs.Heading(3, "Text Examples"),
-		bs.Heading(4, "Paragraph", mvc.WithClass("mt-4")), Example(Example_Text_001),
-		bs.Heading(4, "Lead Paragraph", mvc.WithClass("mt-4")), Example(Example_Text_002),
-		bs.Heading(4, "Blockquote", mvc.WithClass("mt-4")), Example(Example_Text_003),
-		bs.Heading(4, "Code Blocks", mvc.WithClass("mt-4")), Example(Example_Text_009),
-		bs.Heading(4, "Headings", mvc.WithClass("mt-4")), Example(Example_Text_010),
-		bs.Heading(4, "Color", mvc.WithClass("mt-4")), Example(Example_Text_004),
-		bs.Heading(4, "Inline Styles", mvc.WithClass("mt-4")), Example(Example_Text_005),
-		bs.Heading(4, "Markdown", mvc.WithClass("mt-4")), Example(Example_Text_006),
-		bs.Heading(4, "Position", mvc.WithClass("mt-4")), Example(Example_Text_007),
-		bs.Heading(4, "Link", mvc.WithClass("mt-4")), Example(Example_Text_008),
+		ExampleCard("Paragraph", Example_Text_001),
+		ExampleCard("Lead Paragraph", Example_Text_002),
+		ExampleCard("Blockquote", Example_Text_003),
+		ExampleCard("Code Blocks", Example_Text_009),
+		ExampleCard("Headings", Example_Text_010),
+		ExampleCard("Color", Example_Text_004),
+		ExampleCard("Inline Styles", Example_Text_005),
+		ExampleCard("Markdown", Example_Text_006),
+		ExampleCard("Position", Example_Text_007),
+		ExampleCard("Link", Example_Text_008),
 	)
 }
 

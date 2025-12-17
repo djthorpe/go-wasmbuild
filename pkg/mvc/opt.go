@@ -1,6 +1,7 @@
 package mvc
 
 import (
+	"fmt"
 	"slices"
 	"strings"
 
@@ -16,12 +17,10 @@ type Opt func(OptSet) error
 
 // opt is a private struct which holds options
 type opt struct {
-	doc   dom.Document
 	name  string
 	id    string
 	class []string
 	attr  map[string]string
-	child dom.Node
 }
 
 // OptSet interface for applying options
@@ -42,6 +41,7 @@ var _ OptSet = (*opt)(nil)
 /////////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
+// Apply options to an element
 func applyOpts(element dom.Element, opts ...Opt) error {
 	var o opt
 
@@ -54,8 +54,7 @@ func applyOpts(element dom.Element, opts ...Opt) error {
 		o.name = name
 	}
 
-	// Set existing Document, ID and class
-	o.doc = element.OwnerDocument()
+	// Set existing ID and class
 	o.id = element.ID()
 	o.class = element.ClassList().Values()
 
@@ -90,12 +89,6 @@ func applyOpts(element dom.Element, opts ...Opt) error {
 	// Apply attributes if set
 	for key, value := range o.attr {
 		element.SetAttribute(key, value)
-	}
-
-	// Apply child node if set
-	if o.child != nil {
-		element.SetInnerHTML("")
-		element.AppendChild(o.child)
 	}
 
 	return nil
@@ -142,7 +135,7 @@ func (o *opt) Attr(key string) string {
 }
 
 /////////////////////////////////////////////////////////////////////////////////
-// PUBLIC OPTIONS
+// OPTIONS
 
 func WithClass(classes ...string) Opt {
 	return func(o OptSet) error {
@@ -191,15 +184,22 @@ func WithID(id string) Opt {
 	}
 }
 
-func WithInnerText(text string) Opt {
-	return func(o OptSet) error {
-		o.(*opt).child = o.(*opt).doc.CreateTextNode(text)
-		return nil
-	}
-}
-
 func WithStyle(style string) Opt {
 	return func(o OptSet) error {
 		return WithAttr("style", style)(o)
+	}
+}
+
+func WithSlotAttr(slot, key, value string) Opt {
+	return func(o OptSet) error {
+		if slot == "" {
+			slot = ContentSlot
+		}
+		fmt.Println("TODO: WithSlotAttr not implemented")
+		if o.(*opt).attr == nil {
+			o.(*opt).attr = make(map[string]string)
+		}
+		o.(*opt).attr[key] = value
+		return nil
 	}
 }
