@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 
 	// Packages
@@ -11,27 +10,51 @@ import (
 	bart "github.com/djthorpe/go-wasmbuild/wasm/bart-app/bart"
 )
 
+var stationsview mvc.View
+
 // Application displays examples of MVC components
 func main() {
+	// Create stations table
+	stationsview = bs.Table(
+		bs.WithBorder(),
+		bs.WithStripedRows(),
+		mvc.WithClass("m-0"),
+	).Header(
+		bs.Container(
+			bs.WithFlex(bs.Center),
+			"Stations",
+			bs.Button(bs.Icon("arrow-repeat"), bs.WithSize(bs.Small), mvc.WithClass("ms-auto")).AddEventListener("click", load),
+		),
+	)
+
 	// Run the application
 	mvc.New(
-		bs.Button("Load").AddEventListener("click", func(evt dom.Event) {
-			bart.FetchStations(func(stations []bart.Station, err error) {
-				if err != nil {
-					fmt.Println("Error fetching stations:", err)
-					return
-				}
-
-				// Print stations
-				for _, station := range stations {
-					data, err := json.MarshalIndent(station, "", "  ")
-					if err != nil {
-						fmt.Println("JSON marshal error:", err)
-						return
-					}
-					fmt.Printf("%s: %s\n", station.Abbr, string(data))
-				}
-			})
-		}),
+		bs.FluidContainer(
+			mvc.WithClass("p-0"),
+			bs.Row(
+				mvc.WithClass("g-0"),
+				bs.Col4(stationsview),
+				bs.Col8(
+					bs.WithPosition(bs.Center), bs.WithColor(bs.Light),
+					"RIGHT",
+				),
+			),
+		),
 	).Run()
+}
+
+func load(evt dom.Event) {
+	bart.FetchStations(func(stations []bart.Station, err error) {
+		if err != nil {
+			fmt.Println("Error fetching stations:", err)
+			return
+		}
+
+		// Re-create the stations
+		views := make([]any, len(stations))
+		for i, station := range stations {
+			views[i] = bart.StationRow(station)
+		}
+		stationsview.Content(views)
+	})
 }
