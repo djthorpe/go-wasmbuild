@@ -252,21 +252,20 @@ func TestPromise_ErrorWithoutCatch(t *testing.T) {
 
 func TestPromise_Done(t *testing.T) {
 	// Test that Done callback receives results
-	doneCalled := false
+	done := make(chan struct{})
 	var doneValue js.Value
 	var doneErr error
 
 	js.NewPromise(func() (js.Value, error) {
 		return js.Undefined(), nil
 	}).Done(func(value js.Value, err error) {
-		doneCalled = true
 		doneValue = value
 		doneErr = err
-	}).Wait()
+		close(done)
+	})
 
-	if !doneCalled {
-		t.Error("expected Done to be called")
-	}
+	<-done
+
 	if doneErr != nil {
 		t.Errorf("expected no error in Done, got %v", doneErr)
 	}

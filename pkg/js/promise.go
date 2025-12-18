@@ -72,11 +72,13 @@ func (p *Promise) Finally(finallyfn func()) *Promise {
 	return p
 }
 
-// Done sets a completion callback that receives the final value and error.
+// Done sets a completion callback that receives the final value and error,
+// and immediately starts executing the promise asynchronously.
 // In native Go, Wait() is preferred, but Done() provides API compatibility with WASM.
 // Returns the promise for chaining.
 func (p *Promise) Done(donefn func(value Value, err error)) *Promise {
 	p.donefn = donefn
+	p.Run()
 	return p
 }
 
