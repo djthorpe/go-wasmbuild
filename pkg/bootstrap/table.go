@@ -104,11 +104,10 @@ func WithStripedRows() mvc.Opt {
 	}
 }
 
-/*
 func WithStripedColumns() mvc.Opt {
 	return func(o mvc.OptSet) error {
 		if o.Name() != ViewTable {
-			return ErrInternalAppError.Withf("WithStripedColumns: invalid view %q", o.Name())
+			return dom.ErrInternalAppError.Withf("WithStripedColumns: invalid view %q", o.Name())
 		}
 		if err := mvc.WithoutClass("table-striped")(o); err != nil {
 			return err
@@ -120,7 +119,7 @@ func WithStripedColumns() mvc.Opt {
 func WithRowHover() mvc.Opt {
 	return func(o mvc.OptSet) error {
 		if o.Name() != ViewTable {
-			return ErrInternalAppError.Withf("WithRowHover: invalid view %q", o.Name())
+			return dom.ErrInternalAppError.Withf("WithRowHover: invalid view %q", o.Name())
 		}
 		return mvc.WithClass("table-hover")(o)
 	}
@@ -129,9 +128,8 @@ func WithRowHover() mvc.Opt {
 func WithoutRowHover() mvc.Opt {
 	return func(o mvc.OptSet) error {
 		if o.Name() != ViewTable {
-			return ErrInternalAppError.Withf("WithRowHover: invalid view %q", o.Name())
+			return dom.ErrInternalAppError.Withf("WithRowHover: invalid view %q", o.Name())
 		}
 		return mvc.WithoutClass("table-hover")(o)
 	}
 }
-*/

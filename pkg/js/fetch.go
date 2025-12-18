@@ -205,8 +205,8 @@ func (r *FetchResponse) Headers() map[string]string {
 }
 
 // JSON returns a Promise that resolves to the parsed JSON body.
-// Note: In native Go, this returns the raw text as a string Value.
-// Use encoding/json to parse it yourself.
+// Note: In native Go builds, this method is not implemented and will return an error.
+// Use Text() followed by encoding/json.Unmarshal instead.
 func (r *FetchResponse) JSON() *Promise {
 	return NewPromise(func() (Value, error) {
 		return Undefined(), fmt.Errorf("FetchResponse.JSON is only available in WASM builds")
@@ -231,9 +231,10 @@ func (r *FetchResponse) Blob() *Promise {
 
 // ResponseFrom extracts a *FetchResponse from a Value.
 // In native Go, the Value should wrap a *FetchResponse.
+// Returns nil if the Value does not contain a *FetchResponse.
 func ResponseFrom(v Value) *FetchResponse {
 	if resp, ok := v.v.(*FetchResponse); ok {
 		return resp
 	}
-	return &FetchResponse{}
+	return nil
 }

@@ -115,12 +115,17 @@ func (p *Promise) Run() {
 // Wait executes the promise and blocks until completion.
 // Returns the final value and any error that occurred.
 //
-// WARNING: In WASM, Wait() can cause deadlocks when called from JavaScript
-// event handlers (e.g., click handlers, fetch callbacks). This is because
-// WASM runs on a single-threaded event loop - blocking with Wait() prevents
-// the promise resolution callbacks from executing. Use Done() instead for
-// async operations in event handlers. Wait() is safe to use in tests or
-// during initialization before the event loop starts.
+// WARNING: In WASM, Wait() will DEADLOCK when called from JavaScript event
+// handlers (e.g., click handlers, fetch callbacks, setTimeout). The WASM
+// runtime is single-threaded - blocking with Wait() prevents the JavaScript
+// event loop from running, which means promise callbacks can never execute.
+//
+// Safe to use: during initialization before event loop starts, or in tests.
+// For async operations in event handlers, use Done() instead:
+//
+//	promise.Done(func(value Value, err error) {
+//	    // handle result here
+//	})
 //
 // Can only be called once per Promise instance (subsequent calls return zero values).
 func (p *Promise) Wait() (Value, error) {

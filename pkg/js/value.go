@@ -102,9 +102,14 @@ func Null() Value {
 	}
 }
 
-// ValueOf wraps any Go value in a Value.
-// Note: This uses ObjectProto as a generic type for all wrapped values.
-// The actual Go type can be extracted via type assertion on the internal value.
+// ValueOf wraps any Go value in a Value for use in non-WASM builds.
+// Uses ObjectProto as the type since the native build has no JavaScript
+// type system - all wrapped values are treated as generic objects.
+// To retrieve the original Go value, use type assertion:
+//
+//	if str, ok := v.v.(string); ok { ... }
+//
+// In WASM builds, ValueOf converts Go values to their JavaScript equivalents.
 func ValueOf(v any) Value {
 	return Value{
 		t: ObjectProto,

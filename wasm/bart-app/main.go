@@ -12,7 +12,7 @@ import (
 
 var stationsview mvc.View
 
-// Application displays examples of MVC components
+// Application displays BART station data
 func main() {
 	// Create stations table
 	stationsview = bs.Table(
