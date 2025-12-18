@@ -115,6 +115,10 @@ func setView(self mvc.View, child mvc.View) {
 		list.View = child
 	case *offcanvas:
 		list.View = child
+	case *table:
+		list.View = child
+	case *tablerow:
+		list.View = child
 	case *toast:
 		list.View = child
 	case *toastgroup:

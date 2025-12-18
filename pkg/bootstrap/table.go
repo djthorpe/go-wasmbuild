@@ -31,44 +31,38 @@ const (
 )
 
 func init() {
-	mvc.RegisterView(ViewTable, newTableFromElement)
-	mvc.RegisterView(ViewTableRow, newTableRowFromElement)
+	mvc.RegisterView(ViewTable, func(element dom.Element) mvc.View {
+		return mvc.NewViewWithElement(new(table), element, setView)
+	})
+	mvc.RegisterView(ViewTableRow, func(element dom.Element) mvc.View {
+		return mvc.NewViewWithElement(new(tablerow), element, setView)
+	})
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
 func Table(args ...any) *table {
-	return mvc.NewViewExEx(new(table), ViewTable, templateTable, args...).(*table)
+	return mvc.NewView(new(table), ViewTable, templateTable, setView, args).(*table)
 }
 
-func Row(args ...any) *tablerow {
-	return mvc.NewView(new(tablerow), ViewTableRow, "TR", args...).(*tablerow)
-}
-
-func newTableFromElement(element dom.Element) mvc.View {
-	if element.TagName() != "TABLE" {
-		return nil
-	}
-	return mvc.NewViewWithElement(new(table), element)
-}
-
-func newTableRowFromElement(element dom.Element) mvc.View {
-	if element.TagName() != "TR" {
-		return nil
-	}
-	return mvc.NewViewWithElement(new(tablerow), element)
+func TableRow(args ...any) *tablerow {
+	return mvc.NewView(new(tablerow), ViewTableRow, "TR", setView, args).(*tablerow)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
 
-func (table *table) SetView(view mvc.View) {
-	table.View = view
-}
-
-func (tablerow *tablerow) SetView(view mvc.View) {
-	tablerow.View = view
+func (tablerow *tablerow) Content(args ...any) mvc.View {
+	for i, arg := range args {
+		switch arg.(type) {
+		case string, dom.Element, mvc.View:
+			args[i] = mvc.HTML("TD", arg)
+		default:
+			args[i] = arg
+		}
+	}
+	return tablerow.View.Content(args...)
 }
 
 func (table *table) Header(args ...any) mvc.View {
@@ -95,43 +89,13 @@ func (table *table) Footer(args ...any) mvc.View {
 	return table.View.ReplaceSlot("footer", mvc.HTML("TR", args...))
 }
 
-func (table *table) Content(args ...any) mvc.View {
-	for i, arg := range args {
-		switch arg := arg.(type) {
-		case mvc.View:
-			if _, ok := arg.(*tablerow); ok {
-				args[i] = arg
-			} else {
-				panic("table.Content: invalid view type")
-			}
-		default:
-			args[i] = arg
-		}
-	}
-	return table.View.ReplaceSlot("body", mvc.HTML("TBODY", args...))
-}
-
-func (tablerow *tablerow) Content(args ...any) mvc.View {
-	for i, arg := range args {
-		switch arg.(type) {
-		case string, dom.Element, mvc.View:
-			args[i] = mvc.HTML("TD", arg)
-		default:
-			args[i] = arg
-		}
-	}
-	return tablerow.View.Content(args...)
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // OPTIONS
-
-/*
 
 func WithStripedRows() mvc.Opt {
 	return func(o mvc.OptSet) error {
 		if o.Name() != ViewTable {
-			return ErrInternalAppError.Withf("WithStripedRows: invalid view %q", o.Name())
+			return dom.ErrInternalAppError.Withf("WithStripedRows: invalid view %q", o.Name())
 		}
 		if err := mvc.WithoutClass("table-striped-columns")(o); err != nil {
 			return err
@@ -143,7 +107,7 @@ func WithStripedRows() mvc.Opt {
 func WithStripedColumns() mvc.Opt {
 	return func(o mvc.OptSet) error {
 		if o.Name() != ViewTable {
-			return ErrInternalAppError.Withf("WithStripedColumns: invalid view %q", o.Name())
+			return dom.ErrInternalAppError.Withf("WithStripedColumns: invalid view %q", o.Name())
 		}
 		if err := mvc.WithoutClass("table-striped")(o); err != nil {
 			return err
@@ -155,7 +119,7 @@ func WithStripedColumns() mvc.Opt {
 func WithRowHover() mvc.Opt {
 	return func(o mvc.OptSet) error {
 		if o.Name() != ViewTable {
-			return ErrInternalAppError.Withf("WithRowHover: invalid view %q", o.Name())
+			return dom.ErrInternalAppError.Withf("WithRowHover: invalid view %q", o.Name())
 		}
 		return mvc.WithClass("table-hover")(o)
 	}
@@ -164,9 +128,8 @@ func WithRowHover() mvc.Opt {
 func WithoutRowHover() mvc.Opt {
 	return func(o mvc.OptSet) error {
 		if o.Name() != ViewTable {
-			return ErrInternalAppError.Withf("WithRowHover: invalid view %q", o.Name())
+			return dom.ErrInternalAppError.Withf("WithRowHover: invalid view %q", o.Name())
 		}
 		return mvc.WithoutClass("table-hover")(o)
 	}
 }
-*/
