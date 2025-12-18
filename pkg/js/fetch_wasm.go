@@ -58,7 +58,7 @@ func Fetch(url string, opts ...FetchOption) *Promise {
 	}
 
 	// Call fetch and wrap the JS promise
-	jsPromise := js.Global().Call("fetch", url, jsOpts)
+	jsPromise := js.Global().Call("fetch", req.url, jsOpts)
 
 	return FromJSPromise(jsPromise).Then(func(value Value) (Value, error) {
 		// Check response.ok - fetch only rejects on network errors

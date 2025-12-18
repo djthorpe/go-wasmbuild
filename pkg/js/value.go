@@ -103,6 +103,8 @@ func Null() Value {
 }
 
 // ValueOf wraps any Go value in a Value.
+// Note: This uses ObjectProto as a generic type for all wrapped values.
+// The actual Go type can be extracted via type assertion on the internal value.
 func ValueOf(v any) Value {
 	return Value{
 		t: ObjectProto,

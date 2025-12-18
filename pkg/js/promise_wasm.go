@@ -12,6 +12,8 @@ import (
 
 // Promise wraps a JavaScript Promise and provides chainable handlers.
 // In WASM, promises are fully async and non-blocking to avoid deadlocks.
+// A Promise can only be executed once (via Run, Wait, or Done). Subsequent
+// execution attempts are ignored due to an internal sync.Once guard.
 type Promise struct {
 	// The executor function that produces the initial value/error
 	tryfn func() (Value, error)

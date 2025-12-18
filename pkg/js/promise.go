@@ -9,6 +9,8 @@ import "sync"
 
 // Promise represents an asynchronous operation that can be chained with
 // Then, Catch, and Finally handlers, similar to JavaScript Promises.
+// A Promise can only be executed once (via Run, Wait, or Done). Subsequent
+// execution attempts are ignored due to an internal sync.Once guard.
 type Promise struct {
 	tryfn     func() (Value, error)
 	thenfn    func(value Value) (Value, error)
@@ -110,8 +112,8 @@ func (p *Promise) Wait() (Value, error) {
 
 // execute runs the promise chain and returns the final value and error
 func (p *Promise) execute() (Value, error) {
-	var value Value
 	var err error
+	value := Undefined() // Initialize to Undefined for explicit zero-value behavior
 
 	// Always call finally and done at the end
 	defer func() {
