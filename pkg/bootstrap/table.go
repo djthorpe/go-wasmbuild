@@ -77,6 +77,18 @@ func (table *table) Header(args ...any) mvc.View {
 	return table.View.ReplaceSlot("header", mvc.HTML("TR", args...))
 }
 
+func (table *table) Footer(args ...any) mvc.View {
+	for i, arg := range args {
+		switch arg.(type) {
+		case string, dom.Element, mvc.View:
+			args[i] = mvc.HTML("TH", arg)
+		default:
+			args[i] = arg
+		}
+	}
+	return table.View.ReplaceSlot("footer", mvc.HTML("TR", args...))
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // OPTIONS
 
