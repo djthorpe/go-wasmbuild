@@ -5,56 +5,82 @@ import (
 
 	// Packages
 	dom "github.com/djthorpe/go-wasmbuild"
-	bs "github.com/djthorpe/go-wasmbuild/pkg/bootstrap"
+	cds "github.com/djthorpe/go-wasmbuild/pkg/carbon"
 	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
 	bart "github.com/djthorpe/go-wasmbuild/wasm/bart-app/bart"
 )
 
-var stationsview mvc.View
+var (
+	stationsview mvc.View
+	toastStack   mvc.View
+	ctrl         *bart.StationsController
+)
 
 // Application displays BART station data
 func main() {
+	// Fixed-position overlay for toast notifications
+	toastStack = mvc.New(
+		mvc.WithAttr("style", "position:fixed;top:4.5rem;right:1rem;z-index:9999;"+
+			"display:flex;flex-direction:column;gap:var(--cds-spacing-03,0.5rem);"),
+	)
+	toastStack.AddEventListener("cds-notification-closed", func(e dom.Event) {
+		if el, ok := e.Target().(dom.Element); ok {
+			el.Remove()
+		}
+	})
+
+	// Controller: fetch errors fire an error toast
+	ctrl = bart.NewStationsController(func(err error) {
+		toastStack.Root().AppendChild(cds.ToastNotification(
+			cds.WithNotificationKind(cds.NotificationError),
+			cds.WithNotificationTitle("Failed to load stations"),
+			cds.WithNotificationSubtitle(err.Error()),
+			cds.WithNotificationTimeout(8000),
+		).Root())
+	})
+
 	// Create stations table
-	stationsview = bs.Table(
-		bs.WithBorder(),
-		bs.WithStripedRows(),
-		mvc.WithClass("m-0"),
+	stationsview = cds.Table(
+		cds.WithTableZebra(),
 	).Header(
-		bs.Container(
-			bs.WithFlex(bs.Center),
-			"Stations",
-			bs.Button(bs.Icon("arrow-repeat"), bs.WithSize(bs.Small), mvc.WithClass("ms-auto")).AddEventListener("click", load),
-		),
+		cds.TableHeaderCell("Name"),
+		cds.TableHeaderCell("Code"),
+		cds.TableHeaderCell("Location"),
+		cds.TableHeaderCell("Map"),
 	)
 
-	// Run the application
+	// Model listener: re-render the table whenever the data changes.
+	// Registered after stationsview is created because AddEventListener
+	// calls fn immediately with the current (empty) slice.
+	ctrl.Model.AddEventListener("table", func(stations []bart.Station) {
+		rows := make([]any, len(stations))
+		for i, s := range stations {
+			rows[i] = bart.StationRow(s)
+		}
+		stationsview.Content(rows)
+		if len(stations) > 0 {
+			toastStack.Root().AppendChild(cds.ToastNotification(
+				cds.WithNotificationKind(cds.NotificationSuccess),
+				cds.WithNotificationTitle("Stations loaded"),
+				cds.WithNotificationSubtitle(fmt.Sprintf("%d stations retrieved.", len(stations))),
+				cds.WithNotificationTimeout(4000),
+			).Root())
+		}
+	})
+
+	// Shell (fixed header)
+	mvc.New(cds.Header(cds.WithTheme(cds.ThemeG100)).Label("/", "BART App"))
+
+	// Content
 	mvc.New(
-		bs.FluidContainer(
-			mvc.WithClass("p-0"),
-			bs.Row(
-				mvc.WithClass("g-0"),
-				bs.Col4(stationsview),
-				bs.Col8(
-					bs.WithPosition(bs.Center), bs.WithColor(bs.Light),
-					"RIGHT",
-				),
-			),
+		mvc.WithClass("cds--content"),
+		cds.Section(
+			cds.Heading(2, "BART Stations"),
+			cds.Button("Load stations", cds.WithButtonKind(cds.ButtonPrimary)).
+				AddEventListener("click", func(e dom.Event) {
+					ctrl.Load()
+				}),
+			stationsview,
 		),
 	).Run()
-}
-
-func load(evt dom.Event) {
-	bart.FetchStations(func(stations []bart.Station, err error) {
-		if err != nil {
-			fmt.Println("Error fetching stations:", err)
-			return
-		}
-
-		// Re-create the stations
-		views := make([]any, len(stations))
-		for i, station := range stations {
-			views[i] = bart.StationRow(station)
-		}
-		stationsview.Content(views)
-	})
 }
