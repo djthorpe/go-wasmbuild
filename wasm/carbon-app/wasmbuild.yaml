@@ -1,0 +1,20 @@
+vars:
+    Title: "Carbon examples"
+    Header: |
+        <!-- IBM Plex fonts via IBM's own CDN (most reliable source for Carbon) -->
+        <link rel="stylesheet" href="https://1.www.s81c.com/common/carbon/plex/sans.css">
+        <link rel="stylesheet" href="https://1.www.s81c.com/common/carbon/plex/sans-italic.css">
+        <link rel="stylesheet" href="https://1.www.s81c.com/common/carbon/plex/mono.css">
+
+        <!-- IBM Carbon Design System styles (v11 / @carbon/styles v1) -->
+        <link rel="stylesheet" href="https://unpkg.com/@carbon/styles@1/css/styles.min.css">
+
+        <!-- IBM Carbon Web Components — see components.js for individual imports -->
+        <script type="module" src="components.js"></script>
+
+        <!-- Carbon type utility classes and spacing overrides -->
+        <link rel="stylesheet" href="tokens.css">
+
+assets:
+    - tokens.css
+    - components.js

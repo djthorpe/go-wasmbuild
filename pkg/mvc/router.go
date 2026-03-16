@@ -14,11 +14,13 @@ import (
 type router struct {
 	View
 	pages []page
+	sel   Selectable
 }
 
 type page struct {
-	path string
-	view View
+	path       string
+	view       View
+	selections []View
 }
 
 var _ View = (*router)(nil)
@@ -59,13 +61,22 @@ func Router(args ...any) *router {
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
 
-func (router *router) Page(path string, view View) *router {
+// Selectable registers a Selectable (e.g. a SideNav) that the router will
+// update whenever the active page changes. Call before registering pages.
+func (router *router) Selectable(s Selectable) *router {
+	router.sel = s
+	return router
+}
+
+// Page registers a path/view pair. Optional trailing View args are passed to
+// the registered Selectable (if any) as the items to mark active.
+func (router *router) Page(path string, view View, selections ...View) *router {
 	if path != "" && !strings.HasPrefix(path, "#") {
 		panic("Router.Page: path must start with '#'")
 	}
 
 	// Append page to list of pages
-	router.pages = append(router.pages, page{path: path, view: view})
+	router.pages = append(router.pages, page{path: path, view: view, selections: selections})
 
 	// Refresh the view for the current hash or default page
 	router.refresh(dom.GetWindow().Location().Hash())
@@ -90,12 +101,17 @@ func (router *router) match(hash string) *page {
 // refresh updates the router content based on the current hash. If no matching
 // page exists, the first registered page (if any) becomes the default view.
 func (router *router) refresh(hash string) {
-	if page := router.match(hash); page != nil {
-		router.ReplaceSlotChildren(ContentSlot, page.view)
+	var active *page
+	if p := router.match(hash); p != nil {
+		active = p
+	} else if len(router.pages) > 0 {
+		active = &router.pages[0]
+	}
+	if active == nil {
 		return
 	}
-	if len(router.pages) > 0 {
-		router.ReplaceSlotChildren(ContentSlot, router.pages[0].view)
-		return
+	router.ReplaceSlotChildren(ContentSlot, active.view)
+	if router.sel != nil {
+		router.sel.Select(active.selections...)
 	}
 }
