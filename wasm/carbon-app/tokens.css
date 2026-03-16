@@ -7,18 +7,6 @@
  * the pkg/carbon Go package can apply them via class attributes.
  */
 
-/* ── Focus rings ─────────────────────────────────────────────────────────────
- * Reduce focus ring prominence using outline-color alpha.
- * Edit the alpha values to taste (0.0 = hidden, 1.0 = full strength).
- */
-*:focus:not(:focus-visible) {
-    outline-color: rgba(15, 98, 254, 0.15) !important;
-}
-
-*:focus-visible {
-    outline-color: rgba(15, 98, 254, 0.5) !important;
-}
-
 /* ── Paragraph spacing ──────────────────────────────────────────────────────── */
 p[data-mvc] {
     margin-bottom: var(--cds-spacing-05, 1rem);
