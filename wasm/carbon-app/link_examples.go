@@ -6,7 +6,7 @@ import (
 )
 
 func LinkExamples() mvc.View {
-	return cds.Section(
+	return ExamplePage("Link",
 		cds.LeadPara("Carbon provides two link variants: a standalone link for navigation actions, and an inline link that sits within the flow of body text."),
 		ExampleRow("Link", Example_Link_001),
 		ExampleRow("InlineLink", Example_Link_002),

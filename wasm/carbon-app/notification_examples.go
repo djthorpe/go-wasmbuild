@@ -12,7 +12,7 @@ const (
 )
 
 func NotificationExamples() mvc.View {
-	return cds.Section(
+	return ExamplePage("Notification",
 		cds.LeadPara(
 			`Notifications use the `, cds.Code("cds-inline-notification"), ` and `,
 			cds.Code("cds-toast-notification"), ` web components. `,

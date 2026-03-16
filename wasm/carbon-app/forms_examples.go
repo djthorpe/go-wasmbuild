@@ -6,7 +6,7 @@ import (
 )
 
 func FormsExamples() mvc.View {
-	return cds.Section(
+	return ExamplePage("Form",
 		cds.LeadPara(
 			`Carbon forms are built around a few core rules: every field needs a clear label, `,
 			`helper text should explain how to complete the field, validation should appear close to the control, `,

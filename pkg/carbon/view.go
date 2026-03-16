@@ -29,4 +29,7 @@ const (
 	ViewSelectGroup   = "mvc-cds-select-group"
 	ViewDropdown      = "mvc-cds-dropdown"
 	ViewDropdownItem  = "mvc-cds-dropdown-item"
+	ViewTable         = "mvc-cds-table"
+	ViewTableRow      = "mvc-cds-table-row"
+	ViewPagination    = "mvc-cds-pagination"
 )

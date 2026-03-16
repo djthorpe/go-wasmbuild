@@ -11,7 +11,7 @@ import (
 const textAreaStyle = "max-width:32rem;padding-bottom:var(--cds-spacing-07,2rem);"
 
 func TextAreaExamples() mvc.View {
-	return cds.Section(
+	return ExamplePage("Text area",
 		cds.LeadPara(
 			`Text areas use the `, cds.Code("cds-textarea"), ` web component. `,
 			`Use them when the user needs to enter longer multi-line content such as notes, descriptions, or comments. `,

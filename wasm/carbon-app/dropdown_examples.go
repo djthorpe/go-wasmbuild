@@ -9,7 +9,7 @@ import (
 const dropdownStyle = "max-width:28rem;padding-bottom:var(--cds-spacing-07,2rem);"
 
 func DropdownExamples() mvc.View {
-	return cds.Section(
+	return ExamplePage("Dropdown",
 		cds.LeadPara(
 			`Dropdown uses the `, cds.Code("cds-dropdown"), ` family. `,
 			`Use it when you want Carbon's richer custom picker rather than the simpler select control. `,

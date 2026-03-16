@@ -6,7 +6,7 @@ import (
 )
 
 func HeadingExamples() mvc.View {
-	return cds.Section(
+	return ExamplePage("Heading",
 		cds.LeadPara("Carbon uses a productive heading scale for UI contexts. Each level maps to a fixed type token — size, weight, and line-height are all prescribed."),
 		ExampleRow("Heading 1", Example_Heading_001),
 		ExampleRow("Heading 2", Example_Heading_002),

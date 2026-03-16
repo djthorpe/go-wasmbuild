@@ -8,7 +8,7 @@ import (
 const iconStyle = "display:inline-flex;align-items:center;gap:var(--cds-spacing-03,0.5rem);margin-right:var(--cds-spacing-05,1rem);margin-bottom:var(--cds-spacing-04,0.75rem);"
 
 func IconExamples() mvc.View {
-	return cds.Section(
+	return ExamplePage("Icon",
 		cds.LeadPara(
 			`Icons are rendered using `,
 			cds.InlineLink("https://carbondesignsystem.com/elements/icons/library/", "Carbon Icons"),

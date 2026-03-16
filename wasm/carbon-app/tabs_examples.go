@@ -7,7 +7,7 @@ import (
 )
 
 func TabExamples() mvc.View {
-	return cds.Section(
+	return ExamplePage("Tabs",
 		cds.LeadPara(
 			`Tabs use the `, cds.Code("cds-tabs"), ` and `, cds.Code("cds-tab"),
 			` web components. Build a complete tab group with `, cds.Code("cds.TabSet()"),

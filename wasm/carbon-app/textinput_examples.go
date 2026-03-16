@@ -9,7 +9,7 @@ import (
 const textInputStyle = "max-width:28rem;padding-bottom:var(--cds-spacing-07,2rem);"
 
 func InputExamples() mvc.View {
-	return cds.Section(
+	return ExamplePage("Text input",
 		cds.LeadPara(
 			`Inputs start with the generic `, cds.Code("cds.Input()"), ` constructor. `,
 			`Specialized variants such as `, cds.Code("cds.EmailInput()"), `, `, cds.Code("cds.TelInput()"), `, `,

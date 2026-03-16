@@ -7,7 +7,7 @@ import (
 )
 
 func AccordionExamples() mvc.View {
-	return cds.Section(
+	return ExamplePage("Accordion",
 		cds.LeadPara(
 			`Accordions use the `, cds.Code("cds-accordion"), ` and `,
 			cds.Code("cds-accordion-item"), ` web components. `,

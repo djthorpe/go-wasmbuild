@@ -13,6 +13,8 @@ import 'https://esm.sh/@carbon/web-components@2/es/components/number-input/index
 import 'https://esm.sh/@carbon/web-components@2/es/components/textarea/index.js';
 import 'https://esm.sh/@carbon/web-components@2/es/components/select/index.js';
 import 'https://esm.sh/@carbon/web-components@2/es/components/dropdown/index.js';
+import 'https://esm.sh/@carbon/web-components@2/es/components/data-table/index.js';
+import 'https://esm.sh/@carbon/web-components@2/es/components/pagination/index.js';
 
 // ── cds-icon ──────────────────────────────────────────────────────────────────
 // Lightweight Carbon icon renderer.  Loads SVG data on demand from the

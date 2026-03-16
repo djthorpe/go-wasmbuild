@@ -6,7 +6,7 @@ import (
 )
 
 func CodeExamples() mvc.View {
-	return cds.Section(
+	return ExamplePage("Code snippet",
 		cds.LeadPara("Carbon's code snippet component comes in three forms: inline for embedding within prose, single-line for short commands, and multi-line for longer blocks. All variants include a copy-to-clipboard button."),
 		ExampleRow("Inline", Example_Code_001),
 		ExampleRow("Single-line", Example_Code_002),

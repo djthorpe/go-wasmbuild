@@ -27,8 +27,8 @@ func shell() mvc.View {
 	return cds.Section(
 		cds.Header(
 			cds.WithTheme(cds.ThemeG90),
-			cds.HeaderNavItem("#headings", "Headings"),
 			cds.HeaderNavItem("#text", "Text"),
+			cds.HeaderNavItem("#headings", "Headings"),
 			cds.HeaderNavItem("#links", "Links"),
 			cds.HeaderNavItem("#code", "Code"),
 			cds.HeaderNavItem("#icons", "Icons"),
@@ -55,12 +55,15 @@ var (
 	navNotifications = cds.SideNavItem("#notifications", "Notifications")
 	navAccordion     = cds.SideNavItem("#accordion", "Accordion")
 	navTabs          = cds.SideNavItem("#tabs", "Tabs")
+	navTable         = cds.SideNavItem("#table", "Table")
+	navPagination    = cds.SideNavItem("#pagination", "Pagination")
 	navGrid          = cds.SideNavLink("#grid", "Grid")
 	sideNav          = cds.SideNav(
 		cds.WithTheme(cds.ThemeG90),
 		cds.SideNavSection("Typography", navText, navHeadings, navLinks, navCode, navIcons),
 		cds.SideNavSection("Form", navForms, navInput, navSelect, navDropdown),
 		cds.SideNavSection("Components", navButtons, navTags, navNotifications, navAccordion, navTabs),
+		cds.SideNavSection("Data", navTable, navPagination),
 		navGrid,
 	)
 )
@@ -82,5 +85,7 @@ func router() mvc.View {
 		Page("#notifications", NotificationExamples(), navNotifications).
 		Page("#accordion", AccordionExamples(), navAccordion).
 		Page("#tabs", TabExamples(), navTabs).
+		Page("#table", TableExamples(), navTable).
+		Page("#pagination", PaginationExamples(), navPagination).
 		Page("#grid", GridExamples(), navGrid)
 }

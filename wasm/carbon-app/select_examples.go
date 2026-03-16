@@ -9,7 +9,7 @@ import (
 const selectStyle = "max-width:28rem;padding-bottom:var(--cds-spacing-07,2rem);"
 
 func SelectExamples() mvc.View {
-	return cds.Section(
+	return ExamplePage("Select",
 		cds.LeadPara(
 			`Select uses the `, cds.Code("cds-select"), ` family. `,
 			`Use them when the user should choose one item from a known set of options. `,

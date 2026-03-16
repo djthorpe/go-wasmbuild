@@ -201,10 +201,101 @@ func TabSet(args ...any) mvc.View {
 	return Section(tabsEl, panels)
 }
 
+// TabSetParts is like TabSet but returns the tab-bar view and the panels view
+// separately, so they can be placed in different DOM containers — for example
+// a dark-themed header (tab bar) and a light body (panels).
+func TabSetParts(args ...any) (tabBar, panels mvc.View) {
+	var panes []*tabPane
+	var tabsOpts []any
+	type tabPanel struct {
+		label string
+		elem  dom.Element
+	}
+
+	for _, arg := range args {
+		switch v := arg.(type) {
+		case *tabPane:
+			panes = append(panes, v)
+		case mvc.Opt:
+			tabsOpts = append(tabsOpts, v)
+		}
+	}
+
+	selIdx := -1
+	for i, p := range panes {
+		if p.selected {
+			selIdx = i
+			break
+		}
+	}
+	if selIdx < 0 && len(panes) > 0 {
+		selIdx = 0
+	}
+
+	if selIdx >= 0 {
+		tabsOpts = append(tabsOpts, mvc.WithAttr("value", panes[selIdx].label))
+	}
+	tabArgs := append([]any{}, tabsOpts...)
+	var panelList []any
+	var panelRefs []tabPanel
+
+	for i, p := range panes {
+		tabPaneSeq++
+		panelID := fmt.Sprintf("cds-panel-%d", tabPaneSeq)
+
+		ta := []any{
+			p.label,
+			mvc.WithAttr("value", p.label),
+			mvc.WithAttr("target", panelID),
+		}
+		if p.disabled {
+			ta = append(ta, mvc.WithAttr("disabled", ""))
+		}
+		t := mvc.NewView(new(tab), ViewTab, "cds-tab", func(self, child mvc.View) {
+			self.(*tab).View = child
+		}, ta...)
+		tabArgs = append(tabArgs, t)
+
+		pArgs := []any{mvc.WithAttr("id", panelID)}
+		if i != selIdx {
+			pArgs = append(pArgs, mvc.WithAttr("hidden", ""))
+		}
+		pArgs = append(pArgs, p.content...)
+		panel := mvc.HTML("div", pArgs...)
+		panelList = append(panelList, panel)
+		panelRefs = append(panelRefs, tabPanel{label: p.label, elem: panel})
+	}
+
+	tabsEl := mvc.NewView(new(tabs), ViewTabs, "cds-tabs", func(self, child mvc.View) {
+		self.(*tabs).View = child
+	}, tabArgs...)
+	tabsEl.AddEventListener("cds-tabs-selected", func(e dom.Event) {
+		el, ok := e.Target().(dom.Element)
+		if !ok {
+			return
+		}
+		selected := el.Value()
+		for _, panel := range panelRefs {
+			if panel.label == selected {
+				panel.elem.RemoveAttribute("hidden")
+			} else {
+				panel.elem.SetAttribute("hidden", "")
+			}
+		}
+	})
+
+	return tabsEl, Section(panelList)
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // OPTIONS
 
 // WithTabsType sets the tab bar visual style.
 func WithTabsType(t TabsType) mvc.Opt {
 	return mvc.WithAttr("type", string(t))
+}
+
+// WithTabsSize sets the height of the tab bar. Valid values are "sm", "md", "lg".
+func WithTabsSize(size string) mvc.Opt {
+	return mvc.WithAttr("size", size)
 }

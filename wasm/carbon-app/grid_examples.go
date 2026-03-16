@@ -11,7 +11,7 @@ const (
 )
 
 func GridExamples() mvc.View {
-	return cds.Section(
+	return ExamplePage("Grid",
 		cds.LeadPara("Carbon uses a 16-column CSS grid. Columns are expressed as spans (e.g. col-span-4) and collapse naturally on smaller viewports. No row wrapper is needed."),
 		cds.Grid(
 			// 4 equal quarters (4+4+4+4 = 16)

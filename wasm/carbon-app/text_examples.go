@@ -6,7 +6,7 @@ import (
 )
 
 func TextExamples() mvc.View {
-	return cds.Section(
+	return ExamplePage("Text",
 		cds.LeadPara("Carbon's type scale covers body text, supporting copy, and inline emphasis. Each token is tuned for readability at its intended size and context."),
 		ExampleRow("Lead Paragraph", Example_Text_001),
 		ExampleRow("Paragraph", Example_Text_002),

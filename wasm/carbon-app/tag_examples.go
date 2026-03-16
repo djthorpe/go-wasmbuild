@@ -7,7 +7,7 @@ import (
 )
 
 func TagExamples() mvc.View {
-	return cds.Section(
+	return ExamplePage("Tag",
 		cds.LeadPara(
 			`Tags use the `, cds.Code("cds-tag"), ` web component. `,
 			`Set the colour with `, cds.Code("cds.WithTagType()"), `. `,

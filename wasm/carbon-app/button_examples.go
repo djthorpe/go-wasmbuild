@@ -12,7 +12,7 @@ const (
 )
 
 func ButtonExamples() mvc.View {
-	return cds.Section(
+	return ExamplePage("Button",
 		cds.LeadPara(
 			`Buttons use the `, cds.Code("cds-button"), ` web component. `,
 			`The default kind is `, cds.Code("primary"), `. `,
