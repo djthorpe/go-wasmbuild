@@ -56,9 +56,11 @@ func init() {
 	mvc.RegisterView(ViewNav, func(element dom.Element) mvc.View {
 		return mvc.NewViewWithElement(new(nav), element, setView)
 	}, EventClick, EventHoverBubbled, EventNoHoverBubbled, EventFocusBubbled, EventNoFocus, EventSectionToggling, EventSectionToggle)
+
 	mvc.RegisterView(ViewNavGlobal, func(element dom.Element) mvc.View {
 		return mvc.NewViewWithElement(new(navglobal), element, setView)
 	})
+
 	mvc.RegisterView(ViewNavItem, func(element dom.Element) mvc.View {
 		return mvc.NewViewWithElement(new(navitem), element, setView)
 	}, EventSectionToggling, EventSectionToggle)
@@ -90,12 +92,6 @@ func HeaderNavItem(href string, args ...any) *navitem {
 	return mvc.NewView(new(navitem), ViewNavItem, "cds-header-nav-item", setView, append([]any{mvc.WithAttr("href", href)}, args...)...).(*navitem)
 }
 
-// HeaderGlobalAction returns a button that adapts to a header global action when
-// placed inside HeaderNavGlobal.
-func HeaderGlobalAction(args ...any) *button {
-	return Button(args...)
-}
-
 // SideNav returns a <cds-side-nav> shell panel.
 func SideNav(args ...any) *nav {
 	n := mvc.NewView(new(nav), ViewNav, templateShellSideNav, setView, args).(*nav)
@@ -108,8 +104,8 @@ func SideNavLink(href string, args ...any) *navitem {
 	return mvc.NewView(new(navitem), ViewNavItem, "cds-side-nav-link", setView, append([]any{mvc.WithAttr("href", href)}, args...)...).(*navitem)
 }
 
-// SideNavSection returns a <cds-side-nav-menu> collapsible navigation group.
-func SideNavSection(title string, args ...any) *navitem {
+// SideNavGroup returns a <cds-side-nav-menu> collapsible navigation group.
+func SideNavGroup(title string, args ...any) *navitem {
 	n := mvc.NewView(new(navitem), ViewNavItem, "cds-side-nav-menu", setView, append([]any{mvc.WithAttr("title", title), mvc.WithAttr("expanded", "")}, args...)...).(*navitem)
 	if strings.TrimSpace(n.Root().Value()) == "" && !n.Root().HasAttribute("value") {
 		n.Root().SetValue(title)
@@ -119,8 +115,8 @@ func SideNavSection(title string, args ...any) *navitem {
 	return n
 }
 
-// SideNavItem returns a <cds-side-nav-menu-item> for a SideNavSection.
-func SideNavItem(href string, args ...any) *navitem {
+// SideNavGroupItem returns a <cds-side-nav-menu-item> for a SideNavGroup.
+func SideNavGroupItem(href string, args ...any) *navitem {
 	return mvc.NewView(new(navitem), ViewNavItem, "cds-side-nav-menu-item", setView, append([]any{mvc.WithAttr("href", href)}, args...)...).(*navitem)
 }
 
@@ -151,6 +147,16 @@ func (n *nav) SetActive(views ...mvc.View) {
 	for _, item := range n.items {
 		setNavItemActive(item, active)
 	}
+}
+
+// Item returns the first navigation item whose href matches the supplied value.
+func (n *nav) Item(href string) mvc.View {
+	for _, item := range n.items {
+		if view := navItemByHref(item, href); view != nil {
+			return view
+		}
+	}
+	return nil
 }
 
 // OnSectionToggle adds a listener for side-nav section toggle completion.
@@ -195,6 +201,11 @@ func (n *nav) OnSectionCollapsed(handler func(dom.Event)) *nav {
 // SetActive marks the navigation item active or inactive.
 func (n *navitem) SetActive(active bool) {
 	setNavItemActiveElement(n.Root(), active)
+}
+
+// Item returns the first navigation item in this branch whose href matches the supplied value.
+func (n *navitem) Item(href string) mvc.View {
+	return navItemByHref(n, href)
 }
 
 // OnSectionToggle adds a listener for side-nav section toggle completion.
@@ -244,6 +255,21 @@ func navItems(args ...any) []*navitem {
 		}
 	}
 	return items
+}
+
+func navItemByHref(item *navitem, href string) mvc.View {
+	if item == nil {
+		return nil
+	}
+	if item.Root().GetAttribute("href") == href {
+		return item
+	}
+	for _, child := range item.items {
+		if view := navItemByHref(child, href); view != nil {
+			return view
+		}
+	}
+	return nil
 }
 
 func sectionEventExpanded(evt dom.Event) bool {

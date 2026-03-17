@@ -97,10 +97,10 @@ func headerStory() dom.Element {
 func sideNavStory() dom.Element {
 	overview := carbon.SideNavLink("#overview", "Overview")
 	reports := carbon.SideNavLink("#reports", "Reports")
-	stations := carbon.SideNavItem("#stations", "Stations")
-	vehicles := carbon.SideNavItem("#vehicles", "Vehicles")
-	maintenance := carbon.SideNavItem("#maintenance", "Maintenance")
-	fleet := carbon.SideNavSection("Fleet", stations, vehicles, maintenance)
+	stations := carbon.SideNavGroupItem("#stations", "Stations")
+	vehicles := carbon.SideNavGroupItem("#vehicles", "Vehicles")
+	maintenance := carbon.SideNavGroupItem("#maintenance", "Maintenance")
+	fleet := carbon.SideNavGroup("Fleet", stations, vehicles, maintenance)
 	settings := carbon.SideNavLink("#settings", "Settings")
 
 	side := carbon.SideNav(

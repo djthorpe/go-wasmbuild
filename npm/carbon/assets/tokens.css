@@ -276,14 +276,18 @@ cds-code-snippet[type="multi"] {
 }
 
 /* ── Shell content layout ─────────────────────────────────────────────────── */
-/* Clears the fixed 48px header.
+/* Keeps content padding generic.
+   When a header is present as a sibling, offset content below the fixed 48px header.
    When a side nav is present as a sibling, also offset content by 256px.
    Mirrors what @carbon/styles .cds--content provides but also handles the
    responsive breakpoint where cds-side-nav[collapse-mode="responsive"]
    collapses (Carbon breakpoint-lg = 1056px). */
 .cds--content {
-    margin-top: 3rem;
     padding: var(--cds-spacing-07, 2rem);
+}
+
+cds-header~.cds--content {
+    margin-top: 3rem;
 }
 
 cds-side-nav~.cds--content {
