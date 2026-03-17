@@ -65,6 +65,15 @@ func (tablerow *tablerow) Content(args ...any) mvc.View {
 	return tablerow.View.Content(args...)
 }
 
+// SetActive adds or removes the right-border selection highlight, satisfying mvc.ActiveState.
+func (tablerow *tablerow) SetActive(active bool) {
+	if active {
+		tablerow.Apply(mvc.WithClass("table-row-selected"))
+	} else {
+		tablerow.Apply(mvc.WithoutClass("table-row-selected"))
+	}
+}
+
 func (table *table) Header(args ...any) mvc.View {
 	for i, arg := range args {
 		switch arg.(type) {
@@ -87,6 +96,25 @@ func (table *table) Footer(args ...any) mvc.View {
 		}
 	}
 	return table.View.ReplaceSlot("footer", mvc.HTML("TR", args...))
+}
+
+// SetActive activates the given rows and deactivates all other rows in this
+// table, satisfying mvc.ActiveGroup. Pass no arguments to deactivate all rows.
+func (table *table) SetActive(views ...mvc.View) {
+	body := table.Slot(mvc.ContentSlot)
+	if body == nil {
+		return
+	}
+	// Remove the active class from every row in the body.
+	for child := body.FirstElementChild(); child != nil; child = child.NextElementSibling() {
+		child.ClassList().Remove("table-row-selected")
+	}
+	// Add the active class to the requested rows via their own root elements.
+	for _, v := range views {
+		if v != nil {
+			v.Root().ClassList().Add("table-row-selected")
+		}
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////

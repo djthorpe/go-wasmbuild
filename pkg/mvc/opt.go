@@ -81,8 +81,8 @@ func applyOpts(element dom.Element, opts ...Opt) error {
 		element.SetID(o.id)
 	}
 
-	// Apply classes if set
-	if len(o.class) > 0 {
+	// Apply classes if set, or clear if the element previously had classes
+	if len(o.class) > 0 || element.HasAttribute("class") {
 		element.SetAttribute("class", strings.Join(o.Classes(), " "))
 	}
 

@@ -32,9 +32,15 @@ type Controller struct {
 	// station. It contains at most one element. OnSet fires on each fetch.
 	Schedule mvc.Model[StationSchedule]
 
-	// Provider is the BART API provider. Exposed here for direct fetches if needed,
-	// but most interactions should go through the public methods on Controller.
+	// provider is the BART API provider.
 	provider *Provider
+
+	// stationsTable is the ActiveGroup for the stations table. When set, SelectStation
+	// activates the corresponding row.
+	stationsTable mvc.ActiveGroup
+
+	// stationRows maps station abbreviation → its row view.
+	stationRows map[string]mvc.View
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -77,6 +83,22 @@ func NewController() *Controller {
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
 
+// SetStationsTable registers the table view that displays station rows. When set,
+// SelectStation will call SetActive on it with the corresponding row view.
+func (c *Controller) SetStationsTable(ag mvc.ActiveGroup) {
+	c.stationsTable = ag
+}
+
+// RegisterStationRow associates a row view with a station abbreviation so that
+// SelectStation can activate it. Call this after creating each row in the OnSet
+// handler.
+func (c *Controller) RegisterStationRow(abbr string, view mvc.View) {
+	if c.stationRows == nil {
+		c.stationRows = make(map[string]mvc.View)
+	}
+	c.stationRows[abbr] = view
+}
+
 // Start loads the station list. Call after registering all model listeners.
 func (c *Controller) Start() {
 	c.provider.Stations()
@@ -89,10 +111,19 @@ func (c *Controller) SelectStation(abbr string) {
 	c.provider.CancelDepartures()
 	c.provider.DeparturesWithInterval(abbr, time.Minute)
 	c.provider.Schedule(abbr)
+	if c.stationsTable != nil {
+		c.stationsTable.SetActive(c.stationRows[abbr])
+	}
 }
 
 // Refresh cancels any active departure polling and reloads the station list.
+// Station row registrations are cleared; call RegisterStationRow again in the
+// OnSet handler after stations reload.
 func (c *Controller) Refresh() {
 	c.provider.CancelDepartures()
+	c.stationRows = nil
+	if c.stationsTable != nil {
+		c.stationsTable.SetActive()
+	}
 	c.provider.Stations()
 }

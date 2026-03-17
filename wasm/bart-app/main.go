@@ -23,7 +23,9 @@ func main() {
 	controller.Stations.OnSet(func(stations []bart.Station) {
 		views := make([]any, len(stations))
 		for i, station := range stations {
-			views[i] = bart.StationRow(station, controller.SelectStation)
+			row := bart.StationRow(station, controller.SelectStation)
+			controller.RegisterStationRow(station.Abbr, row)
+			views[i] = row
 		}
 		stationsview.Content(views)
 	})
@@ -57,6 +59,7 @@ func main() {
 			bs.Button(bs.Icon("arrow-repeat"), bs.WithSize(bs.Small), mvc.WithClass("ms-auto")).AddEventListener("click", load),
 		),
 	)
+	controller.SetStationsTable(stationsview.(mvc.ActiveGroup))
 
 	// Create right-panel views (populated on station click)
 	departureview = bs.Container(mvc.WithClass("p-3 text-muted"), "Select a station to see departures")

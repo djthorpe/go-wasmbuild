@@ -380,6 +380,13 @@ func NodeFromAny(child any) dom.Node {
 ///////////////////////////////////////////////////////////////////////////////
 // PRIVATE METHODS
 
+// ViewFromElement returns the View associated with a DOM element, or nil if
+// the element does not have a data-mvc attribute. Returns an error if the
+// element has a data-mvc attribute but no registered constructor.
+func ViewFromElement(element dom.Element) (View, error) {
+	return viewFromElement(element)
+}
+
 func viewFromElement(element dom.Element) (View, error) {
 	if !element.HasAttribute(DataComponentAttrKey) {
 		return nil, nil
