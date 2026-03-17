@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"mime"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -98,8 +99,14 @@ func (f *File) URL() string {
 
 func (f *File) Handler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Set content type by extension first, then detect
+		contentType := mime.TypeByExtension(filepath.Ext(f.Path))
+		if contentType == "" {
+			contentType = http.DetectContentType(f.Data)
+		}
+
 		// Set the Content-Type and Content-Length headers
-		w.Header().Set("Content-Type", http.DetectContentType(f.Data))
+		w.Header().Set("Content-Type", contentType)
 		w.Header().Set("Content-Length", fmt.Sprintf("%d", len(f.Data)))
 
 		// Set no-cache headers
