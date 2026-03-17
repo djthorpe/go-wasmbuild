@@ -157,6 +157,8 @@ func eventIndicators(v mvc.View) dom.Element {
 			if target, ok := e.Target().(dom.Element); ok {
 				if value := target.GetAttribute("value"); value != "" {
 					text = value
+				} else if title := target.GetAttribute("title"); title != "" {
+					text = title
 				} else if href := target.GetAttribute("href"); href != "" {
 					text = href
 				} else if content := target.TextContent(); content != "" {

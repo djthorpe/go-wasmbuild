@@ -115,6 +115,68 @@ func sideNavStory() dom.Element {
 	localizeSideNav(side.Root())
 	side.SetActive(reports)
 
+	overlayTitle := carbon.Head(3, "Fleet details").Root()
+	overlayBody := carbon.Para("Expand the Fleet section to slide in contextual content from the right.").Root()
+	overlayClose := carbon.Button("Close")
+	overlayClose.SetValue("close-overlay")
+	backdrop := mvc.HTML("DIV", mvc.WithAttr("style", sideNavOverlayBackdropStyle(false)))
+	overlayPanel := carbon.HeaderPanel(
+		mvc.WithAttr("aria-label", "Fleet details"),
+		mvc.WithAttr("style", sideNavOverlayPanelStyle()),
+		mvc.HTML("DIV",
+			mvc.WithAttr("style", "padding:1.5rem"),
+			mvc.HTML("DIV",
+				mvc.WithAttr("style", "display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:1.5rem"),
+				mvc.HTML("DIV", overlayTitle, overlayBody),
+				overlayClose,
+			),
+			mvc.HTML("DIV",
+				mvc.WithAttr("style", "display:grid;gap:0.75rem"),
+				carbon.Tile(
+					mvc.WithAttr("style", "padding:1rem;background:var(--cds-layer-accent-01,#f4f4f4)"),
+					carbon.Head(4, "Overlay behavior"),
+					carbon.Para("This panel stays over the preview content instead of reflowing the page layout."),
+				),
+				carbon.Tile(
+					mvc.WithAttr("style", "padding:1rem"),
+					carbon.Head(4, "Interaction model"),
+					carbon.Para("Use Fleet and its nested items to update the overlay content, then dismiss it with the close button or backdrop."),
+				),
+			),
+		),
+	)
+
+	showOverlay := func(title, body string, open bool) {
+		overlayTitle.SetInnerHTML(title)
+		overlayBody.SetInnerHTML(body)
+		backdrop.SetAttribute("style", sideNavOverlayBackdropStyle(open))
+		overlayPanel.SetExpanded(open)
+	}
+
+	fleet.OnSectionExpanded(func(dom.Event) {
+		showOverlay("Fleet", "The Fleet section now opens a right-hand overlay instead of reserving permanent layout space.", true)
+	})
+	fleet.OnSectionCollapsed(func(dom.Event) {
+		showOverlay("Fleet details", "Expand the Fleet section to slide in contextual content from the right.", false)
+	})
+
+	stations.AddEventListener(carbon.EventClick, func(dom.Event) {
+		showOverlay("Stations", "Stations content shifts in over the preview as a modal-like side overlay.", true)
+	})
+	vehicles.AddEventListener(carbon.EventClick, func(dom.Event) {
+		showOverlay("Vehicles", "Vehicles details appear in the right-hand overlay without changing the underlying page width.", true)
+	})
+	maintenance.AddEventListener(carbon.EventClick, func(dom.Event) {
+		showOverlay("Maintenance", "Maintenance workflow content is presented inside the overlay panel so the shell stays fixed.", true)
+	})
+
+	closeOverlay := func(dom.Event) {
+		fleet.Root().RemoveAttribute("expanded")
+		showOverlay("Fleet details", "Expand the Fleet section to slide in contextual content from the right.", false)
+	}
+	overlayClose.AddEventListener(carbon.EventClick, closeOverlay)
+	backdrop.AddEventListener(carbon.EventClick, closeOverlay)
+
 	canvas := mvc.HTML("DIV",
 		mvc.WithClass("canvas", carbon.ClassForTheme(carbon.ThemeWhite)),
 		mvc.HTML("DIV",
@@ -125,9 +187,11 @@ func sideNavStory() dom.Element {
 				mvc.HTML("DIV",
 					mvc.WithAttr("style", "flex:1;padding:2rem 2rem 2rem 1.5rem;color:var(--cds-text-primary,#161616);background:linear-gradient(180deg,var(--cds-layer-accent-01,#f4f4f4) 0%,var(--cds-background,#ffffff) 100%)"),
 					carbon.Head(3, "Side Navigation Preview").Root(),
-					carbon.Para("Use the controls to move the active state across top-level links and nested menu items.").Root(),
+					carbon.Para("The base content stays in place while Fleet opens a right-hand overlay over the preview.").Root(),
 				),
 			),
+			backdrop,
+			overlayPanel,
 		),
 	)
 
@@ -154,6 +218,17 @@ func sideNavStory() dom.Element {
 		}),
 		activeChoice.Root(),
 	)
+}
+
+func sideNavOverlayBackdropStyle(open bool) string {
+	if open {
+		return "position:absolute;inset:0;background:rgba(22,22,22,0.16);opacity:1;transition:opacity 160ms cubic-bezier(0.2,0,1,0.9);z-index:2"
+	}
+	return "position:absolute;inset:0;background:rgba(22,22,22,0.16);opacity:0;pointer-events:none;transition:opacity 160ms cubic-bezier(0.2,0,1,0.9);z-index:2"
+}
+
+func sideNavOverlayPanelStyle() string {
+	return "position:absolute;inset-block:0;inset-inline-end:0;inline-size:min(24rem,100%);background:var(--cds-layer,#ffffff);box-shadow:-0.25rem 0 1rem rgba(0,0,0,0.16);z-index:3"
 }
 
 func choiceDropdown(label, selected string, options []navChoice, onChange func(navChoice)) choiceControl {

@@ -18,6 +18,7 @@ const (
 	ViewIcon          = "mvc-cds-icon"
 	ViewNav           = "mvc-cds-nav"
 	ViewNavGlobal     = "mvc-cds-nav-global"
+	ViewHeaderPanel   = "mvc-cds-header-panel"
 	ViewNavItem       = "mvc-cds-navitem"
 	ViewGrid          = "mvc-cds-grid"
 	ViewTile          = "mvc-cds-tile"

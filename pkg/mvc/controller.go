@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"slices"
+	"strings"
 
 	dom "github.com/djthorpe/go-wasmbuild"
 )
@@ -65,7 +66,13 @@ func (c *controller) Attach(views ...View) {
 		for _, event := range events[view.Name()] {
 			e := event // capture loop variable
 			view.AddEventListener(e, func(evt dom.Event) {
-				if view := ViewFromEvent(evt); view != nil {
+				var view View
+				if strings.HasPrefix(e, "cds-") {
+					view = ViewFromEventTarget(evt)
+				} else {
+					view = ViewFromEvent(evt)
+				}
+				if view != nil {
 					c.Self().EventListener(e, view)
 				}
 			})

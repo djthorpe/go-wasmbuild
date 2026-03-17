@@ -55,13 +55,13 @@ const (
 func init() {
 	mvc.RegisterView(ViewNav, func(element dom.Element) mvc.View {
 		return mvc.NewViewWithElement(new(nav), element, setView)
-	}, EventClick, EventHoverBubbled, EventNoHoverBubbled, EventFocusBubbled, EventNoFocus)
+	}, EventClick, EventHoverBubbled, EventNoHoverBubbled, EventFocusBubbled, EventNoFocus, EventSectionToggling, EventSectionToggle)
 	mvc.RegisterView(ViewNavGlobal, func(element dom.Element) mvc.View {
 		return mvc.NewViewWithElement(new(navglobal), element, setView)
 	})
 	mvc.RegisterView(ViewNavItem, func(element dom.Element) mvc.View {
 		return mvc.NewViewWithElement(new(navitem), element, setView)
-	})
+	}, EventSectionToggling, EventSectionToggle)
 }
 
 // Header returns a <cds-header> UI shell header.
@@ -111,6 +111,10 @@ func SideNavLink(href string, args ...any) *navitem {
 // SideNavSection returns a <cds-side-nav-menu> collapsible navigation group.
 func SideNavSection(title string, args ...any) *navitem {
 	n := mvc.NewView(new(navitem), ViewNavItem, "cds-side-nav-menu", setView, append([]any{mvc.WithAttr("title", title), mvc.WithAttr("expanded", "")}, args...)...).(*navitem)
+	if strings.TrimSpace(n.Root().Value()) == "" && !n.Root().HasAttribute("value") {
+		n.Root().SetValue(title)
+		n.Root().SetAttribute("value", title)
+	}
 	n.items = navItems(args...)
 	return n
 }
@@ -149,12 +153,84 @@ func (n *nav) SetActive(views ...mvc.View) {
 	}
 }
 
+// OnSectionToggle adds a listener for side-nav section toggle completion.
+func (n *nav) OnSectionToggle(handler func(dom.Event)) *nav {
+	if handler != nil {
+		n.AddEventListener(EventSectionToggle, func(evt dom.Event) {
+			if sectionEventTarget(evt) != nil {
+				handler(evt)
+			}
+		})
+	}
+	return n
+}
+
+// OnSectionExpanded adds a listener for side-nav sections after expansion.
+func (n *nav) OnSectionExpanded(handler func(dom.Event)) *nav {
+	if handler != nil {
+		n.AddEventListener(EventSectionToggle, func(evt dom.Event) {
+			if sectionEventExpanded(evt) {
+				handler(evt)
+			}
+		})
+	}
+	return n
+}
+
+// OnSectionCollapsed adds a listener for side-nav sections after collapse.
+func (n *nav) OnSectionCollapsed(handler func(dom.Event)) *nav {
+	if handler != nil {
+		n.AddEventListener(EventSectionToggle, func(evt dom.Event) {
+			if sectionEventCollapsed(evt) {
+				handler(evt)
+			}
+		})
+	}
+	return n
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS - NAV ITEM
 
 // SetActive marks the navigation item active or inactive.
 func (n *navitem) SetActive(active bool) {
 	setNavItemActiveElement(n.Root(), active)
+}
+
+// OnSectionToggle adds a listener for side-nav section toggle completion.
+func (n *navitem) OnSectionToggle(handler func(dom.Event)) *navitem {
+	if handler != nil {
+		n.AddEventListener(EventSectionToggle, func(evt dom.Event) {
+			if sectionEventTarget(evt) != nil {
+				handler(evt)
+			}
+		})
+	}
+	return n
+}
+
+// OnSectionExpanded adds a listener for side-nav sections after expansion.
+func (n *navitem) OnSectionExpanded(handler func(dom.Event)) *navitem {
+	if handler != nil {
+		n.AddEventListener(EventSectionToggle, func(evt dom.Event) {
+			if sectionEventExpanded(evt) {
+				handler(evt)
+			}
+		})
+	}
+	return n
+}
+
+// OnSectionCollapsed adds a listener for side-nav sections after collapse.
+func (n *navitem) OnSectionCollapsed(handler func(dom.Event)) *navitem {
+	if handler != nil {
+		n.AddEventListener(EventSectionToggle, func(evt dom.Event) {
+			if sectionEventCollapsed(evt) {
+				handler(evt)
+			}
+		})
+	}
+	return n
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -168,6 +244,24 @@ func navItems(args ...any) []*navitem {
 		}
 	}
 	return items
+}
+
+func sectionEventExpanded(evt dom.Event) bool {
+	target := sectionEventTarget(evt)
+	return target != nil && target.HasAttribute("expanded")
+}
+
+func sectionEventCollapsed(evt dom.Event) bool {
+	target := sectionEventTarget(evt)
+	return target != nil && !target.HasAttribute("expanded")
+}
+
+func sectionEventTarget(evt dom.Event) dom.Element {
+	target, ok := evt.Target().(dom.Element)
+	if !ok || target == nil || !target.HasAttribute(mvc.DataComponentAttrKey) {
+		return nil
+	}
+	return target
 }
 
 func splitHeaderArgs(args ...any) ([]mvc.Opt, []any, *navglobal) {

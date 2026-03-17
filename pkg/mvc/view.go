@@ -365,6 +365,26 @@ func ViewFromEvent(e dom.Event, views ...string) View {
 	return nil
 }
 
+// ViewFromEventTarget returns a View only if the event target itself is a
+// registered view. Unlike ViewFromEvent, it does not walk ancestor elements.
+func ViewFromEventTarget(e dom.Event, views ...string) View {
+	if e == nil {
+		return nil
+	}
+	switch element := e.Target().(type) {
+	case dom.Element:
+		if view, err := viewFromElement(element); err != nil {
+			fmt.Fprintf(os.Stderr, "ViewFromEventTarget: %v\n", err)
+			return nil
+		} else if view != nil {
+			if len(views) == 0 || slices.Contains(views, view.Name()) {
+				return view
+			}
+		}
+	}
+	return nil
+}
+
 // NodeFromAny returns a Node from a string, Element, Tag or View
 // or returns nil if the type is unsupported
 func NodeFromAny(child any) dom.Node {

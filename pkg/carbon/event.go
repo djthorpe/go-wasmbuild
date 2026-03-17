@@ -13,6 +13,8 @@ const (
 	EventHoverBubbled    = "pointerover" // bubbling hover signal for container-level listeners
 	EventNoHoverBubbled  = "pointerout"  // bubbling hover-exit signal for container-level listeners
 	EventFocusBubbled    = "focusin"     // bubbling focus signal for container-level listeners
+	EventSectionToggle   = "cds-side-nav-menu-toggled"
+	EventSectionToggling = "cds-side-nav-menu-beingtoggled"
 	EventSelected        = "cds-dropdown-selected"
 	EventCheckboxChanged = "cds-checkbox-changed"
 )
@@ -28,6 +30,8 @@ var EventName = map[string]string{
 	EventHoverBubbled:    "EventHover",
 	EventNoHoverBubbled:  "EventNoHover",
 	EventFocusBubbled:    "EventFocus",
+	EventSectionToggle:   "EventSectionToggle",
+	EventSectionToggling: "EventSectionToggling",
 	EventSelected:        "EventSelected",
 	EventCheckboxChanged: "EventCheckboxChanged",
 }
