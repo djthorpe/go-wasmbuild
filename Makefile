@@ -11,13 +11,20 @@ BUILD_MODULE = $(shell cat go.mod | head -1 | cut -d ' ' -f 2)
 LD_FLAGS = -X $(BUILD_MODULE)/pkg/version.GitSource=${BUILD_MODULE} -X $(BUILD_MODULE)/pkg/version.GitTag=$(shell git describe --tags --always) -X $(BUILD_MODULE)/pkg/version.GitBranch=$(shell git name-rev HEAD --name-only --always) -X $(BUILD_MODULE)/pkg/version.GitHash=$(shell git rev-parse HEAD) -X $(BUILD_MODULE)/pkg/version.GoBuildTime=$(shell date -u '+%Y-%m-%dT%H:%M:%SZ')
 
 # All targets
-all: wasmbuild $(WASM)
+all: wasmbuild npm $(WASM)
 
 # Rules for building
 .PHONY: $(WASM)
 $(WASM): wasmbuild
 	@echo 'Building $@ with ${GOCC}'
 	@$(BUILDDIR)/wasmbuild build --go=${GOCC} --go-flags='-ldflags "$(LD_FLAGS)"' -o ${BUILDDIR}/$(shell basename $@).wasm ./$@
+
+.PHONY: npm
+npm: npm/carbon/bundle.js
+
+npm/carbon/bundle.js: npm/carbon/index.js npm/carbon/package.json
+	@echo 'Building npm/carbon bundle'
+	@cd npm/carbon && npm install && npm run build
 
 .PHONY: wasmbuild
 wasmbuild: mkdir
@@ -50,4 +57,5 @@ tidy:
 .PHONY: clean
 clean: tidy
 	@rm -fr $(BUILDDIR)
+	@rm -f npm/carbon/bundle.js
 	$(GO) clean

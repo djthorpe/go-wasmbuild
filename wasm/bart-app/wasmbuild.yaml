@@ -7,6 +7,9 @@ vars:
 
         <!-- bootstrap icons -->
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+
+        <!-- carbon web components -->
+        <script type="module" src="/carbon-bundle.js"></script>
     Footer: |
         <footer class="text-center mt-4">
             <p>&copy; 2025 Bart App</p>

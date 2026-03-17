@@ -124,6 +124,9 @@ func (c *ServeContext) Serve(ctx *Context, files ...*File) error {
 		}
 		if info, err := os.Stat(asset); err != nil {
 			return err
+		} else if info.Mode().IsDir() {
+			prefix := "/" + filepath.Base(asset) + "/"
+			handler.Handle(prefix, http.StripPrefix(prefix, http.FileServer(http.Dir(asset))))
 		} else if info.Mode().IsRegular() {
 			file, err := NewFileFromSource(asset, filepath.Base(asset))
 			if err != nil {

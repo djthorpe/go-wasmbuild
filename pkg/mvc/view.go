@@ -102,6 +102,12 @@ func RegisterView(name string, constructor ViewConstructorFunc, eventtypes ...st
 	events[name] = eventtypes
 }
 
+// RegisteredEvents returns the event types registered for the named view.
+// Returns nil if the view is not registered.
+func RegisteredEvents(name string) []string {
+	return events[name]
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 

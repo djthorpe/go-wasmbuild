@@ -1,0 +1,21 @@
+assets:
+    - ../../npm/carbon/bundle.js
+    - ../../npm/carbon/assets
+
+vars:
+    Title: "Carbon App"
+    Header: |
+        <!-- IBM Plex fonts (local) -->
+        <link rel="stylesheet" href="/assets/fonts.css">
+
+        <!-- Carbon type tokens & utility classes -->
+        <link rel="stylesheet" href="/assets/tokens.css">
+
+        <!-- Carbon theme token overrides (.cds--white, .cds--g10, .cds--g90, .cds--g100) -->
+        <link rel="stylesheet" href="/assets/themes.css">
+
+        <!-- Carbon CSS grid (cds--css-grid, cds--col-span-N) -->
+        <link rel="stylesheet" href="/assets/grid.css">
+
+        <!-- IBM Carbon Design System -->
+        <script type="module" src="/bundle.js"></script>
