@@ -14,11 +14,13 @@ import (
 type router struct {
 	View
 	pages []page
+	sel   ActiveGroup
 }
 
 type page struct {
 	path string
 	view View
+	sel  []View
 }
 
 var _ View = (*router)(nil)
@@ -59,13 +61,20 @@ func Router(args ...any) *router {
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
 
-func (router *router) Page(path string, view View) *router {
+// SetActive registers an ActiveGroup (e.g. a SideNav) that the router will
+// update whenever the active page changes.
+func (router *router) Active(sel ActiveGroup) *router {
+	router.sel = sel
+	return router
+}
+
+func (router *router) Page(path string, view View, sel ...View) *router {
 	if path != "" && !strings.HasPrefix(path, "#") {
 		panic("Router.Page: path must start with '#'")
 	}
 
 	// Append page to list of pages
-	router.pages = append(router.pages, page{path: path, view: view})
+	router.pages = append(router.pages, page{path: path, view: view, sel: sel})
 
 	// Refresh the view for the current hash or default page
 	router.refresh(dom.GetWindow().Location().Hash())
@@ -79,9 +88,9 @@ func (router *router) Page(path string, view View) *router {
 
 // match returns the page which matches the specified hash, or nil
 func (router *router) match(hash string) *page {
-	for _, page := range router.pages {
-		if page.path == hash {
-			return &page
+	for i := range router.pages {
+		if router.pages[i].path == hash {
+			return &router.pages[i]
 		}
 	}
 	return nil
@@ -90,12 +99,17 @@ func (router *router) match(hash string) *page {
 // refresh updates the router content based on the current hash. If no matching
 // page exists, the first registered page (if any) becomes the default view.
 func (router *router) refresh(hash string) {
-	if page := router.match(hash); page != nil {
-		router.ReplaceSlotChildren(ContentSlot, page.view)
+	var active *page
+	if p := router.match(hash); p != nil {
+		active = p
+	} else if len(router.pages) > 0 {
+		active = &router.pages[0]
+	}
+	if active == nil {
 		return
 	}
-	if len(router.pages) > 0 {
-		router.ReplaceSlotChildren(ContentSlot, router.pages[0].view)
-		return
+	router.ReplaceSlotChildren(ContentSlot, active.view)
+	if router.sel != nil {
+		router.sel.SetActive(active.sel...)
 	}
 }

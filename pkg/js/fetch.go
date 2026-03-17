@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
 )
 
@@ -167,6 +168,28 @@ func WithHeaders(headers map[string]string) FetchOption {
 func WithBody(body any) FetchOption {
 	return func(r *FetchRequest) {
 		r.body = body
+	}
+}
+
+// WithQuery appends the given query parameters to the request URL.
+// Existing parameters in the URL are preserved; new keys are added.
+func WithQuery(params url.Values) FetchOption {
+	return func(r *FetchRequest) {
+		if len(params) == 0 {
+			return
+		}
+		u, err := url.Parse(r.url)
+		if err != nil {
+			return
+		}
+		q := u.Query()
+		for k, vs := range params {
+			for _, v := range vs {
+				q.Add(k, v)
+			}
+		}
+		u.RawQuery = q.Encode()
+		r.url = u.String()
 	}
 }
 
