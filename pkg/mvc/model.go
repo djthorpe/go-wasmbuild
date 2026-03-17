@@ -40,6 +40,7 @@ func (m *Model[T]) Append(items ...T) {
 
 // Clear removes all items and notifies all listeners.
 func (m *Model[T]) Clear() {
+	clear(m.items)
 	m.items = m.items[:0]
 	m.emit()
 }

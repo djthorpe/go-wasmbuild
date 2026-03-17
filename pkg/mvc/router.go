@@ -88,9 +88,9 @@ func (router *router) Page(path string, view View, sel ...View) *router {
 
 // match returns the page which matches the specified hash, or nil
 func (router *router) match(hash string) *page {
-	for _, page := range router.pages {
-		if page.path == hash {
-			return &page
+	for i := range router.pages {
+		if router.pages[i].path == hash {
+			return &router.pages[i]
 		}
 	}
 	return nil

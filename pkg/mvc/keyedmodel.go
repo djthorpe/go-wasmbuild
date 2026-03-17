@@ -138,6 +138,7 @@ func (m *KeyedModel[K, T]) Update(item T) {
 
 // Clear removes all items. Only OnSet listeners fire.
 func (m *KeyedModel[K, T]) Clear() {
+	clear(m.items)
 	m.items = m.items[:0]
 	m.index = nil
 	m.emitSet()

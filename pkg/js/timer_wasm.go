@@ -12,9 +12,10 @@ import (
 
 // Timer wraps a browser setTimeout/setInterval handle.
 type Timer struct {
-	id   js.Value
-	fn   Func
-	kind string // "timeout" or "interval"
+	id       js.Value
+	fn       Func
+	kind     string // "timeout" or "interval"
+	released bool   // guards against double-release of fn
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -25,7 +26,7 @@ func SetTimeout(delay time.Duration, fn func()) *Timer {
 	t := &Timer{kind: "timeout"}
 	t.fn = js.FuncOf(func(this js.Value, args []js.Value) any {
 		fn()
-		t.fn.Release()
+		t.release()
 		return nil
 	})
 	ms := delay.Milliseconds()
@@ -52,6 +53,7 @@ func SetInterval(interval time.Duration, fn func()) *Timer {
 // PUBLIC METHODS
 
 // Cancel clears the browser timer and releases the associated JS function.
+// Safe to call multiple times.
 func (t *Timer) Cancel() {
 	switch t.kind {
 	case "timeout":
@@ -59,5 +61,13 @@ func (t *Timer) Cancel() {
 	case "interval":
 		js.Global().Call("clearInterval", t.id)
 	}
-	t.fn.Release()
+	t.release()
+}
+
+// release releases the JS function exactly once.
+func (t *Timer) release() {
+	if !t.released {
+		t.released = true
+		t.fn.Release()
+	}
 }
