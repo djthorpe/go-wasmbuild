@@ -13,6 +13,11 @@ type EnabledState interface {
 	Enabled() bool
 }
 
+// VisibleState is implemented by a view that can be shown or hidden.
+type VisibleState interface {
+	Visible() bool
+}
+
 // ActiveGroup is implemented by a container that manages which of its member
 // views are active. Calling SetActive with no arguments deactivates all members.
 type ActiveGroup interface {
@@ -24,4 +29,11 @@ type ActiveGroup interface {
 // disabled. Calling SetEnabled with no arguments disables all members.
 type EnabledGroup interface {
 	SetEnabled(views ...View)
+}
+
+// VisibleGroup is implemented by a container that manages the visible/hidden
+// state of its member views. The passed views are made visible; all others are
+// hidden. Calling SetVisible with no arguments hides all members.
+type VisibleGroup interface {
+	SetVisible(views ...View)
 }

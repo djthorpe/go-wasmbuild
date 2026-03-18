@@ -34,8 +34,10 @@ func TagView() []any {
 			mvc.WithStyle("padding:1.5rem 2rem"),
 			carbon.With(carbon.ThemeWhite),
 			basicTagsStory(),
+			iconTagsStory(),
 			dismissibleTagsStory(),
 			operationalTagsStory(),
+			tagGroupStory(),
 		),
 	}
 }
@@ -71,16 +73,116 @@ func basicTagsStory() dom.Element {
 	)
 }
 
+func iconTagsStory() dom.Element {
+	currentTheme := carbon.ThemeWhite
+	currentType := carbon.TagBlue
+	currentSize := carbon.SizeMedium
+
+	canvas := carbon.Section(
+		mvc.WithClass("canvas"),
+		mvc.WithStyle("display:grid;gap:1rem"),
+	)
+
+	refresh := func() {
+		canvas.Apply(carbon.With(currentTheme)...)
+		canvas.Content(
+			tagRow("Decorative icons inherit the tag colour and are inserted into Carbon's icon slot.", currentSize,
+				carbon.Tag(
+					carbon.Icon(carbon.IconAdd),
+					"New",
+					carbon.With(currentType, currentSize),
+				),
+				carbon.DismissibleTag(
+					"Beta",
+					carbon.Icon(carbon.IconLaunch),
+					carbon.With(currentType, currentSize),
+				),
+				carbon.OperationalTag(
+					"Needs review",
+					carbon.Icon(carbon.IconWarningFilled),
+					carbon.With(currentType, currentSize),
+				),
+			),
+		)
+	}
+	refresh()
+
+	return storybook.Story(
+		"Tag Icons",
+		"Tags can render a leading Carbon icon. This story demonstrates why the wrapper normalizes passed icons into the `icon` slot and forces them to inherit the tag's current color.",
+		canvas,
+		nil,
+		storybook.Dropdown("Theme", currentTheme, storybook.DefaultThemes, func(theme carbon.Attr) {
+			currentTheme = theme
+			refresh()
+		}),
+		storybook.Dropdown("Type", currentType, tagTypes, func(value carbon.Attr) {
+			currentType = value
+			refresh()
+		}),
+		storybook.Dropdown("Size", currentSize, tagSizes, func(size carbon.Attr) {
+			currentSize = size
+			refresh()
+		}),
+	)
+}
+
+func tagGroupStory() dom.Element {
+	currentTheme := carbon.ThemeWhite
+	currentType := carbon.TagTeal
+	currentSize := carbon.SizeMedium
+
+	group := carbon.TagGroup(
+		carbon.Tag(carbon.Icon(carbon.IconAdd), "Draft", carbon.With(currentType, currentSize)),
+		carbon.DismissibleTag("Beta", carbon.Icon(carbon.IconLaunch), carbon.With(currentType, currentSize)),
+		carbon.OperationalTag("Review", carbon.Icon(carbon.IconWarningFilled), carbon.With(currentType, currentSize)),
+	)
+	canvas := carbon.Section(
+		mvc.WithClass("canvas"),
+		mvc.WithStyle("display:grid;gap:1rem"),
+		group,
+	)
+
+	refresh := func() {
+		canvas.Apply(carbon.With(currentTheme)...)
+		group.Content(
+			carbon.Tag(carbon.Icon(carbon.IconAdd), "Draft", carbon.With(currentType, currentSize)),
+			carbon.DismissibleTag("Beta", carbon.Icon(carbon.IconLaunch), carbon.With(currentType, currentSize)),
+			carbon.OperationalTag("Review", carbon.Icon(carbon.IconWarningFilled), carbon.With(currentType, currentSize)),
+		)
+	}
+	refresh()
+
+	return storybook.Story(
+		"Tag Group",
+		"TagGroup is a typed container for multiple tags. Because the child tag custom events bubble, the group can be observed once at the container level instead of wiring handlers on each individual tag.",
+		canvas,
+		group,
+		storybook.Dropdown("Theme", currentTheme, storybook.DefaultThemes, func(theme carbon.Attr) {
+			currentTheme = theme
+			refresh()
+		}),
+		storybook.Dropdown("Type", currentType, tagTypes, func(value carbon.Attr) {
+			currentType = value
+			refresh()
+		}),
+		storybook.Dropdown("Size", currentSize, tagSizes, func(size carbon.Attr) {
+			currentSize = size
+			refresh()
+		}),
+	)
+}
+
 func dismissibleTagsStory() dom.Element {
 	currentTheme := carbon.ThemeWhite
 	currentType := carbon.TagGray
 	currentSize := carbon.SizeMedium
 	disabled := false
 
-	tag := carbon.DismissibleTag("Release 1.8", carbon.With(currentType, currentSize), mvc.WithAttr("dismiss-tooltip-label", "Remove release tag")).SetTitle("Release 1.8")
+	tag := carbon.DismissibleTag("Release 1.8", carbon.With(currentType, currentSize), mvc.WithAttr("dismiss-tooltip-label", "Remove release tag"))
 	reset := carbon.Button("Reset")
 	reset.AddEventListener(carbon.EventClick, func(dom.Event) {
-		tag.SetOpen(true)
+		tag.SetVisible(true)
 	})
 
 	canvas := carbon.Section(
@@ -94,13 +196,13 @@ func dismissibleTagsStory() dom.Element {
 		canvas.Apply(carbon.With(currentTheme)...)
 		tag.Apply(carbon.With(currentType, currentSize)...)
 		tag.SetEnabled(!disabled)
-		tag.SetOpen(true)
+		tag.SetVisible(true)
 	}
 	refresh()
 
 	return storybook.Story(
 		"Dismissible Tag",
-		"Dismissible tags manage their own close affordance and emit close lifecycle events. The wrapper exposes the dedicated `cds-dismissible-tag` API directly, including reopen support through the `open` state.",
+		"Dismissible tags manage their own close affordance and emit close lifecycle events. The wrapper exposes the dedicated `cds-dismissible-tag` API directly, with visibility controlled through the shared MVC visible-state pattern.",
 		canvas,
 		tag,
 		storybook.Dropdown("Theme", currentTheme, storybook.DefaultThemes, func(theme carbon.Attr) {

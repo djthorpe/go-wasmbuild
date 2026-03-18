@@ -1,6 +1,7 @@
 package carbon
 
 import (
+	"fmt"
 	"strings"
 
 	// Packages
@@ -14,17 +15,16 @@ import (
 
 type tag struct{ base }
 
-type dismissibleTag struct{ base }
-
-type operationalTag struct{ base }
+type tagGroup struct{ base }
 
 var _ mvc.View = (*tag)(nil)
-var _ mvc.View = (*dismissibleTag)(nil)
-var _ mvc.View = (*operationalTag)(nil)
+var _ mvc.View = (*tagGroup)(nil)
 var _ mvc.EnabledState = (*tag)(nil)
-var _ mvc.EnabledState = (*dismissibleTag)(nil)
-var _ mvc.EnabledState = (*operationalTag)(nil)
-var _ mvc.ActiveState = (*operationalTag)(nil)
+var _ mvc.ActiveState = (*tag)(nil)
+var _ mvc.VisibleState = (*tag)(nil)
+var _ mvc.EnabledGroup = (*tagGroup)(nil)
+var _ mvc.ActiveGroup = (*tagGroup)(nil)
+var _ mvc.VisibleGroup = (*tagGroup)(nil)
 
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
@@ -32,15 +32,19 @@ var _ mvc.ActiveState = (*operationalTag)(nil)
 func init() {
 	mvc.RegisterView(ViewTag, func(element dom.Element) mvc.View {
 		return mvc.NewViewWithElement(new(tag), element, setView)
-	}, EventTagBeingClosed, EventTagClosed)
+	})
+
+	mvc.RegisterView(ViewTagGroup, func(element dom.Element) mvc.View {
+		return mvc.NewViewWithElement(new(tagGroup), element, setView)
+	}, EventTagDismissibleClosed, EventTagOperationalSelected)
 
 	mvc.RegisterView(ViewDismissibleTag, func(element dom.Element) mvc.View {
-		return mvc.NewViewWithElement(new(dismissibleTag), element, setView)
-	}, EventTagDismissibleBeingClosed, EventTagDismissibleClosed)
+		return mvc.NewViewWithElement(new(tag), element, setView)
+	}, EventTagDismissibleClosed)
 
 	mvc.RegisterView(ViewOperationalTag, func(element dom.Element) mvc.View {
-		return mvc.NewViewWithElement(new(operationalTag), element, setView)
-	}, EventTagOperationalBeingSelected, EventTagOperationalSelected)
+		return mvc.NewViewWithElement(new(tag), element, setView)
+	}, EventTagOperationalSelected)
 }
 
 // Tag returns a <cds-tag> web component.
@@ -49,20 +53,27 @@ func Tag(args ...any) *tag {
 	return mvc.NewView(new(tag), ViewTag, "cds-tag", setView, args).(*tag)
 }
 
+// TagGroup returns a container for one or more tags.
+// Child tag events bubble to the group, allowing group-level observation.
+func TagGroup(args ...any) *tagGroup {
+	args = append([]any{mvc.WithStyle("display:flex;flex-wrap:wrap;align-items:center;gap:0.75rem")}, args...)
+	return mvc.NewView(new(tagGroup), ViewTagGroup, "DIV", setView, args).(*tagGroup)
+}
+
 // DismissibleTag returns a <cds-dismissible-tag> web component.
 // An optional leading string sets the text attribute.
-func DismissibleTag(args ...any) *dismissibleTag {
+func DismissibleTag(args ...any) *tag {
 	args = normalizeTagTextArgs(args...)
 	normalizeTagArgs(args...)
-	return mvc.NewView(new(dismissibleTag), ViewDismissibleTag, "cds-dismissible-tag", setView, args).(*dismissibleTag)
+	return mvc.NewView(new(tag), ViewDismissibleTag, "cds-dismissible-tag", setView, args).(*tag)
 }
 
 // OperationalTag returns a <cds-operational-tag> web component.
 // An optional leading string sets the text attribute.
-func OperationalTag(args ...any) *operationalTag {
+func OperationalTag(args ...any) *tag {
 	args = normalizeTagTextArgs(args...)
 	normalizeTagArgs(args...)
-	return mvc.NewView(new(operationalTag), ViewOperationalTag, "cds-operational-tag", setView, args).(*operationalTag)
+	return mvc.NewView(new(tag), ViewOperationalTag, "cds-operational-tag", setView, args).(*tag)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -77,154 +88,103 @@ func (t *tag) SetEnabled(enabled bool) *tag {
 	return t
 }
 
-func (t *tag) Text() string {
-	return strings.TrimSpace(t.Root().TextContent())
-}
-
-func (t *tag) SetText(text string) *tag {
-	t.Content(text)
-	return t
-}
-
-func (t *tag) Type() Attr {
-	if value := t.Root().GetAttribute("type"); value != "" {
-		return Attr(value)
-	}
-	return TagGray
-}
-
-func (t *tag) SetType(value Attr) *tag {
-	t.Root().SetAttribute("type", string(value))
-	return t
-}
-
-func (t *tag) Size() Attr {
-	if value := t.Root().GetAttribute("size"); value != "" {
-		return Attr(value)
-	}
-	return SizeMedium
-}
-
-func (t *tag) SetSize(value Attr) *tag {
-	t.Root().SetAttribute("size", string(value))
-	return t
-}
-
 ///////////////////////////////////////////////////////////////////////////////
-// PUBLIC METHODS - DISMISSIBLE TAG
+// PUBLIC METHODS - DISMISSIBLE / OPERATIONAL TAGS
 
-func (t *dismissibleTag) Enabled() bool {
-	return !tagBoolProperty(t.Root(), "disabled")
-}
-
-func (t *dismissibleTag) SetEnabled(enabled bool) *dismissibleTag {
-	setTagBoolProperty(t.Root(), "disabled", !enabled)
-	return t
-}
-
-func (t *dismissibleTag) Open() bool {
+func (t *tag) Visible() bool {
 	return tagBoolProperty(t.Root(), "open")
 }
 
-func (t *dismissibleTag) SetOpen(open bool) *dismissibleTag {
-	setTagBoolProperty(t.Root(), "open", open)
+func (t *tag) SetVisible(visible bool) *tag {
+	setTagBoolProperty(t.Root(), "open", visible)
 	return t
 }
 
-func (t *dismissibleTag) Text() string {
-	return t.Root().GetAttribute("text")
-}
-
-func (t *dismissibleTag) SetText(text string) *dismissibleTag {
-	t.Root().SetAttribute("text", text)
-	return t
-}
-
-func (t *dismissibleTag) Title() string {
-	return t.Root().GetAttribute("tag-title")
-}
-
-func (t *dismissibleTag) SetTitle(text string) *dismissibleTag {
-	t.Root().SetAttribute("tag-title", text)
-	return t
-}
-
-func (t *dismissibleTag) Type() Attr {
-	if value := t.Root().GetAttribute("type"); value != "" {
-		return Attr(value)
-	}
-	return TagGray
-}
-
-func (t *dismissibleTag) SetType(value Attr) *dismissibleTag {
-	t.Root().SetAttribute("type", string(value))
-	return t
-}
-
-func (t *dismissibleTag) Size() Attr {
-	if value := t.Root().GetAttribute("size"); value != "" {
-		return Attr(value)
-	}
-	return SizeMedium
-}
-
-func (t *dismissibleTag) SetSize(value Attr) *dismissibleTag {
-	t.Root().SetAttribute("size", string(value))
-	return t
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// PUBLIC METHODS - OPERATIONAL TAG
-
-func (t *operationalTag) Enabled() bool {
-	return !tagBoolProperty(t.Root(), "disabled")
-}
-
-func (t *operationalTag) SetEnabled(enabled bool) *operationalTag {
-	setTagBoolProperty(t.Root(), "disabled", !enabled)
-	return t
-}
-
-func (t *operationalTag) Active() bool {
+func (t *tag) Active() bool {
 	return tagBoolProperty(t.Root(), "selected")
 }
 
-func (t *operationalTag) SetActive(active bool) *operationalTag {
+func (t *tag) SetActive(active bool) *tag {
 	setTagBoolProperty(t.Root(), "selected", active)
 	return t
 }
 
-func (t *operationalTag) Text() string {
-	return t.Root().GetAttribute("text")
-}
-
-func (t *operationalTag) SetText(text string) *operationalTag {
-	t.Root().SetAttribute("text", text)
-	return t
-}
-
-func (t *operationalTag) Type() Attr {
-	if value := t.Root().GetAttribute("type"); value != "" {
-		return Attr(value)
+// Label returns the visible label for any tag variant.
+// Plain tags use child content; dismissible and operational tags use the text attribute.
+func (t *tag) Label() string {
+	if value := strings.TrimSpace(t.Root().GetAttribute("text")); value != "" {
+		return value
 	}
-	return TagGray
+	return strings.TrimSpace(t.Root().TextContent())
 }
 
-func (t *operationalTag) SetType(value Attr) *operationalTag {
-	t.Root().SetAttribute("type", string(value))
-	return t
-}
-
-func (t *operationalTag) Size() Attr {
-	if value := t.Root().GetAttribute("size"); value != "" {
-		return Attr(value)
+// SetLabel updates the visible label for any tag variant.
+// Plain tags use child content; dismissible and operational tags use the text attribute.
+func (t *tag) SetLabel(label string) *tag {
+	if t.Name() == ViewDismissibleTag || t.Name() == ViewOperationalTag {
+		t.Root().SetAttribute("text", label)
+		return t
 	}
-	return SizeMedium
+	t.Content(label)
+	return t
 }
 
-func (t *operationalTag) SetSize(value Attr) *operationalTag {
-	t.Root().SetAttribute("size", string(value))
-	return t
+///////////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS - TAG GROUP
+
+// Content appends tags to the group. Panics if any arg is not a *tag.
+func (g *tagGroup) Content(args ...any) mvc.View {
+	children := make([]any, 0, len(args))
+	for _, arg := range args {
+		if t, ok := arg.(*tag); ok {
+			children = append(children, t)
+		} else {
+			panic(fmt.Sprintf("TagGroup.Content: expected *tag, got %T", arg))
+		}
+	}
+	return g.View.Content(children...)
+}
+
+// SetActive marks the specified tags active and deactivates the rest.
+// With no arguments, all children are deactivated.
+func (g *tagGroup) SetActive(views ...mvc.View) {
+	active := make(map[mvc.View]bool, len(views))
+	for _, v := range views {
+		active[v] = true
+	}
+	for _, child := range g.Children() {
+		if t, ok := child.(*tag); ok {
+			t.SetActive(active[child])
+		}
+	}
+}
+
+// SetEnabled enables the specified tags and disables the rest.
+// With no arguments, all children are disabled.
+func (g *tagGroup) SetEnabled(views ...mvc.View) {
+	enabled := make(map[mvc.View]bool, len(views))
+	for _, v := range views {
+		enabled[v] = true
+	}
+	for _, child := range g.Children() {
+		if t, ok := child.(*tag); ok {
+			t.SetEnabled(enabled[child])
+		}
+	}
+}
+
+// SetVisible makes the specified tags visible and hides the rest.
+// With no arguments, all children are hidden.
+func (g *tagGroup) SetVisible(views ...mvc.View) {
+	visible := make(map[mvc.View]bool, len(views))
+	for _, v := range views {
+		visible[v] = true
+	}
+	for _, child := range g.Children() {
+		if t, ok := child.(*tag); ok {
+			t.SetVisible(visible[child])
+		}
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////

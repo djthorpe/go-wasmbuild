@@ -30,6 +30,7 @@ const (
 	ViewDropdownItem   = "mvc-cds-dropdown-item"
 	ViewCodeSnippet    = "mvc-cds-code-snippet"
 	ViewTag            = "mvc-cds-tag"
+	ViewTagGroup       = "mvc-cds-tag-group"
 	ViewDismissibleTag = "mvc-cds-dismissible-tag"
 	ViewOperationalTag = "mvc-cds-operational-tag"
 )
