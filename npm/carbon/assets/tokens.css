@@ -283,7 +283,7 @@ cds-code-snippet[type="multi"] {
    responsive breakpoint where cds-side-nav[collapse-mode="responsive"]
    collapses (Carbon breakpoint-lg = 1056px). */
 .cds--content {
-    padding: var(--cds-spacing-07, 2rem);
+    padding: var(--cds-spacing-07, 2rem) 0;
 }
 
 cds-header~.cds--content {

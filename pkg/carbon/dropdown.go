@@ -108,9 +108,16 @@ func (d *dropdown) Value() string {
 }
 
 // SetValue sets the dropdown's selected value.
-func (d *dropdown) SetValue(value string) {
+func (d *dropdown) SetValue(value string) *dropdown {
 	d.Root().SetValue(value)
 	d.Root().SetAttribute("value", value)
+	return d
+}
+
+// Label sets the dropdown's title-text slot to the given string label.
+func (d *dropdown) Label(label string) *dropdown {
+	d.Root().AppendChild(DropdownTitleText(label))
+	return d
 }
 
 // TitleText appends content to the dropdown's title-text slot.
@@ -145,21 +152,23 @@ func (i *dropdownItem) Value() string {
 }
 
 // SetValue sets the item value.
-func (i *dropdownItem) SetValue(value string) {
+func (i *dropdownItem) SetValue(value string) *dropdownItem {
 	i.Root().SetValue(value)
 	i.Root().SetAttribute("value", value)
+	return i
 }
 
-// Selected reports whether the item is marked selected.
-func (i *dropdownItem) Selected() bool {
+// Active reports whether the item is marked as the active selection.
+func (i *dropdownItem) Active() bool {
 	return i.Root().HasAttribute("selected")
 }
 
-// SetSelected marks the item selected or not selected.
-func (i *dropdownItem) SetSelected(selected bool) {
-	if selected {
+// SetActive marks the item as active or inactive.
+func (i *dropdownItem) SetActive(active bool) *dropdownItem {
+	if active {
 		i.Root().SetAttribute("selected", "")
 	} else {
 		i.Root().RemoveAttribute("selected")
 	}
+	return i
 }

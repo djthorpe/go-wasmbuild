@@ -18,6 +18,7 @@ func main() {
 		),
 		carbon.SideNavGroup("Components",
 			carbon.SideNavGroupItem("#buttons", "Buttons"),
+			carbon.SideNavGroupItem("#button-groups", "Button Groups"),
 		),
 		carbon.SideNavGroup("Forms",
 			carbon.SideNavGroupItem("#dropdowns", "Dropdowns"),
@@ -27,8 +28,11 @@ func main() {
 		),
 	)
 
-	// Main content area
-	Content := carbon.Section(router(SideNav), carbon.With(carbon.ThemeG10))
+	// Main content area — min-height fills the viewport below the fixed header.
+	Content := carbon.Section(
+		mvc.WithStyle("min-height:100vh"),
+		router(SideNav),
+	)
 
 	mvc.New(carbon.Section(
 		carbon.Header(
@@ -47,6 +51,7 @@ func router(nav mvc.View) mvc.View {
 	}
 	return mvc.Router().
 		Active(nav.(mvc.ActiveGroup)).
-		Page("#headings", headings.View(), nav.(ItemSelector).Item("#headings")).
-		Page("#buttons", buttons.View(), nav.(ItemSelector).Item("#buttons"))
+		Page("#headings", carbon.Page(headings.View()...), nav.(ItemSelector).Item("#headings")).
+		Page("#buttons", carbon.Page(buttons.View()...), nav.(ItemSelector).Item("#buttons")).
+		Page("#button-groups", carbon.Page(buttons.GroupView()...), nav.(ItemSelector).Item("#button-groups"))
 }

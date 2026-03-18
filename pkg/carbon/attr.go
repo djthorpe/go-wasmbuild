@@ -138,11 +138,19 @@ func WithBackground(color string) mvc.Opt {
 //
 //	carbon.Button(carbon.With(carbon.KindPrimary, carbon.SizeLarge), "Click me")
 //	carbon.Tile(carbon.With(carbon.ThemeG90), "Dark tile")
+//
+// When a theme Attr is included, all other theme classes are removed first so
+// that switching themes via Apply is always clean.
 func With(attrs ...Attr) []mvc.Opt {
 	opts := make([]mvc.Opt, 0, len(attrs))
 	for _, a := range attrs {
 		a := a
 		if IsTheme(a) {
+			for t := range themeAttrs {
+				if t != a {
+					opts = append(opts, mvc.WithoutClass(ClassForTheme(t)))
+				}
+			}
 			opts = append(opts, mvc.WithClass(ClassForTheme(a)))
 		} else {
 			opts = append(opts, mvc.WithAttr(keyForAttr(a), string(a)))

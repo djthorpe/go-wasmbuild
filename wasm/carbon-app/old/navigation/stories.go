@@ -87,7 +87,7 @@ func headerStory() dom.Element {
 		"A Carbon header with product branding and top-level navigation items. The active state uses the new wrapper methods instead of raw attributes.",
 		canvas,
 		header,
-		storybook.AttrDropdown("Theme", carbon.ThemeWhite, storybook.DefaultThemes, func(a carbon.Attr) {
+		storybook.Dropdown("Theme", carbon.ThemeWhite, storybook.DefaultThemes, func(a carbon.Attr) {
 			applyTheme(headerPreview, a)
 		}),
 		activeChoice.Root(),
@@ -213,7 +213,7 @@ func sideNavStory() dom.Element {
 		"A responsive Carbon side nav with top-level links and a nested section. The wrapper's ActiveGroup support makes router-style selection straightforward.",
 		canvas,
 		side,
-		storybook.AttrDropdown("Theme", carbon.ThemeWhite, storybook.DefaultThemes, func(a carbon.Attr) {
+		storybook.Dropdown("Theme", carbon.ThemeWhite, storybook.DefaultThemes, func(a carbon.Attr) {
 			applyTheme(canvas, a)
 		}),
 		activeChoice.Root(),

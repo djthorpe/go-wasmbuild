@@ -64,13 +64,13 @@ func basicButtonStory() dom.Element {
 		"Use the controls below to change the theme, kind and size of the button.",
 		canvas,
 		btn,
-		storybook.AttrDropdown("Theme", carbon.ThemeWhite, storybook.DefaultThemes, func(a carbon.Attr) {
+		storybook.Dropdown("Theme", carbon.ThemeWhite, storybook.DefaultThemes, func(a carbon.Attr) {
 			applyTheme(canvas, a)
 		}),
-		storybook.AttrDropdown("Kind", carbon.KindPrimary, buttonKinds, func(a carbon.Attr) {
+		storybook.Dropdown("Kind", carbon.KindPrimary, buttonKinds, func(a carbon.Attr) {
 			btn.Apply(carbon.With(a)...)
 		}),
-		storybook.AttrDropdown("Size", carbon.SizeLarge, buttonSizes, func(a carbon.Attr) {
+		storybook.Dropdown("Size", carbon.SizeLarge, buttonSizes, func(a carbon.Attr) {
 			btn.Apply(carbon.With(a)...)
 		}),
 		storybook.CheckboxGroup("Options", "Enabled", true, func(checked bool) {
@@ -89,13 +89,13 @@ func iconButtonStory() dom.Element {
 		"Carbon buttons accept an icon in the dedicated icon slot. This story keeps the button interactive while letting you swap the icon, theme, kind, and size.",
 		canvas,
 		btn,
-		storybook.AttrDropdown("Theme", carbon.ThemeWhite, storybook.DefaultThemes, func(a carbon.Attr) {
+		storybook.Dropdown("Theme", carbon.ThemeWhite, storybook.DefaultThemes, func(a carbon.Attr) {
 			applyTheme(canvas, a)
 		}),
-		storybook.AttrDropdown("Kind", carbon.KindPrimary, buttonKinds, func(a carbon.Attr) {
+		storybook.Dropdown("Kind", carbon.KindPrimary, buttonKinds, func(a carbon.Attr) {
 			btn.Apply(carbon.With(a)...)
 		}),
-		storybook.AttrDropdown("Size", carbon.SizeLarge, buttonSizes, func(a carbon.Attr) {
+		storybook.Dropdown("Size", carbon.SizeLarge, buttonSizes, func(a carbon.Attr) {
 			btn.Apply(carbon.With(a)...)
 		}),
 		storybook.IconDropdown("Icon", carbon.IconLaunch, buttonIcons, func(name carbon.IconName) {
@@ -121,13 +121,13 @@ func iconOnlyButtonStory() dom.Element {
 		"Icon-only Carbon buttons still need an accessible name. This story keeps the button label, tooltip text, and icon selection aligned while you change theme, kind, and size.",
 		canvas,
 		btn,
-		storybook.AttrDropdown("Theme", carbon.ThemeWhite, storybook.DefaultThemes, func(a carbon.Attr) {
+		storybook.Dropdown("Theme", carbon.ThemeWhite, storybook.DefaultThemes, func(a carbon.Attr) {
 			applyTheme(canvas, a)
 		}),
-		storybook.AttrDropdown("Kind", carbon.KindGhost, buttonKinds, func(a carbon.Attr) {
+		storybook.Dropdown("Kind", carbon.KindGhost, buttonKinds, func(a carbon.Attr) {
 			btn.Apply(carbon.With(a)...)
 		}),
-		storybook.AttrDropdown("Size", carbon.SizeLarge, buttonSizes, func(a carbon.Attr) {
+		storybook.Dropdown("Size", carbon.SizeLarge, buttonSizes, func(a carbon.Attr) {
 			btn.Apply(carbon.With(a)...)
 		}),
 		storybook.IconDropdown("Icon", carbon.IconSettings, buttonIcons, func(name carbon.IconName) {

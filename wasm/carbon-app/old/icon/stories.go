@@ -50,7 +50,7 @@ func iconStory() dom.Element {
 		"Use the controls below to swap the bundled Carbon icon, change its size, and preview it against the Carbon themes.",
 		canvas,
 		nil,
-		storybook.AttrDropdown("Theme", carbon.ThemeWhite, storybook.DefaultThemes, func(a carbon.Attr) {
+		storybook.Dropdown("Theme", carbon.ThemeWhite, storybook.DefaultThemes, func(a carbon.Attr) {
 			applyTheme(canvas, a)
 		}),
 		storybook.IconDropdown("Icon", carbon.IconAdd, icons, func(name carbon.IconName) {

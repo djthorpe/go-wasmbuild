@@ -73,6 +73,11 @@ func (t *tile) SetHeight(height string) {
 	t.applyPresentation()
 }
 
+// Active reports whether the tile is in its active state.
+func (t *tile) Active() bool {
+	return t.Root().GetAttribute("data-carbon-active") == "true"
+}
+
 // SetActive applies a transient active presentation to the tile.
 // The active state increases contrast and slightly lifts the tile, with a
 // smooth transition back to the inactive state.

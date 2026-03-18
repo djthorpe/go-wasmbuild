@@ -68,15 +68,16 @@ func (i *icon) IconName() IconName {
 }
 
 // SetIcon updates the icon property on the underlying Carbon web component.
-func (i *icon) SetIcon(name IconName) {
+func (i *icon) SetIcon(name IconName) *icon {
 	root := i.Root()
 	if name == "" {
 		root.RemoveAttribute("data-carbon-icon")
 		setIconProperty(root, js.Undefined())
-		return
+		return i
 	}
 	root.SetAttribute("data-carbon-icon", string(name))
 	setIconProperty(root, iconProperty(name, i.Size()))
+	return i
 }
 
 // Size returns the icon size, defaulting to 16 when unset or invalid.
@@ -84,23 +85,23 @@ func (i *icon) Size() IconSize {
 	return normalizeIconSize(IconSize(i.Root().GetAttribute("size")))
 }
 
-// SetSize updates the icon size on the host element and reapplies the icon.
-func (i *icon) SetSize(size IconSize) {
-	i.Apply(With(normalizeIconSize(size))...)
-}
-
-// AriaLabel returns the icon's aria-label.
-func (i *icon) AriaLabel() string {
+// Label returns the icon's accessible name (aria-label).
+func (i *icon) Label() string {
 	return i.Root().GetAttribute("aria-label")
 }
 
-// SetAriaLabel sets the icon's aria-label.
-func (i *icon) SetAriaLabel(label string) {
+// SetLabel sets both the accessible name (aria-label) and tooltip text on the icon.
+// It also removes aria-hidden so the icon is announced by assistive technology.
+func (i *icon) SetLabel(label string) *icon {
 	if label == "" {
-		i.Apply(mvc.WithoutAttr("aria-label"))
-		return
+		i.Apply(mvc.WithoutAttr("aria-label"), mvc.WithoutAttr("tooltip-text"))
+		if i.Root().GetAttribute("slot") == "icon" {
+			i.Root().SetAttribute("aria-hidden", "true")
+		}
+	} else {
+		i.Apply(mvc.WithAriaLabel(label), mvc.WithAttr("tooltip-text", label), mvc.WithoutAttr("aria-hidden"))
 	}
-	i.Apply(mvc.WithAriaLabel(label))
+	return i
 }
 
 ///////////////////////////////////////////////////////////////////////////////

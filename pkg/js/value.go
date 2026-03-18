@@ -149,6 +149,17 @@ func (v Value) Get(key string) Value {
 func (v Value) Set(key string, value any) {
 }
 
+// Bool returns the value as a bool (stub for non-WASM builds).
+func (v Value) Bool() bool {
+	if v.v == nil {
+		return false
+	}
+	if b, ok := v.v.(bool); ok {
+		return b
+	}
+	return false
+}
+
 // String returns the value as a string.
 func (v Value) String() string {
 	if v.v == nil {

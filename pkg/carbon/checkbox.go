@@ -2,6 +2,8 @@ package carbon
 
 import (
 	// Packages
+	"fmt"
+
 	dom "github.com/djthorpe/go-wasmbuild"
 	js "github.com/djthorpe/go-wasmbuild/pkg/js"
 	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
@@ -12,7 +14,9 @@ import (
 
 type checkbox struct{ base }
 
-type checkboxGroup struct{ base }
+type checkboxGroup struct {
+	base
+}
 
 // CheckboxState represents the tri-state value of a checkbox.
 //
@@ -31,6 +35,7 @@ const (
 
 var _ mvc.View = (*checkbox)(nil)
 var _ mvc.View = (*checkboxGroup)(nil)
+var _ mvc.ActiveGroup = (*checkboxGroup)(nil)
 
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
@@ -44,11 +49,16 @@ func init() {
 	})
 }
 
-// Checkbox returns a <cds-checkbox> web component.
+// Checkbox returns a <cds-checkbox> web component. An optional leading string
+// argument sets the label-text attribute.
 //
 //	carbon.Checkbox("Enabled")
-//	carbon.Checkbox(mvc.WithAttr("label-text", "Enabled"))
 func Checkbox(args ...any) *checkbox {
+	if len(args) > 0 {
+		if label, ok := args[0].(string); ok {
+			args = append([]any{mvc.WithAttr("label-text", label)}, args[1:]...)
+		}
+	}
 	return mvc.NewView(new(checkbox), ViewCheckbox, "cds-checkbox", setView, args).(*checkbox)
 }
 
@@ -108,14 +118,30 @@ func (c *checkbox) SetState(state CheckboxState) {
 	}
 }
 
-// LabelText returns the label-text attribute when explicitly set.
-func (c *checkbox) LabelText() string {
+// Active reports whether the checkbox is checked.
+func (c *checkbox) Active() bool {
+	return c.State() == CheckboxStateTrue
+}
+
+// SetActive checks or unchecks the checkbox and returns the receiver for chaining.
+func (c *checkbox) SetActive(active bool) *checkbox {
+	if active {
+		c.SetState(CheckboxStateTrue)
+	} else {
+		c.SetState(CheckboxStateFalse)
+	}
+	return c
+}
+
+// Label returns the label-text attribute when explicitly set.
+func (c *checkbox) Label() string {
 	return c.Root().GetAttribute("label-text")
 }
 
-// SetLabelText sets the label-text attribute.
-func (c *checkbox) SetLabelText(label string) {
+// SetLabel sets the label-text attribute.
+func (c *checkbox) SetLabel(label string) *checkbox {
 	c.Root().SetAttribute("label-text", label)
+	return c
 }
 
 // Value returns the checkbox value attribute.
@@ -132,25 +158,37 @@ func (c *checkbox) SetValue(value string) {
 	c.Root().SetAttribute("value", value)
 }
 
-// Name returns the checkbox name attribute.
-func (c *checkbox) Name() string {
-	return c.Root().GetAttribute("name")
-}
-
-// SetName sets the checkbox name attribute.
-func (c *checkbox) SetName(name string) {
-	c.Root().SetAttribute("name", name)
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS - CHECKBOX GROUP
 
-// AddCheckbox appends a checkbox to the group.
-func (g *checkboxGroup) AddCheckbox(item *checkbox) *checkboxGroup {
-	if item != nil {
-		g.Root().AppendChild(item.Root())
+// Content appends one or more checkboxes to the group, replacing any existing children.
+// Panics if any argument is not a *checkbox.
+func (g *checkboxGroup) Content(args ...any) mvc.View {
+	for _, arg := range args {
+		if _, ok := arg.(*checkbox); !ok {
+			panic(fmt.Sprintf("CheckboxGroup.Content: expected *checkbox, got %T", arg))
+		}
 	}
-	return g
+	return g.View.Content(args...)
+}
+
+// SetActive marks the specified checkboxes active and deactivates the rest.
+// Calling SetActive with no arguments deactivates all members.
+func (g *checkboxGroup) SetActive(views ...mvc.View) {
+	active := make(map[dom.Element]struct{}, len(views))
+	for _, v := range views {
+		if v != nil {
+			active[v.Root()] = struct{}{}
+		}
+	}
+	for _, child := range g.Root().Children() {
+		if v, err := mvc.ViewFromElement(child); err == nil {
+			if chk, ok := v.(*checkbox); ok {
+				_, on := active[child]
+				chk.SetActive(on)
+			}
+		}
+	}
 }
 
 // HelperText returns the group's helper text.
@@ -171,6 +209,17 @@ func (g *checkboxGroup) LegendText() string {
 // SetLegendText sets the group's legend text.
 func (g *checkboxGroup) SetLegendText(text string) {
 	g.Root().SetAttribute("legend-text", text)
+}
+
+// Label returns the group's legend text.
+func (g *checkboxGroup) Label() string {
+	return g.LegendText()
+}
+
+// SetLabel sets the group's legend text and returns the receiver for chaining.
+func (g *checkboxGroup) SetLabel(text string) *checkboxGroup {
+	g.SetLegendText(text)
+	return g
 }
 
 // Orientation returns the group's orientation.

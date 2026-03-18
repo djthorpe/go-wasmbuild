@@ -198,6 +198,11 @@ func (n *nav) OnSectionCollapsed(handler func(dom.Event)) *nav {
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS - NAV ITEM
 
+// Active reports whether the navigation item is active.
+func (n *navitem) Active() bool {
+	return n.Root().GetAttribute("aria-current") == "page"
+}
+
 // SetActive marks the navigation item active or inactive.
 func (n *navitem) SetActive(active bool) {
 	setNavItemActiveElement(n.Root(), active)

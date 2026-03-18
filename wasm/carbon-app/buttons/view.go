@@ -1,10 +1,12 @@
 package buttons
 
 import (
+	// Packages
+
 	dom "github.com/djthorpe/go-wasmbuild"
-	"github.com/djthorpe/go-wasmbuild/pkg/carbon"
-	"github.com/djthorpe/go-wasmbuild/pkg/mvc"
-	"github.com/djthorpe/go-wasmbuild/wasm/carbon-app/storybook"
+	carbon "github.com/djthorpe/go-wasmbuild/pkg/carbon"
+	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
+	storybook "github.com/djthorpe/go-wasmbuild/wasm/carbon-app/storybook"
 )
 
 var (
@@ -20,6 +22,7 @@ var (
 		carbon.SizeSmall,
 		carbon.SizeMedium,
 		carbon.SizeExtraLarge,
+		carbon.Size2XLarge,
 	}
 	buttonIcons = []carbon.IconName{
 		carbon.IconAdd,
@@ -43,55 +46,94 @@ var (
 	}
 )
 
-func View() mvc.View {
-	return carbon.Section(
-		basicButtonStory(),
-	)
+func View() []any {
+	return []any{
+		mvc.HTML("DIV", mvc.WithStyle("padding:1.5rem 2rem"), carbon.Head(1, "Buttons")),
+		carbon.Section(
+			mvc.WithStyle("padding:1.5rem 2rem"),
+			carbon.With(carbon.ThemeG10),
+			basicButtonStory(),
+			iconButtonStory(),
+			iconOnlyButtonStory(),
+		),
+	}
 }
 
 func basicButtonStory() dom.Element {
+	// Create the button and the canvas
 	btn := carbon.Button(carbon.With(carbon.KindPrimary), "Example button").SetValue("example-button")
+	canvas := carbon.Section(mvc.WithClass("canvas"), btn)
 
+	// Return the story
 	return storybook.Story(
 		"Basic Button",
 		"Use the controls below to change the theme, kind and size of the button.",
-		mvc.HTML("DIV", mvc.WithClass("canvas"), btn),
+		canvas,
 		btn,
-		Dropdown("Theme", carbon.ThemeG10, storybook.DefaultThemes, func(theme carbon.Attr) {
-			btn.Parent().Apply(carbon.With(theme)...)
+		storybook.Dropdown("Theme", carbon.ThemeG10, storybook.DefaultThemes, func(theme carbon.Attr) {
+			canvas.Apply(carbon.With(theme)...)
 		}),
-		Dropdown("Kind", carbon.KindDanger, buttonKinds, func(a carbon.Attr) {
+		storybook.Dropdown("Kind", carbon.KindDanger, buttonKinds, func(a carbon.Attr) {
 			btn.Apply(carbon.With(a)...)
 		}),
-		Dropdown("Size", carbon.SizeLarge, buttonSizes, func(a carbon.Attr) {
+		storybook.Dropdown("Size", carbon.SizeLarge, buttonSizes, func(a carbon.Attr) {
 			btn.Apply(carbon.With(a)...)
+		}),
+		storybook.CheckboxGroup("Enabled", "Enabled", true, func(a bool) {
+			btn.SetEnabled(a)
 		}),
 	)
 }
 
-// Dropdown builds a Carbon dropdown for a set of Attr options.
-func Dropdown(label string, selected carbon.Attr, options []carbon.Attr, onChange func(carbon.Attr)) dom.Element {
-	// TODO: Select the default option
-	//onChange(selected)
+func iconButtonStory() dom.Element {
+	// Create the icon, button and the canvas
+	icon := carbon.Icon(carbon.IconLaunch, carbon.With(carbon.IconSize16))
+	btn := carbon.Button(carbon.With(carbon.KindPrimary), "Icon button", icon).SetValue("icon-button")
+	canvas := carbon.Section(mvc.WithClass("canvas"), btn)
 
-	// Build the dropdown items
-	items := make([]any, 0, len(options)+1)
-	items = append(items, carbon.DropdownTitleText(label))
-	for _, option := range options {
-		item := carbon.DropdownItem(mvc.WithAttr("value", string(option)), string(option))
-		if option == selected {
-			item.SetSelected(true)
-		}
-		items = append(items, item)
-	}
+	return storybook.Story(
+		"Button With Icon",
+		"Carbon buttons accept an icon in the dedicated icon slot. This story keeps the button interactive while letting you swap the icon, theme, kind, and size.",
+		canvas,
+		btn,
+		storybook.Dropdown("Theme", carbon.ThemeG10, storybook.DefaultThemes, func(theme carbon.Attr) {
+			canvas.Apply(carbon.With(theme)...)
+		}),
+		storybook.Dropdown("Kind", carbon.KindPrimary, buttonKinds, func(a carbon.Attr) {
+			btn.Apply(carbon.With(a)...)
+		}),
+		storybook.Dropdown("Size", carbon.SizeExtraLarge, buttonSizes, func(a carbon.Attr) {
+			btn.Apply(carbon.With(a)...)
+		}),
+		storybook.IconDropdown("Icon", carbon.IconLaunch, buttonIcons, func(name carbon.IconName) {
+			icon.SetIcon(name)
+		}),
+	)
+}
 
-	dd := carbon.Dropdown(append([]any{
-		mvc.WithAttr("style", "width:100%"),
-		mvc.WithClass(carbon.ClassForTheme(carbon.ThemeWhite)),
-	}, items...)...)
-	dd.SetValue(string(selected))
-	dd.AddEventListener(carbon.EventSelected, func(dom.Event) {
-		onChange(carbon.Attr(dd.Value()))
-	})
-	return dd.Root()
+func iconOnlyButtonStory() dom.Element {
+	// Create the icon, button and the canvas
+	icon := carbon.Icon(carbon.IconLaunch, carbon.With(carbon.IconSize16))
+	btn := carbon.Button(carbon.With(carbon.KindPrimary), icon).SetValue("icon-only-button").SetLabel(buttonIconLabels[carbon.IconLaunch])
+	canvas := carbon.Section(mvc.WithClass("canvas"), btn)
+
+	return storybook.Story(
+		"Icon Only Button",
+		"Icon-only Carbon buttons still need an accessible name. This story keeps the button label, tooltip text, and icon selection aligned while you change theme, kind, and size.",
+		canvas,
+		btn,
+		storybook.Dropdown("Theme", carbon.ThemeWhite, storybook.DefaultThemes, func(theme carbon.Attr) {
+			canvas.Apply(carbon.With(theme)...)
+		}),
+		storybook.Dropdown("Kind", carbon.KindSecondary, buttonKinds, func(a carbon.Attr) {
+			btn.Apply(carbon.With(a)...)
+		}),
+		storybook.Dropdown("Size", carbon.SizeLarge, buttonSizes, func(a carbon.Attr) {
+			btn.Apply(carbon.With(a)...)
+		}),
+		storybook.IconDropdown("Icon", carbon.IconSettings, buttonIcons, func(name carbon.IconName) {
+			icon.SetIcon(name)
+			btn.SetLabel(buttonIconLabels[name])
+		}),
+	)
 }

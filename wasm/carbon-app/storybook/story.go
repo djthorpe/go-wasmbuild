@@ -15,7 +15,7 @@ import (
 var DefaultThemes = []carbon.Attr{carbon.ThemeWhite, carbon.ThemeG10, carbon.ThemeG90, carbon.ThemeG100}
 
 // Story builds a reusable component demo frame for the example app.
-func Story(title, description string, preview dom.Element, observed mvc.View, controls ...dom.Element) dom.Element {
+func Story(title, description string, preview mvc.View, observed mvc.View, controls ...mvc.View) dom.Element {
 	children := make([]any, 0, 5)
 	children = append(children,
 		carbon.Head(2, title),
@@ -31,109 +31,106 @@ func Story(title, description string, preview dom.Element, observed mvc.View, co
 	return mvc.HTML("DIV", append([]any{mvc.WithClass("component-story")}, children...)...)
 }
 
-// AttrDropdown builds a Carbon dropdown for a set of Attr options.
-func AttrDropdown(label string, selected carbon.Attr, options []carbon.Attr, onChange func(carbon.Attr)) dom.Element {
-	items := make([]any, 0, len(options)+1)
-	items = append(items, carbon.DropdownTitleText(label))
+// Dropdown builds a Carbon dropdown for a set of Attr options.
+func Dropdown(label string, selected carbon.Attr, options []carbon.Attr, onChange func(carbon.Attr)) mvc.View {
+	onChange(selected)
+	items := make([]any, 0, len(options))
 	for _, option := range options {
-		item := carbon.DropdownItem(mvc.WithAttr("value", string(option)), string(option))
-		if option == selected {
-			item.SetSelected(true)
-		}
-		items = append(items, item)
+		items = append(items, carbon.DropdownItem(string(option)).SetValue(string(option)))
 	}
-
-	dd := carbon.Dropdown(append([]any{
-		mvc.WithAttr("style", "width:100%"),
-		mvc.WithClass(carbon.ClassForTheme(carbon.ThemeWhite)),
-	}, items...)...)
-	dd.SetValue(string(selected))
-	dd.AddEventListener(carbon.EventSelected, func(dom.Event) {
-		onChange(carbon.Attr(dd.Value()))
-	})
-	return dd.Root()
+	return carbon.Dropdown(items).
+		Label(label).
+		SetValue(string(selected)).
+		AddEventListener(carbon.EventSelected, func(e dom.Event) {
+			if v := mvc.ViewFromEventTarget(e, carbon.ViewDropdown); v != nil {
+				onChange(carbon.Attr(v.Root().Value()))
+			}
+		})
 }
 
 // CheckboxGroup builds a Carbon checkbox group containing one checkbox.
-func CheckboxGroup(legend, label string, initiallyChecked bool, onChange func(bool)) dom.Element {
-	chk := carbon.Checkbox(label)
-	if initiallyChecked {
-		chk.SetState(carbon.CheckboxStateTrue)
-	} else {
-		chk.SetState(carbon.CheckboxStateFalse)
-	}
-	chk.AddEventListener(carbon.EventCheckboxChanged, func(dom.Event) {
-		onChange(chk.State() == carbon.CheckboxStateTrue)
-	})
-
-	group := carbon.CheckboxGroup(mvc.WithAttr("legend-text", legend))
-	group.AddCheckbox(chk)
-	return group.Root()
+func CheckboxGroup(legend, label string, selected bool, onChange func(bool)) mvc.View {
+	return carbon.CheckboxGroup(
+		carbon.Checkbox(label).
+			SetActive(selected).
+			AddEventListener(carbon.EventCheckboxChanged, func(e dom.Event) {
+				if v := mvc.ViewFromEventTarget(e, carbon.ViewCheckbox); v != nil {
+					if a, ok := v.(interface{ Active() bool }); ok {
+						onChange(a.Active())
+					}
+				}
+			}),
+	).SetLabel(legend)
 }
 
 // IconDropdown builds a Carbon dropdown for the bundled icon names.
-func IconDropdown(label string, selected carbon.IconName, options []carbon.IconName, onChange func(carbon.IconName)) dom.Element {
-	items := make([]any, 0, len(options)+1)
-	items = append(items, carbon.DropdownTitleText(label))
+func IconDropdown(label string, selected carbon.IconName, options []carbon.IconName, onChange func(carbon.IconName)) mvc.View {
+	items := make([]any, 0, len(options))
 	for _, option := range options {
-		item := carbon.DropdownItem(mvc.WithAttr("value", string(option)), string(option))
+		item := carbon.DropdownItem(string(option)).SetValue(string(option))
 		if option == selected {
-			item.SetSelected(true)
+			item.SetActive(true)
 		}
 		items = append(items, item)
 	}
 
-	dd := carbon.Dropdown(append([]any{
+	return carbon.Dropdown(
 		mvc.WithAttr("style", "width:100%"),
-		mvc.WithClass(carbon.ClassForTheme(carbon.ThemeWhite)),
-	}, items...)...)
-	dd.SetValue(string(selected))
-	dd.AddEventListener(carbon.EventSelected, func(dom.Event) {
-		onChange(carbon.IconName(dd.Value()))
+		items,
+	).Label(label).SetValue(string(selected)).AddEventListener(carbon.EventSelected, func(e dom.Event) {
+		if v := mvc.ViewFromEventTarget(e, carbon.ViewDropdown); v != nil {
+			onChange(carbon.IconName(v.Root().Value()))
+		}
 	})
-	return dd.Root()
 }
 
 // IconSizeDropdown builds a Carbon dropdown for icon sizes.
-func IconSizeDropdown(label string, selected carbon.IconSize, options []carbon.IconSize, onChange func(carbon.IconSize)) dom.Element {
-	items := make([]any, 0, len(options)+1)
-	items = append(items, carbon.DropdownTitleText(label))
+func IconSizeDropdown(label string, selected carbon.IconSize, options []carbon.IconSize, onChange func(carbon.IconSize)) mvc.View {
+	items := make([]any, 0, len(options))
 	for _, option := range options {
 		value := fmt.Sprintf("%d", option)
-		item := carbon.DropdownItem(mvc.WithAttr("value", value), value)
+		item := carbon.DropdownItem(value).SetValue(value)
 		if option == selected {
-			item.SetSelected(true)
+			item.SetActive(true)
 		}
 		items = append(items, item)
 	}
 
-	dd := carbon.Dropdown(append([]any{
+	return carbon.Dropdown(
 		mvc.WithAttr("style", "width:100%"),
 		mvc.WithClass(carbon.ClassForTheme(carbon.ThemeWhite)),
-	}, items...)...)
-	dd.SetValue(fmt.Sprintf("%d", selected))
-	dd.AddEventListener(carbon.EventSelected, func(dom.Event) {
-		switch dd.Value() {
-		case "20":
-			onChange(carbon.IconSize20)
-		case "24":
-			onChange(carbon.IconSize24)
-		case "32":
-			onChange(carbon.IconSize32)
-		default:
-			onChange(carbon.IconSize16)
+		items,
+	).Label(label).SetValue(fmt.Sprintf("%d", selected)).AddEventListener(carbon.EventSelected, func(e dom.Event) {
+		if v := mvc.ViewFromEventTarget(e, carbon.ViewDropdown); v != nil {
+			switch v.Root().Value() {
+			case "20":
+				onChange(carbon.IconSize20)
+			case "24":
+				onChange(carbon.IconSize24)
+			case "32":
+				onChange(carbon.IconSize32)
+			default:
+				onChange(carbon.IconSize16)
+			}
 		}
 	})
-	return dd.Root()
 }
 
-func controlsPanel(controls ...dom.Element) dom.Element {
+func controlsPanel(controls ...mvc.View) dom.Element {
 	cols := make([]any, 0, len(controls))
-	for _, control := range controls {
-		cols = append(cols, carbon.Col4(mvc.WithClass("controls-panel__cell"), control))
+	for i, control := range controls {
+		// Each cell needs its own z-index so that the first dropdown's open
+		// menu paints above the cells that follow it in the DOM.
+		zIndex := len(controls) - i
+		cols = append(cols, carbon.Col4(
+			mvc.WithClass("controls-panel__cell"),
+			mvc.WithStyle(fmt.Sprintf("position:relative;z-index:%d;overflow:visible", zIndex)),
+			control,
+		))
 	}
 	return mvc.HTML("DIV", mvc.WithClass(carbon.ClassForTheme(carbon.ThemeWhite), "controls-panel"),
-		carbon.Grid(append([]any{mvc.WithClass("controls-panel__grid")}, cols...)...),
+		mvc.WithStyle("position:relative;z-index:100;overflow:visible"),
+		carbon.Grid(append([]any{mvc.WithClass("controls-panel__grid"), mvc.WithStyle("overflow:visible")}, cols...)...),
 	)
 }
 

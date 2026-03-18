@@ -1,6 +1,7 @@
 package carbon
 
 import (
+	"fmt"
 	"strings"
 
 	// Packages
@@ -67,6 +68,22 @@ func (b *button) SetValue(value string) *button {
 	return b
 }
 
+// Label returns the button's accessible name (aria-label).
+func (b *button) Label() string {
+	return b.Root().GetAttribute("aria-label")
+}
+
+// SetLabel sets both the accessible name (aria-label) and tooltip text on the button.
+// Use this for icon-only buttons where the button itself carries the accessible name.
+func (b *button) SetLabel(label string) *button {
+	if label == "" {
+		b.Apply(mvc.WithoutAttr("aria-label"), mvc.WithoutAttr("tooltip-text"))
+	} else {
+		b.Apply(mvc.WithAriaLabel(label), mvc.WithAttr("tooltip-text", label))
+	}
+	return b
+}
+
 // AddIcon appends an icon to the button's dedicated icon slot.
 func (b *button) AddIcon(icon *icon) *button {
 	if icon == nil {
@@ -76,6 +93,68 @@ func (b *button) AddIcon(icon *icon) *button {
 	b.Root().AppendChild(icon.Root())
 	applyIconOnlyDefaultKind(b)
 	return b
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// BUTTON GROUP
+
+type buttonGroup struct{ base }
+
+var _ mvc.View = (*buttonGroup)(nil)
+var _ mvc.EnabledGroup = (*buttonGroup)(nil)
+
+func init() {
+	mvc.RegisterView(ViewButtonGroup, func(element dom.Element) mvc.View {
+		return mvc.NewViewWithElement(new(buttonGroup), element, setView)
+	}, EventClick, EventHover, EventNoHover, EventFocus, EventNoFocus)
+}
+
+// ButtonGroup returns a <cds-button-group> web component that arranges
+// buttons horizontally with correct Carbon spacing.
+func ButtonGroup(args ...any) *buttonGroup {
+	return mvc.NewView(new(buttonGroup), ViewButtonGroup, "cds-button-group", setView, args).(*buttonGroup)
+}
+
+// Content appends buttons to the group. Panics if any arg is not a *button.
+func (g *buttonGroup) Content(args ...any) mvc.View {
+	children := make([]any, 0, len(args))
+	for _, arg := range args {
+		if b, ok := arg.(*button); ok {
+			children = append(children, b)
+		} else {
+			panic(fmt.Sprintf("ButtonGroup.Content: expected *button, got %T", arg))
+		}
+	}
+	return g.View.Content(children...)
+}
+
+// AddEventListener registers a button-like event handler on the group root.
+// Hover and focus events are mapped to bubbling equivalents so child button
+// interactions are observed at the group level while keeping e.Target() on the
+// individual button.
+func (g *buttonGroup) AddEventListener(event string, handler func(dom.Event)) mvc.View {
+	g.View.AddEventListener(buttonGroupEvent(event), handler)
+	return g
+}
+
+// RemoveEventListener removes a previously registered button-like event handler.
+func (g *buttonGroup) RemoveEventListener(event string) mvc.View {
+	g.View.RemoveEventListener(buttonGroupEvent(event))
+	return g
+}
+
+// SetEnabled enables the specified buttons and disables all others in the group.
+// With no arguments, all buttons are disabled.
+func (g *buttonGroup) SetEnabled(views ...mvc.View) {
+	enabled := make(map[mvc.View]bool, len(views))
+	for _, v := range views {
+		enabled[v] = true
+	}
+	for _, child := range g.Children() {
+		if b, ok := child.(mvc.EnabledState); ok {
+			b.SetEnabled(enabled[child])
+		}
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -117,7 +196,7 @@ func applyButtonIconSlot(icon *icon) {
 	}
 	root := icon.Root()
 	root.SetAttribute("slot", "icon")
-	if root.GetAttribute("aria-hidden") == "" {
+	if root.GetAttribute("aria-hidden") == "" && root.GetAttribute("aria-label") == "" {
 		root.SetAttribute("aria-hidden", "true")
 	}
 	style := strings.TrimSpace(root.GetAttribute("style"))
@@ -127,5 +206,18 @@ func applyButtonIconSlot(icon *icon) {
 		} else {
 			root.SetAttribute("style", strings.TrimRight(style, "; ")+";color:currentColor")
 		}
+	}
+}
+
+func buttonGroupEvent(event string) string {
+	switch event {
+	case EventHover:
+		return EventHoverBubbled
+	case EventNoHover:
+		return EventNoHoverBubbled
+	case EventFocus:
+		return EventFocusBubbled
+	default:
+		return event
 	}
 }

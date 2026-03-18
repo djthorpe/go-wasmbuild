@@ -15,6 +15,7 @@ const (
 	ViewSection       = "mvc-cds-section"
 	ViewText          = "mvc-cds-text"
 	ViewButton        = "mvc-cds-button"
+	ViewButtonGroup   = "mvc-cds-button-group"
 	ViewIcon          = "mvc-cds-icon"
 	ViewNav           = "mvc-cds-nav"
 	ViewNavGlobal     = "mvc-cds-nav-global"
