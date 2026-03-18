@@ -1,9 +1,10 @@
 package headings
 
 import (
+	// Packages
 	dom "github.com/djthorpe/go-wasmbuild"
-	"github.com/djthorpe/go-wasmbuild/pkg/carbon"
-	"github.com/djthorpe/go-wasmbuild/pkg/mvc"
+	carbon "github.com/djthorpe/go-wasmbuild/pkg/carbon"
+	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
 	storybook "github.com/djthorpe/go-wasmbuild/wasm/carbon-app/storybook"
 )
 
@@ -18,7 +19,6 @@ func TextView() []any {
 			compactStory(),
 			blockquoteStory(),
 			inlineStylesStory(),
-			markdownStory(),
 		),
 	}
 }
@@ -115,40 +115,6 @@ func inlineStylesStory() dom.Element {
 	return storybook.Story(
 		"Inline Styles",
 		"Inline text elements cover deletion, highlighting, emphasis, small supporting text, and inline code.",
-		canvas,
-		nil,
-		storybook.Dropdown("Theme", carbon.ThemeWhite, storybook.DefaultThemes, func(theme carbon.Attr) {
-			canvas.Apply(carbon.With(theme)...)
-		}),
-	)
-}
-
-func markdownStory() dom.Element {
-	const sample = `## Markdown
-
-Markdown content supports **strong text**, *emphasis*, ~~deletion~~, and inline code like ` + "`const theme = \"white\"`" + `.
-
-- First bullet item
-- Second bullet item
-- Third bullet item
-
-> Markdown also supports blockquotes for quoted or supporting content.
-
-` + "```go" + `
-func Example() string {
-    return "hello, markdown"
-}
-` + "```" + `
-`
-	canvas := carbon.Section(
-		mvc.WithClass("canvas"),
-		mvc.WithStyle("display:grid;gap:1rem;max-width:56rem;padding:0 1rem"),
-		carbon.Markdown(sample),
-	)
-
-	return storybook.Story(
-		"Markdown",
-		"Markdown content is parsed into Carbon text and semantic HTML elements for rich documentation-style content.",
 		canvas,
 		nil,
 		storybook.Dropdown("Theme", carbon.ThemeWhite, storybook.DefaultThemes, func(theme carbon.Attr) {

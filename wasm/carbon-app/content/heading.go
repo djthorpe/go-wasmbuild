@@ -1,13 +1,14 @@
 package headings
 
 import (
+	// Packages
 	dom "github.com/djthorpe/go-wasmbuild"
-	"github.com/djthorpe/go-wasmbuild/pkg/carbon"
-	"github.com/djthorpe/go-wasmbuild/pkg/mvc"
+	carbon "github.com/djthorpe/go-wasmbuild/pkg/carbon"
+	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
 	storybook "github.com/djthorpe/go-wasmbuild/wasm/carbon-app/storybook"
 )
 
-func View() []any {
+func HeadingView() []any {
 	return []any{
 		mvc.HTML("DIV", mvc.WithStyle("padding:1.5rem 2rem"), carbon.Head(1, "Headings")),
 		carbon.Section(

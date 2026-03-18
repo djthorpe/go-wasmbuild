@@ -2,7 +2,6 @@ package buttons
 
 import (
 	// Packages
-
 	dom "github.com/djthorpe/go-wasmbuild"
 	carbon "github.com/djthorpe/go-wasmbuild/pkg/carbon"
 	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"

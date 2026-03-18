@@ -5,26 +5,27 @@ import (
 	carbon "github.com/djthorpe/go-wasmbuild/pkg/carbon"
 	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
 	buttons "github.com/djthorpe/go-wasmbuild/wasm/carbon-app/buttons"
-	headings "github.com/djthorpe/go-wasmbuild/wasm/carbon-app/content"
+	content "github.com/djthorpe/go-wasmbuild/wasm/carbon-app/content"
 )
 
 func main() {
 	// Side bar navigation
 	SideNav := carbon.SideNav(
 		carbon.SideNavGroup("Content",
-			carbon.SideNavGroupItem("#headings", "Headings"),
+			carbon.SideNavGroupItem("#heading", "Headings"),
 			carbon.SideNavGroupItem("#text", "Text"),
-			carbon.SideNavGroupItem("#icons", "Icons"),
+			carbon.SideNavGroupItem("#markdown", "Markdown"),
+			carbon.SideNavGroupItem("#icon", "Icons"),
 		),
 		carbon.SideNavGroup("Components",
-			carbon.SideNavGroupItem("#buttons", "Buttons"),
-			carbon.SideNavGroupItem("#button-groups", "Button Groups"),
+			carbon.SideNavGroupItem("#button", "Buttons"),
+			carbon.SideNavGroupItem("#button-group", "Button Groups"),
 		),
 		carbon.SideNavGroup("Forms",
-			carbon.SideNavGroupItem("#dropdowns", "Dropdowns"),
+			carbon.SideNavGroupItem("#dropdown", "Dropdowns"),
 		),
 		carbon.SideNavGroup("Data",
-			carbon.SideNavGroupItem("#tables", "Tables"),
+			carbon.SideNavGroupItem("#table", "Tables"),
 		),
 	)
 
@@ -51,8 +52,9 @@ func router(nav mvc.View) mvc.View {
 	}
 	return mvc.Router().
 		Active(nav.(mvc.ActiveGroup)).
-		Page("#headings", carbon.Page(headings.View()...), nav.(ItemSelector).Item("#headings")).
-		Page("#text", carbon.Page(headings.TextView()...), nav.(ItemSelector).Item("#text")).
-		Page("#buttons", carbon.Page(buttons.View()...), nav.(ItemSelector).Item("#buttons")).
-		Page("#button-groups", carbon.Page(buttons.GroupView()...), nav.(ItemSelector).Item("#button-groups"))
+		Page("#heading", carbon.Page(content.HeadingView()...), nav.(ItemSelector).Item("#heading")).
+		Page("#text", carbon.Page(content.TextView()...), nav.(ItemSelector).Item("#text")).
+		Page("#markdown", carbon.Page(content.MarkdownView()...), nav.(ItemSelector).Item("#markdown")).
+		Page("#button", carbon.Page(buttons.View()...), nav.(ItemSelector).Item("#button")).
+		Page("#button-group", carbon.Page(buttons.GroupView()...), nav.(ItemSelector).Item("#button-group"))
 }
