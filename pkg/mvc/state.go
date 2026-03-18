@@ -16,6 +16,7 @@ type EnabledState interface {
 // VisibleState is implemented by a view that can be shown or hidden.
 type VisibleState interface {
 	Visible() bool
+	SetVisible(bool) View
 }
 
 // ActiveGroup is implemented by a container that manages which of its member

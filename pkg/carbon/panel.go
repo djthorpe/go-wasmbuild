@@ -12,6 +12,7 @@ import (
 type panel struct{ base }
 
 var _ mvc.View = (*panel)(nil)
+var _ mvc.VisibleState = (*panel)(nil)
 
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
@@ -30,32 +31,14 @@ func HeaderPanel(args ...any) *panel {
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
 
-// Expanded reports whether the header panel is open.
-func (p *panel) Expanded() bool {
-	return p.Root().HasAttribute("expanded")
+// Visible reports whether the panel is expanded (visible).
+func (p *panel) Visible() bool {
+	return tagBoolProperty(p.Root(), "expanded")
 }
 
-// SetExpanded opens or closes the header panel.
-func (p *panel) SetExpanded(expanded bool) *panel {
-	if expanded {
-		p.Root().SetAttribute("expanded", "")
-	} else {
-		p.Root().RemoveAttribute("expanded")
-	}
+// SetVisible shows or hides the panel by setting the expanded property.
+func (p *panel) SetVisible(visible bool) mvc.View {
+	setTagBoolProperty(p.Root(), "expanded", visible)
 	return p
 }
 
-// Open expands the header panel.
-func (p *panel) Open() *panel {
-	return p.SetExpanded(true)
-}
-
-// Close collapses the header panel.
-func (p *panel) Close() *panel {
-	return p.SetExpanded(false)
-}
-
-// Toggle flips the expanded state of the header panel.
-func (p *panel) Toggle() *panel {
-	return p.SetExpanded(!p.Expanded())
-}

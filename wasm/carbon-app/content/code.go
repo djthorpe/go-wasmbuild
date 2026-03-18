@@ -47,7 +47,14 @@ func codeInlineStory() dom.Element {
 }
 
 func codeSingleStory() dom.Element {
-	snippet := carbon.CodeSnippet("GOOS=js GOARCH=wasm go build -trimpath -ldflags \"-s -w\" -o dist/carbon-app/carbon-app.wasm github.com/djthorpe/go-wasmbuild/wasm/carbon-app")
+	// Long enough to overflow the container and show the horizontal scroll affordance.
+	const cmd = `GOOS=js GOARCH=wasm go build -trimpath -ldflags "-s -w" ` +
+		`-o dist/carbon-app/carbon-app.wasm ` +
+		`-tags production ` +
+		`-gcflags="all=-e" ` +
+		`github.com/djthorpe/go-wasmbuild/wasm/carbon-app`
+
+	snippet := carbon.CodeSnippet(cmd)
 
 	canvas := carbon.Section(
 		mvc.WithClass("canvas"),
@@ -57,17 +64,17 @@ func codeSingleStory() dom.Element {
 
 	return storybook.Story(
 		"Single Line",
-		"Single-line code snippets display a one-line command or expression with a copy button and horizontal scroll on overflow.",
+		"Single-line code snippets display a one-line command or expression with a copy button. Long content scrolls horizontally — Carbon does not support text wrapping for this variant.",
 		canvas,
 		nil,
 		storybook.Dropdown("Theme", carbon.ThemeWhite, storybook.DefaultThemes, func(theme carbon.Attr) {
 			canvas.Apply(carbon.With(theme)...)
 		}),
-		storybook.CheckboxGroup("Disabled", "Disable copy button", false, func(v bool) {
+		storybook.CheckboxGroup("Disabled", "Disable snippet", false, func(v bool) {
 			snippet.SetEnabled(!v)
 		}),
-		storybook.CheckboxGroup("Wrap text", "Wrap long lines", false, func(v bool) {
-			snippet.SetWrapText(v)
+		storybook.CheckboxGroup("Copy button", "Hide copy button", false, func(v bool) {
+			snippet.SetHideCopyButton(v)
 		}),
 	)
 }
@@ -76,18 +83,17 @@ func codeMultiStory() dom.Element {
 	const src = `package main
 
 import (
-	"fmt"
-
 	carbon "github.com/djthorpe/go-wasmbuild/pkg/carbon"
-	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
+	mvc    "github.com/djthorpe/go-wasmbuild/pkg/mvc"
 )
 
 func main() {
 	mvc.New(carbon.Section(
-		carbon.Header().SetLabel("#", "My App", ""),
+		carbon.Header(carbon.HeaderNavGlobal(carbon.Button(carbon.Icon(carbon.IconUserAvatar, carbon.With(carbon.IconSize24))))).SetLabel("#", "My App", ""),
+		carbon.SideNav(carbon.SideNavGroup("Content", carbon.SideNavGroupItem("#home", "Home"), carbon.SideNavGroupItem("#about", "About"))),
 		carbon.Page(
 			carbon.Head(1, "Hello, Carbon"),
-			carbon.Para("Built with go-wasmbuild."),
+			carbon.Para("Built with go-wasmbuild — a Go-native Carbon Design System framework targeting WebAssembly."),
 		),
 	), carbon.With(carbon.ThemeG90)).Run()
 }`
@@ -102,14 +108,20 @@ func main() {
 
 	return storybook.Story(
 		"Multi Line",
-		"Multi-line code blocks display larger code samples and collapse long content behind a \"Show more\" button.",
+		"Multi-line code blocks display larger code samples and collapse long content behind a \"Show more\" button. Long lines scroll horizontally by default; enable \"Wrap text\" to fold them instead.",
 		canvas,
 		nil,
 		storybook.Dropdown("Theme", carbon.ThemeWhite, storybook.DefaultThemes, func(theme carbon.Attr) {
 			canvas.Apply(carbon.With(theme)...)
 		}),
-		storybook.CheckboxGroup("Disabled", "Disable copy button", false, func(v bool) {
+		storybook.CheckboxGroup("Disabled", "Disable snippet", false, func(v bool) {
 			block.SetEnabled(!v)
+		}),
+		storybook.CheckboxGroup("Copy button", "Hide copy button", false, func(v bool) {
+			block.SetHideCopyButton(v)
+		}),
+		storybook.CheckboxGroup("Wrap text", "Wrap long lines", false, func(v bool) {
+			block.SetWrapText(v)
 		}),
 	)
 }

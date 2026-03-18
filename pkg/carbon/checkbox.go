@@ -47,7 +47,7 @@ func init() {
 	}, EventCheckboxChanged)
 	mvc.RegisterView(ViewCheckboxGroup, func(element dom.Element) mvc.View {
 		return mvc.NewViewWithElement(new(checkboxGroup), element, setView)
-	})
+	}, EventCheckboxChanged)
 }
 
 // Checkbox returns a <cds-checkbox> web component. An optional leading string
@@ -90,16 +90,19 @@ func (c *checkbox) SetEnabled(enabled bool) *checkbox {
 // SetEnabled enables the specified checkboxes and disables the rest.
 // Calling SetEnabled with no arguments disables all members.
 func (g *checkboxGroup) SetEnabled(views ...mvc.View) {
-	enabled := make(map[dom.Element]struct{}, len(views))
-	for _, v := range views {
-		if v != nil {
-			enabled[v.Root()] = struct{}{}
-		}
-	}
 	for _, child := range g.Root().Children() {
 		if v, err := mvc.ViewFromElement(child); err == nil {
 			if chk, ok := v.(*checkbox); ok {
-				_, on := enabled[child]
+				// Use Equals (JS object identity) rather than a map keyed on
+				// dom.Element interface values — Children() creates fresh wrapper
+				// objects each call, so pointer equality always fails.
+				on := false
+				for _, ev := range views {
+					if ev != nil && child.Equals(ev.Root()) {
+						on = true
+						break
+					}
+				}
 				chk.SetEnabled(on)
 			}
 		}

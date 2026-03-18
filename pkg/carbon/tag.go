@@ -95,7 +95,7 @@ func (t *tag) Visible() bool {
 	return tagBoolProperty(t.Root(), "open")
 }
 
-func (t *tag) SetVisible(visible bool) *tag {
+func (t *tag) SetVisible(visible bool) mvc.View {
 	setTagBoolProperty(t.Root(), "open", visible)
 	return t
 }

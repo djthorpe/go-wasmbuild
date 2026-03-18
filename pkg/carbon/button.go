@@ -105,6 +105,25 @@ func (b *button) SetLabel(label string) *button {
 	return b
 }
 
+// CloseButton returns a ghost icon-only button with a close (X) icon.
+// When clicked, it walks up the view parent chain to find the nearest
+// mvc.VisibleState ancestor and calls SetVisible(false) on it.
+// Additional args are forwarded to Button (e.g. mvc.WithStyle(...)).
+func CloseButton(args ...any) *button {
+	b := Button(append([]any{Icon(IconClose, With(IconSize20)), mvc.WithAriaLabel("Close")}, args...)...)
+	b.AddEventListener(EventClick, func(_ dom.Event) {
+		var v mvc.View = b
+		for v != nil {
+			v = v.Parent()
+			if vs, ok := v.(mvc.VisibleState); ok {
+				vs.SetVisible(false)
+				return
+			}
+		}
+	})
+	return b
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // BUTTON GROUP
 
