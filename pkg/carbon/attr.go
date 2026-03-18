@@ -142,13 +142,26 @@ func ClassForTheme(a Attr) string {
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
 
-// WithBackground returns an mvc.Opt that sets the tile (or any Carbon
-// component using --cds-layer) background to the given CSS colour value.
-// It works by overriding the CSS custom property that the shadow DOM reads:
+// WithBackground returns an mvc.Opt that sets a tile background to the given
+// CSS colour value.
+// The tile wrapper translates this into the --cds-layer custom property.
 //
 //	carbon.Tile(carbon.WithBackground("#d0e2ff"), carbon.Head(3, "Title"))
 func WithBackground(color string) mvc.Opt {
-	return mvc.WithAttr("style", "--cds-layer:"+color)
+	return mvc.WithAttr("data-carbon-layer", color)
+}
+
+// WithFill returns an mvc.Opt that makes a tile fill the width of its container.
+func WithFill() mvc.Opt {
+	return mvc.WithAttr("data-carbon-fill", "true")
+}
+
+// WithHeight returns an mvc.Opt that sets a fixed host height.
+func WithHeight(height string) mvc.Opt {
+	if height == "" {
+		return mvc.WithoutAttr("data-carbon-height")
+	}
+	return mvc.WithAttr("data-carbon-height", height)
 }
 
 // With converts one or more Attr constants into mvc.Opt values and returns

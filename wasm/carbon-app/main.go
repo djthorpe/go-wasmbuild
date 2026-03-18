@@ -4,8 +4,9 @@ import (
 	// Packages
 	carbon "github.com/djthorpe/go-wasmbuild/pkg/carbon"
 	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
-	buttons "github.com/djthorpe/go-wasmbuild/wasm/carbon-app/buttons"
+	button "github.com/djthorpe/go-wasmbuild/wasm/carbon-app/button"
 	content "github.com/djthorpe/go-wasmbuild/wasm/carbon-app/content"
+	form "github.com/djthorpe/go-wasmbuild/wasm/carbon-app/form"
 )
 
 func main() {
@@ -22,6 +23,7 @@ func main() {
 		carbon.SideNavGroup("Components",
 			carbon.SideNavGroupItem("#button", "Buttons"),
 			carbon.SideNavGroupItem("#button-group", "Button Groups"),
+			carbon.SideNavGroupItem("#tile", "Tiles"),
 			carbon.SideNavGroupItem("#tag", "Tags"),
 		),
 		carbon.SideNavGroup("Forms",
@@ -61,7 +63,9 @@ func router(nav mvc.View) mvc.View {
 		Page("#code", carbon.Page(content.CodeView()...), nav.(ItemSelector).Item("#code")).
 		Page("#icon", carbon.Page(content.IconView()...), nav.(ItemSelector).Item("#icon")).
 		Page("#grid", carbon.Page(content.GridView()...), nav.(ItemSelector).Item("#grid")).
+		Page("#button", carbon.Page(button.View()...), nav.(ItemSelector).Item("#button")).
+		Page("#button-group", carbon.Page(button.GroupView()...), nav.(ItemSelector).Item("#button-group")).
+		Page("#tile", carbon.Page(content.TileView()...), nav.(ItemSelector).Item("#tile")).
 		Page("#tag", carbon.Page(content.TagView()...), nav.(ItemSelector).Item("#tag")).
-		Page("#button", carbon.Page(buttons.View()...), nav.(ItemSelector).Item("#button")).
-		Page("#button-group", carbon.Page(buttons.GroupView()...), nav.(ItemSelector).Item("#button-group"))
+		Page("#dropdown", carbon.Page(form.DropdownView()...), nav.(ItemSelector).Item("#dropdown"))
 }

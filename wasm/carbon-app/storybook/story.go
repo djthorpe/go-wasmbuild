@@ -2,6 +2,7 @@ package storybook
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	// Packages
@@ -142,10 +143,13 @@ func eventIndicators(v mvc.View) dom.Element {
 	)
 	for i, evt := range evts {
 		val := carbon.Para()
-		tile := carbon.TileDecorator(carbon.Head(4, carbon.GoName(evt)), val)
-		tile.SetFill(true)
-		tile.SetHeight("9rem")
-		tile.SetBackground("var(--cds-layer-02,#e0e0e0)")
+		tile := carbon.TileDecorator(
+			carbon.WithFill(),
+			carbon.WithHeight("9rem"),
+			carbon.WithBackground("var(--cds-layer-02,#e0e0e0)"),
+			carbon.Head(4, carbon.GoName(evt)),
+			val,
+		)
 		localTile := tile
 		localVal := val
 		v.AddEventListener(evt, func(e dom.Event) {
@@ -162,9 +166,15 @@ func eventIndicators(v mvc.View) dom.Element {
 				}
 			}
 			localVal.Root().SetInnerHTML(text)
-			localTile.SetActive(true)
+			baseStyle := localTile.Root().GetAttribute("style")
+			flashStyle := strings.Trim(baseStyle, "; ")
+			if flashStyle != "" {
+				flashStyle += ";"
+			}
+			flashStyle += "filter:contrast(1.12) brightness(0.94) saturate(0.92);transform:translateY(-1px);box-shadow:0 0 0 1px var(--cds-border-strong-01,#8d8d8d)"
+			localTile.Root().SetAttribute("style", flashStyle)
 			js.SetTimeout(600*time.Millisecond, func() {
-				localTile.SetActive(false)
+				localTile.Root().SetAttribute("style", baseStyle)
 			})
 		})
 		tiles[i] = mvc.HTML("DIV", mvc.WithAttr("style", wrapperStyle), tile)
