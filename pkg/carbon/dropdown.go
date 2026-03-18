@@ -1,6 +1,7 @@
 package carbon
 
 import (
+	"fmt"
 	"strings"
 
 	// Packages
@@ -19,6 +20,9 @@ const dropdownThemeWhiteStyle = "--cds-field:#ffffff;--cds-field-hover:#e8e8e8;-
 
 var _ mvc.View = (*dropdown)(nil)
 var _ mvc.View = (*dropdownItem)(nil)
+var _ mvc.EnabledState = (*dropdown)(nil)
+var _ mvc.ActiveGroup = (*dropdown)(nil)
+var _ mvc.ActiveState = (*dropdownItem)(nil)
 
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
@@ -33,12 +37,11 @@ func init() {
 }
 
 // Dropdown returns a <cds-dropdown> web component.
-//
-//	carbon.Dropdown(
-//		carbon.DropdownTitleText("Theme"),
-//		carbon.DropdownItem(mvc.WithAttr("value", "one"), "One"),
-//	)
-func Dropdown(args ...any) *dropdown {
+// helperText is shown below the dropdown; pass an empty string for none.
+func Dropdown(helperText string, args ...any) *dropdown {
+	if helperText != "" {
+		args = append([]any{mvc.WithAttr("helper-text", helperText)}, args...)
+	}
 	dd := mvc.NewView(new(dropdown), ViewDropdown, "cds-dropdown", setView, args).(*dropdown)
 	dd.applyThemePresentation()
 	return dd
@@ -49,15 +52,10 @@ func DropdownItem(args ...any) *dropdownItem {
 	return mvc.NewView(new(dropdownItem), ViewDropdownItem, "cds-dropdown-item", setView, args).(*dropdownItem)
 }
 
-// DropdownTitleText returns a node slotted into the dropdown's title-text slot.
-func DropdownTitleText(args ...any) dom.Element {
+func dropdownTitleText(args ...any) dom.Element {
 	return mvc.HTML("SPAN", append([]any{mvc.WithAttr("slot", "title-text")}, args...)...)
 }
 
-// DropdownHelperText returns a node slotted into the dropdown's helper-text slot.
-func DropdownHelperText(args ...any) dom.Element {
-	return mvc.HTML("SPAN", append([]any{mvc.WithAttr("slot", "helper-text")}, args...)...)
-}
 
 func (d *dropdown) Apply(opts ...mvc.Opt) mvc.View {
 	d.View.Apply(opts...)
@@ -99,6 +97,44 @@ func appendStyle(base, extra string) string {
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS - DROPDOWN
 
+// Enabled reports whether the dropdown is enabled.
+func (d *dropdown) Enabled() bool {
+	return !d.Root().HasAttribute("disabled")
+}
+
+// SetEnabled enables or disables the dropdown.
+func (d *dropdown) SetEnabled(enabled bool) *dropdown {
+	if enabled {
+		d.Root().RemoveAttribute("disabled")
+	} else {
+		d.Root().SetAttribute("disabled", "")
+	}
+	return d
+}
+
+// SetActive marks the specified items as selected and deselects all others.
+// Also updates the dropdown's value to match the first active item.
+// With no arguments, all items are deselected.
+func (d *dropdown) SetActive(views ...mvc.View) {
+	active := make(map[dom.Element]struct{}, len(views))
+	for _, v := range views {
+		if v != nil {
+			active[v.Root()] = struct{}{}
+		}
+	}
+	for _, child := range d.Root().Children() {
+		if v, err := mvc.ViewFromElement(child); err == nil {
+			if item, ok := v.(*dropdownItem); ok {
+				_, on := active[child]
+				item.SetActive(on)
+				if on {
+					d.SetValue(item.Value())
+				}
+			}
+		}
+	}
+}
+
 // Value returns the dropdown's selected value.
 func (d *dropdown) Value() string {
 	if value := d.Root().Value(); value != "" {
@@ -114,30 +150,38 @@ func (d *dropdown) SetValue(value string) *dropdown {
 	return d
 }
 
-// Label sets the dropdown's title-text slot to the given string label.
-func (d *dropdown) Label(label string) *dropdown {
-	d.Root().AppendChild(DropdownTitleText(label))
-	return d
+// Label returns the dropdown's title-text slot content.
+func (d *dropdown) Label() string {
+	for _, child := range d.Root().Children() {
+		if child.GetAttribute("slot") == "title-text" {
+			return strings.TrimSpace(child.TextContent())
+		}
+	}
+	return ""
 }
 
-// TitleText appends content to the dropdown's title-text slot.
-func (d *dropdown) TitleText(args ...any) *dropdown {
-	d.Root().AppendChild(DropdownTitleText(args...))
-	return d
-}
-
-// HelperText appends content to the dropdown's helper-text slot.
-func (d *dropdown) HelperText(args ...any) *dropdown {
-	d.Root().AppendChild(DropdownHelperText(args...))
-	return d
-}
-
-// AddItem appends a dropdown item as a child of the dropdown.
-func (d *dropdown) AddItem(item *dropdownItem) *dropdown {
-	if item != nil {
-		d.Root().AppendChild(item.Root())
+// SetLabel sets the dropdown's title-text slot to the given string.
+func (d *dropdown) SetLabel(label string) *dropdown {
+	for _, child := range d.Root().Children() {
+		if child.GetAttribute("slot") == "title-text" {
+			d.Root().RemoveChild(child)
+		}
+	}
+	if label != "" {
+		d.Root().AppendChild(dropdownTitleText(label))
 	}
 	return d
+}
+
+// Content appends dropdown items, replacing any existing children.
+// Panics if any argument is not a *dropdownItem.
+func (d *dropdown) Content(args ...any) mvc.View {
+	for _, arg := range args {
+		if _, ok := arg.(*dropdownItem); !ok {
+			panic(fmt.Sprintf("Dropdown.Content: expected *dropdownItem, got %T", arg))
+		}
+	}
+	return d.View.Content(args...)
 }
 
 ///////////////////////////////////////////////////////////////////////////////

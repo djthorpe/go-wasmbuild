@@ -40,7 +40,7 @@ func main() {
 			carbon.HeaderNavGlobal(
 				carbon.Button(carbon.Icon(carbon.IconUserAvatar, carbon.With(carbon.IconSize24))),
 			),
-		).Label("#", "Carbon Design System", "Storybook"),
+		).SetLabel("#", "Carbon Design System", "Storybook"),
 		SideNav,
 		Content,
 	), carbon.With(carbon.ThemeG90)).Run()

@@ -1,9 +1,9 @@
 package carbon
 
 import (
-	// Packages
 	"fmt"
 
+	// Packages
 	dom "github.com/djthorpe/go-wasmbuild"
 	js "github.com/djthorpe/go-wasmbuild/pkg/js"
 	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
@@ -35,6 +35,7 @@ const (
 
 var _ mvc.View = (*checkbox)(nil)
 var _ mvc.View = (*checkboxGroup)(nil)
+var _ mvc.ActiveState = (*checkbox)(nil)
 var _ mvc.ActiveGroup = (*checkboxGroup)(nil)
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -63,7 +64,11 @@ func Checkbox(args ...any) *checkbox {
 }
 
 // CheckboxGroup returns a <cds-checkbox-group> web component.
-func CheckboxGroup(args ...any) *checkboxGroup {
+// helperText is shown below the group; pass an empty string for none.
+func CheckboxGroup(helperText string, args ...any) *checkboxGroup {
+	if helperText != "" {
+		args = append([]any{mvc.WithAttr("helper-text", helperText)}, args...)
+	}
 	return mvc.NewView(new(checkboxGroup), ViewCheckboxGroup, "cds-checkbox-group", setView, args).(*checkboxGroup)
 }
 
@@ -71,22 +76,34 @@ func CheckboxGroup(args ...any) *checkboxGroup {
 // ENABLED STATE
 
 var _ mvc.EnabledState = (*checkbox)(nil)
-var _ mvc.EnabledState = (*checkboxGroup)(nil)
+var _ mvc.EnabledGroup = (*checkboxGroup)(nil)
 
 func (c *checkbox) Enabled() bool {
 	return !boolProperty(c.Root(), "disabled")
 }
 
-func (c *checkbox) SetEnabled(enabled bool) {
+func (c *checkbox) SetEnabled(enabled bool) *checkbox {
 	setBoolProperty(c.Root(), "disabled", !enabled)
+	return c
 }
 
-func (g *checkboxGroup) Enabled() bool {
-	return !boolProperty(g.Root(), "disabled")
-}
-
-func (g *checkboxGroup) SetEnabled(enabled bool) {
-	setBoolProperty(g.Root(), "disabled", !enabled)
+// SetEnabled enables the specified checkboxes and disables the rest.
+// Calling SetEnabled with no arguments disables all members.
+func (g *checkboxGroup) SetEnabled(views ...mvc.View) {
+	enabled := make(map[dom.Element]struct{}, len(views))
+	for _, v := range views {
+		if v != nil {
+			enabled[v.Root()] = struct{}{}
+		}
+	}
+	for _, child := range g.Root().Children() {
+		if v, err := mvc.ViewFromElement(child); err == nil {
+			if chk, ok := v.(*checkbox); ok {
+				_, on := enabled[child]
+				chk.SetEnabled(on)
+			}
+		}
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -104,7 +121,7 @@ func (c *checkbox) State() CheckboxState {
 }
 
 // SetState updates the checkbox tri-state value.
-func (c *checkbox) SetState(state CheckboxState) {
+func (c *checkbox) SetState(state CheckboxState) *checkbox {
 	switch state {
 	case CheckboxStateUndefined:
 		setBoolProperty(c.Root(), "checked", false)
@@ -116,6 +133,7 @@ func (c *checkbox) SetState(state CheckboxState) {
 		setBoolProperty(c.Root(), "indeterminate", false)
 		setBoolProperty(c.Root(), "checked", false)
 	}
+	return c
 }
 
 // Active reports whether the checkbox is checked.
@@ -123,7 +141,7 @@ func (c *checkbox) Active() bool {
 	return c.State() == CheckboxStateTrue
 }
 
-// SetActive checks or unchecks the checkbox and returns the receiver for chaining.
+// SetActive checks or unchecks the checkbox.
 func (c *checkbox) SetActive(active bool) *checkbox {
 	if active {
 		c.SetState(CheckboxStateTrue)
@@ -153,9 +171,10 @@ func (c *checkbox) Value() string {
 }
 
 // SetValue sets the checkbox value attribute.
-func (c *checkbox) SetValue(value string) {
+func (c *checkbox) SetValue(value string) *checkbox {
 	c.Root().SetValue(value)
 	c.Root().SetAttribute("value", value)
+	return c
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -191,34 +210,14 @@ func (g *checkboxGroup) SetActive(views ...mvc.View) {
 	}
 }
 
-// HelperText returns the group's helper text.
-func (g *checkboxGroup) HelperText() string {
-	return g.Root().GetAttribute("helper-text")
-}
-
-// SetHelperText sets the group's helper text.
-func (g *checkboxGroup) SetHelperText(text string) {
-	g.Root().SetAttribute("helper-text", text)
-}
-
-// LegendText returns the group's legend text.
-func (g *checkboxGroup) LegendText() string {
+// Label returns the group's legend text.
+func (g *checkboxGroup) Label() string {
 	return g.Root().GetAttribute("legend-text")
 }
 
-// SetLegendText sets the group's legend text.
-func (g *checkboxGroup) SetLegendText(text string) {
-	g.Root().SetAttribute("legend-text", text)
-}
-
-// Label returns the group's legend text.
-func (g *checkboxGroup) Label() string {
-	return g.LegendText()
-}
-
-// SetLabel sets the group's legend text and returns the receiver for chaining.
+// SetLabel sets the group's legend text.
 func (g *checkboxGroup) SetLabel(text string) *checkboxGroup {
-	g.SetLegendText(text)
+	g.Root().SetAttribute("legend-text", text)
 	return g
 }
 
@@ -231,8 +230,9 @@ func (g *checkboxGroup) Orientation() CheckboxOrientation {
 }
 
 // SetOrientation sets the group's orientation.
-func (g *checkboxGroup) SetOrientation(orientation CheckboxOrientation) {
+func (g *checkboxGroup) SetOrientation(orientation CheckboxOrientation) *checkboxGroup {
 	g.Root().SetAttribute("orientation", string(orientation))
+	return g
 }
 
 ///////////////////////////////////////////////////////////////////////////////

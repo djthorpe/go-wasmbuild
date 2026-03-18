@@ -11,7 +11,7 @@ import (
 ///////////////////////////////////////////////////////////////////////////////
 // TYPES
 
-type nav struct {
+type navgroup struct {
 	base
 	items []*navitem
 }
@@ -23,11 +23,12 @@ type navitem struct {
 	items []*navitem
 }
 
-var _ mvc.View = (*nav)(nil)
+var _ mvc.View = (*navgroup)(nil)
 var _ mvc.View = (*navglobal)(nil)
 var _ mvc.View = (*navitem)(nil)
-var _ mvc.ActiveGroup = (*nav)(nil)
+var _ mvc.ActiveGroup = (*navgroup)(nil)
 var _ mvc.ActiveState = (*navitem)(nil)
+var _ mvc.EnabledState = (*navitem)(nil)
 
 ///////////////////////////////////////////////////////////////////////////////
 // GLOBALS
@@ -54,7 +55,7 @@ const (
 
 func init() {
 	mvc.RegisterView(ViewNav, func(element dom.Element) mvc.View {
-		return mvc.NewViewWithElement(new(nav), element, setView)
+		return mvc.NewViewWithElement(new(navgroup), element, setView)
 	}, EventClick, EventHoverBubbled, EventNoHoverBubbled, EventFocusBubbled, EventNoFocus, EventSectionToggling, EventSectionToggle)
 
 	mvc.RegisterView(ViewNavGlobal, func(element dom.Element) mvc.View {
@@ -67,9 +68,9 @@ func init() {
 }
 
 // Header returns a <cds-header> UI shell header.
-func Header(args ...any) *nav {
+func Header(args ...any) *navgroup {
 	opts, body, global := splitHeaderArgs(args...)
-	n := mvc.NewView(new(nav), ViewNav, templateShellHeader, setView, opts).(*nav)
+	n := mvc.NewView(new(navgroup), ViewNav, templateShellHeader, setView, opts).(*navgroup)
 	n.items = navItems(body...)
 	n.ReplaceSlotChildren("body", body...)
 	if global != nil {
@@ -93,8 +94,8 @@ func HeaderNavItem(href string, args ...any) *navitem {
 }
 
 // SideNav returns a <cds-side-nav> shell panel.
-func SideNav(args ...any) *nav {
-	n := mvc.NewView(new(nav), ViewNav, templateShellSideNav, setView, args).(*nav)
+func SideNav(args ...any) *navgroup {
+	n := mvc.NewView(new(navgroup), ViewNav, templateShellSideNav, setView, args).(*navgroup)
 	n.items = navItems(args...)
 	return n
 }
@@ -123,8 +124,13 @@ func SideNavGroupItem(href string, args ...any) *navitem {
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS - NAV
 
-// Label sets the header name slot with a <cds-header-name> link.
-func (n *nav) Label(href, prefix string, args ...any) *nav {
+// Label returns the header's aria-label.
+func (n *navgroup) Label() string {
+	return n.Root().GetAttribute("aria-label")
+}
+
+// SetLabel sets the header name slot with a <cds-header-name> link.
+func (n *navgroup) SetLabel(href, prefix string, args ...any) *navgroup {
 	el := mvc.HTML("cds-header-name", append([]any{mvc.WithAttr("href", href), mvc.WithAttr("prefix", prefix)}, args...)...)
 	n.ReplaceSlot("name", el)
 	aria := strings.TrimSpace(strings.Join([]string{strings.TrimSpace(prefix), strings.TrimSpace(el.TextContent())}, " "))
@@ -137,7 +143,7 @@ func (n *nav) Label(href, prefix string, args ...any) *nav {
 }
 
 // SetActive marks the supplied nav items active and clears the rest.
-func (n *nav) SetActive(views ...mvc.View) {
+func (n *navgroup) SetActive(views ...mvc.View) {
 	active := make(map[dom.Element]struct{}, len(views))
 	for _, view := range views {
 		if view != nil {
@@ -150,7 +156,7 @@ func (n *nav) SetActive(views ...mvc.View) {
 }
 
 // Item returns the first navigation item whose href matches the supplied value.
-func (n *nav) Item(href string) mvc.View {
+func (n *navgroup) Item(href string) mvc.View {
 	for _, item := range n.items {
 		if view := navItemByHref(item, href); view != nil {
 			return view
@@ -160,7 +166,7 @@ func (n *nav) Item(href string) mvc.View {
 }
 
 // OnSectionToggle adds a listener for side-nav section toggle completion.
-func (n *nav) OnSectionToggle(handler func(dom.Event)) *nav {
+func (n *navgroup) OnSectionToggle(handler func(dom.Event)) *navgroup {
 	if handler != nil {
 		n.AddEventListener(EventSectionToggle, func(evt dom.Event) {
 			if sectionEventTarget(evt) != nil {
@@ -172,7 +178,7 @@ func (n *nav) OnSectionToggle(handler func(dom.Event)) *nav {
 }
 
 // OnSectionExpanded adds a listener for side-nav sections after expansion.
-func (n *nav) OnSectionExpanded(handler func(dom.Event)) *nav {
+func (n *navgroup) OnSectionExpanded(handler func(dom.Event)) *navgroup {
 	if handler != nil {
 		n.AddEventListener(EventSectionToggle, func(evt dom.Event) {
 			if sectionEventExpanded(evt) {
@@ -184,7 +190,7 @@ func (n *nav) OnSectionExpanded(handler func(dom.Event)) *nav {
 }
 
 // OnSectionCollapsed adds a listener for side-nav sections after collapse.
-func (n *nav) OnSectionCollapsed(handler func(dom.Event)) *nav {
+func (n *navgroup) OnSectionCollapsed(handler func(dom.Event)) *navgroup {
 	if handler != nil {
 		n.AddEventListener(EventSectionToggle, func(evt dom.Event) {
 			if sectionEventCollapsed(evt) {
@@ -198,14 +204,30 @@ func (n *nav) OnSectionCollapsed(handler func(dom.Event)) *nav {
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS - NAV ITEM
 
+// Enabled reports whether the navigation item is enabled.
+func (n *navitem) Enabled() bool {
+	return !n.Root().HasAttribute("disabled")
+}
+
+// SetEnabled enables or disables the navigation item.
+func (n *navitem) SetEnabled(enabled bool) *navitem {
+	if enabled {
+		n.Root().RemoveAttribute("disabled")
+	} else {
+		n.Root().SetAttribute("disabled", "")
+	}
+	return n
+}
+
 // Active reports whether the navigation item is active.
 func (n *navitem) Active() bool {
 	return n.Root().GetAttribute("aria-current") == "page"
 }
 
 // SetActive marks the navigation item active or inactive.
-func (n *navitem) SetActive(active bool) {
+func (n *navitem) SetActive(active bool) *navitem {
 	setNavItemActiveElement(n.Root(), active)
+	return n
 }
 
 // Item returns the first navigation item in this branch whose href matches the supplied value.

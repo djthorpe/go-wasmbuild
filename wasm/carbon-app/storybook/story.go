@@ -38,8 +38,8 @@ func Dropdown(label string, selected carbon.Attr, options []carbon.Attr, onChang
 	for _, option := range options {
 		items = append(items, carbon.DropdownItem(string(option)).SetValue(string(option)))
 	}
-	return carbon.Dropdown(items).
-		Label(label).
+	return carbon.Dropdown("", items).
+		SetLabel(label).
 		SetValue(string(selected)).
 		AddEventListener(carbon.EventSelected, func(e dom.Event) {
 			if v := mvc.ViewFromEventTarget(e, carbon.ViewDropdown); v != nil {
@@ -50,17 +50,16 @@ func Dropdown(label string, selected carbon.Attr, options []carbon.Attr, onChang
 
 // CheckboxGroup builds a Carbon checkbox group containing one checkbox.
 func CheckboxGroup(legend, label string, selected bool, onChange func(bool)) mvc.View {
-	return carbon.CheckboxGroup(
-		carbon.Checkbox(label).
-			SetActive(selected).
-			AddEventListener(carbon.EventCheckboxChanged, func(e dom.Event) {
-				if v := mvc.ViewFromEventTarget(e, carbon.ViewCheckbox); v != nil {
-					if a, ok := v.(interface{ Active() bool }); ok {
-						onChange(a.Active())
-					}
-				}
-			}),
-	).SetLabel(legend)
+	chk := carbon.Checkbox(label)
+	chk.SetActive(selected)
+	chk.AddEventListener(carbon.EventCheckboxChanged, func(e dom.Event) {
+		if v := mvc.ViewFromEventTarget(e, carbon.ViewCheckbox); v != nil {
+			if a, ok := v.(interface{ Active() bool }); ok {
+				onChange(a.Active())
+			}
+		}
+	})
+	return carbon.CheckboxGroup("", chk).SetLabel(legend)
 }
 
 // IconDropdown builds a Carbon dropdown for the bundled icon names.
@@ -74,10 +73,10 @@ func IconDropdown(label string, selected carbon.IconName, options []carbon.IconN
 		items = append(items, item)
 	}
 
-	return carbon.Dropdown(
+	return carbon.Dropdown("",
 		mvc.WithAttr("style", "width:100%"),
 		items,
-	).Label(label).SetValue(string(selected)).AddEventListener(carbon.EventSelected, func(e dom.Event) {
+	).SetLabel(label).SetValue(string(selected)).AddEventListener(carbon.EventSelected, func(e dom.Event) {
 		if v := mvc.ViewFromEventTarget(e, carbon.ViewDropdown); v != nil {
 			onChange(carbon.IconName(v.Root().Value()))
 		}
@@ -96,11 +95,11 @@ func IconSizeDropdown(label string, selected carbon.IconSize, options []carbon.I
 		items = append(items, item)
 	}
 
-	return carbon.Dropdown(
+	return carbon.Dropdown("",
 		mvc.WithAttr("style", "width:100%"),
 		mvc.WithClass(carbon.ClassForTheme(carbon.ThemeWhite)),
 		items,
-	).Label(label).SetValue(fmt.Sprintf("%d", selected)).AddEventListener(carbon.EventSelected, func(e dom.Event) {
+	).SetLabel(label).SetValue(fmt.Sprintf("%d", selected)).AddEventListener(carbon.EventSelected, func(e dom.Event) {
 		if v := mvc.ViewFromEventTarget(e, carbon.ViewDropdown); v != nil {
 			switch v.Root().Value() {
 			case "20":

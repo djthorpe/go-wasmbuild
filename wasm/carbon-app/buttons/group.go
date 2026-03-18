@@ -27,10 +27,13 @@ func basicButtonGroupStory() dom.Element {
 	grp := carbon.ButtonGroup()
 	grp.Content(btn1, btn2, btn3)
 	canvas := carbon.Section(mvc.WithClass("canvas"), grp)
-	enabled1 := carbon.Checkbox("Primary").SetActive(true)
-	enabled2 := carbon.Checkbox("Secondary").SetActive(true)
-	enabled3 := carbon.Checkbox("Tertiary").SetActive(true)
-	enabledControl := carbon.CheckboxGroup().SetLabel("Enabled")
+	enabled1 := carbon.Checkbox("Primary")
+	enabled1.SetActive(true)
+	enabled2 := carbon.Checkbox("Secondary")
+	enabled2.SetActive(true)
+	enabled3 := carbon.Checkbox("Tertiary")
+	enabled3.SetActive(true)
+	enabledControl := carbon.CheckboxGroup("").SetLabel("Enabled")
 	syncEnabled := func() {
 		views := make([]mvc.View, 0, 3)
 		if enabled1.Active() {

@@ -47,30 +47,33 @@ func TileDecorator(args ...any) *tile {
 
 // SetBackground sets the background colour of the tile by overriding the
 // --cds-layer CSS custom property, which the shadow DOM uses internally.
-func (t *tile) SetBackground(color string) {
+func (t *tile) SetBackground(color string) *tile {
 	t.Root().SetAttribute("data-carbon-layer", color)
 	t.applyPresentation()
+	return t
 }
 
 // SetFill controls whether the tile fills the width of its container.
-func (t *tile) SetFill(fill bool) {
+func (t *tile) SetFill(fill bool) *tile {
 	if fill {
 		t.Root().SetAttribute("data-carbon-fill", "true")
 	} else {
 		t.Root().RemoveAttribute("data-carbon-fill")
 	}
 	t.applyPresentation()
+	return t
 }
 
 // SetHeight sets a fixed CSS height for the tile host.
 // Pass an empty string to clear the explicit height.
-func (t *tile) SetHeight(height string) {
+func (t *tile) SetHeight(height string) *tile {
 	if height == "" {
 		t.Root().RemoveAttribute("data-carbon-height")
 	} else {
 		t.Root().SetAttribute("data-carbon-height", height)
 	}
 	t.applyPresentation()
+	return t
 }
 
 // Active reports whether the tile is in its active state.
@@ -81,13 +84,14 @@ func (t *tile) Active() bool {
 // SetActive applies a transient active presentation to the tile.
 // The active state increases contrast and slightly lifts the tile, with a
 // smooth transition back to the inactive state.
-func (t *tile) SetActive(active bool) {
+func (t *tile) SetActive(active bool) *tile {
 	if active {
 		t.Root().SetAttribute("data-carbon-active", "true")
 	} else {
 		t.Root().RemoveAttribute("data-carbon-active")
 	}
 	t.applyPresentation()
+	return t
 }
 
 func (t *tile) applyPresentation() {

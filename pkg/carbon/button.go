@@ -37,6 +37,26 @@ func Button(args ...any) *button {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// ACTIVE STATE
+
+var _ mvc.ActiveState = (*button)(nil)
+
+// Active reports whether the button is in its pressed/active state.
+func (b *button) Active() bool {
+	return b.Root().GetAttribute("aria-pressed") == "true"
+}
+
+// SetActive sets the pressed/active state of the button via aria-pressed.
+func (b *button) SetActive(active bool) *button {
+	if active {
+		b.Root().SetAttribute("aria-pressed", "true")
+	} else {
+		b.Root().RemoveAttribute("aria-pressed")
+	}
+	return b
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // ENABLED STATE
 
 var _ mvc.EnabledState = (*button)(nil)
@@ -45,12 +65,13 @@ func (b *button) Enabled() bool {
 	return !b.Root().HasAttribute("disabled")
 }
 
-func (b *button) SetEnabled(enabled bool) {
+func (b *button) SetEnabled(enabled bool) *button {
 	if enabled {
 		b.Root().RemoveAttribute("disabled")
 	} else {
 		b.Root().SetAttribute("disabled", "")
 	}
+	return b
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -84,23 +105,13 @@ func (b *button) SetLabel(label string) *button {
 	return b
 }
 
-// AddIcon appends an icon to the button's dedicated icon slot.
-func (b *button) AddIcon(icon *icon) *button {
-	if icon == nil {
-		return b
-	}
-	applyButtonIconSlot(icon)
-	b.Root().AppendChild(icon.Root())
-	applyIconOnlyDefaultKind(b)
-	return b
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // BUTTON GROUP
 
 type buttonGroup struct{ base }
 
 var _ mvc.View = (*buttonGroup)(nil)
+var _ mvc.ActiveGroup = (*buttonGroup)(nil)
 var _ mvc.EnabledGroup = (*buttonGroup)(nil)
 
 func init() {
@@ -143,6 +154,20 @@ func (g *buttonGroup) RemoveEventListener(event string) mvc.View {
 	return g
 }
 
+// SetActive marks the specified buttons active and clears the rest.
+// With no arguments, all buttons are deactivated.
+func (g *buttonGroup) SetActive(views ...mvc.View) {
+	active := make(map[mvc.View]bool, len(views))
+	for _, v := range views {
+		active[v] = true
+	}
+	for _, child := range g.Children() {
+		if b, ok := child.(*button); ok {
+			b.SetActive(active[child])
+		}
+	}
+}
+
 // SetEnabled enables the specified buttons and disables all others in the group.
 // With no arguments, all buttons are disabled.
 func (g *buttonGroup) SetEnabled(views ...mvc.View) {
@@ -151,7 +176,7 @@ func (g *buttonGroup) SetEnabled(views ...mvc.View) {
 		enabled[v] = true
 	}
 	for _, child := range g.Children() {
-		if b, ok := child.(mvc.EnabledState); ok {
+		if b, ok := child.(*button); ok {
 			b.SetEnabled(enabled[child])
 		}
 	}
