@@ -100,10 +100,7 @@ func markdownNode(node ast.Node) any {
 		if language := n.Language(); language != "" {
 			codeArgs = append([]any{mvc.WithAttr("data-language", language)}, codeArgs...)
 		}
-		return mvc.HTML("PRE",
-			mvc.WithStyle("padding:1rem;overflow:auto;background:var(--cds-layer-01,#f4f4f4);border:1px solid var(--cds-border-subtle,#c6c6c6)"),
-			mvc.HTML("CODE", codeArgs...),
-		)
+		return CodeBlock(codeArgs...)
 
 	case *md.Link:
 		children := markdownChildren(n)

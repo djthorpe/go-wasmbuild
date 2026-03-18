@@ -217,8 +217,8 @@ func iconTile(entry IconEntry, size carbon.IconSize, onClick func(IconEntry)) do
 		mvc.WithStyle("width:8rem;cursor:pointer"),
 		mvc.HTML("DIV",
 			mvc.WithStyle("display:flex;flex-direction:column;align-items:center;gap:0.5rem;text-align:center;height:100%"),
+			carbon.Strong(entry.Name),
 			carbon.Icon(entry.ID, carbon.With(size)),
-			carbon.Compact(entry.Name),
 			carbon.Code(string(entry.ID), mvc.WithStyle("font-size:0.625rem")),
 		),
 	)
