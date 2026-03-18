@@ -87,7 +87,7 @@ func IconDropdown(label string, selected carbon.IconName, options []carbon.IconN
 func IconSizeDropdown(label string, selected carbon.IconSize, options []carbon.IconSize, onChange func(carbon.IconSize)) mvc.View {
 	items := make([]any, 0, len(options))
 	for _, option := range options {
-		value := fmt.Sprintf("%d", option)
+		value := string(option)
 		item := carbon.DropdownItem(value).SetValue(value)
 		if option == selected {
 			item.SetActive(true)
@@ -99,7 +99,7 @@ func IconSizeDropdown(label string, selected carbon.IconSize, options []carbon.I
 		mvc.WithAttr("style", "width:100%"),
 		mvc.WithClass(carbon.ClassForTheme(carbon.ThemeWhite)),
 		items,
-	).SetLabel(label).SetValue(fmt.Sprintf("%d", selected)).AddEventListener(carbon.EventSelected, func(e dom.Event) {
+	).SetLabel(label).SetValue(string(selected)).AddEventListener(carbon.EventSelected, func(e dom.Event) {
 		if v := mvc.ViewFromEventTarget(e, carbon.ViewDropdown); v != nil {
 			switch v.Root().Value() {
 			case "20":

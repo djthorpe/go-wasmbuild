@@ -28,6 +28,7 @@ const (
 	ViewCheckboxGroup = "mvc-cds-checkbox-group"
 	ViewDropdown      = "mvc-cds-dropdown"
 	ViewDropdownItem  = "mvc-cds-dropdown-item"
+	ViewCodeSnippet   = "mvc-cds-code-snippet"
 )
 
 ///////////////////////////////////////////////////////////////////////////////

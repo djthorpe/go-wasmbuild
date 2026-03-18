@@ -75,11 +75,6 @@ func Em(args ...any) *text {
 	return mvc.NewView(new(text), ViewText, "EM", setView, args).(*text)
 }
 
-// Code returns inline code text.
-func Code(args ...any) *text {
-	return mvc.NewView(new(text), ViewText, "CODE", setView, args).(*text)
-}
-
 // Blockquote returns a figure containing a styled blockquote and optional label.
 func Blockquote(args ...any) *text {
 	return mvc.NewView(new(text), ViewText, templateBlockquote, setView, args).(*text)

@@ -21,6 +21,7 @@ type IconSize = Attr
 
 const carbonIconLookup = "goWasmBuildCarbonIcon"
 
+// Common icon name constants for convenience.
 const (
 	IconAdd           IconName = "add"
 	IconArrowRight    IconName = "arrow-right"

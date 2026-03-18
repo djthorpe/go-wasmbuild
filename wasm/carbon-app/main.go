@@ -15,6 +15,7 @@ func main() {
 			carbon.SideNavGroupItem("#heading", "Headings"),
 			carbon.SideNavGroupItem("#text", "Text"),
 			carbon.SideNavGroupItem("#markdown", "Markdown"),
+			carbon.SideNavGroupItem("#code", "Source Code"),
 			carbon.SideNavGroupItem("#icon", "Icons"),
 		),
 		carbon.SideNavGroup("Components",
@@ -55,6 +56,8 @@ func router(nav mvc.View) mvc.View {
 		Page("#heading", carbon.Page(content.HeadingView()...), nav.(ItemSelector).Item("#heading")).
 		Page("#text", carbon.Page(content.TextView()...), nav.(ItemSelector).Item("#text")).
 		Page("#markdown", carbon.Page(content.MarkdownView()...), nav.(ItemSelector).Item("#markdown")).
+		Page("#code", carbon.Page(content.CodeView()...), nav.(ItemSelector).Item("#code")).
+		Page("#icon", carbon.Page(content.IconView()...), nav.(ItemSelector).Item("#icon")).
 		Page("#button", carbon.Page(buttons.View()...), nav.(ItemSelector).Item("#button")).
 		Page("#button-group", carbon.Page(buttons.GroupView()...), nav.(ItemSelector).Item("#button-group"))
 }
