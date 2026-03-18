@@ -252,7 +252,7 @@ func operationalTagsStory() dom.Element {
 
 	return storybook.Story(
 		"Operational Tag",
-		"Operational tags behave like compact toggles. They emit selection lifecycle events and keep the label inline, which makes them useful when a tag should both describe and trigger a lightweight action.",
+		"Operational tags expose a selectable active state and emit a selected event when activated. In this wrapper they work best as compact one-step action/status chips, with the reset control clearing the active state explicitly.",
 		canvas,
 		tag,
 		storybook.Dropdown("Theme", currentTheme, storybook.DefaultThemes, func(theme carbon.Attr) {
