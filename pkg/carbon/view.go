@@ -14,6 +14,7 @@ import (
 const (
 	ViewSection       = "mvc-cds-section"
 	ViewText          = "mvc-cds-text"
+	ViewMarkdown      = "mvc-cds-markdown"
 	ViewButton        = "mvc-cds-button"
 	ViewButtonGroup   = "mvc-cds-button-group"
 	ViewIcon          = "mvc-cds-icon"

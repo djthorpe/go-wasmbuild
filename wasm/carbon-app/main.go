@@ -5,7 +5,7 @@ import (
 	carbon "github.com/djthorpe/go-wasmbuild/pkg/carbon"
 	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
 	buttons "github.com/djthorpe/go-wasmbuild/wasm/carbon-app/buttons"
-	headings "github.com/djthorpe/go-wasmbuild/wasm/carbon-app/headings"
+	headings "github.com/djthorpe/go-wasmbuild/wasm/carbon-app/content"
 )
 
 func main() {
@@ -39,7 +39,7 @@ func main() {
 			carbon.HeaderNavGlobal(
 				carbon.Button(carbon.Icon(carbon.IconUserAvatar, carbon.With(carbon.IconSize24))),
 			),
-		).Label("#", "Go Wasm Build", "Carbon"),
+		).Label("#", "Carbon Design System", "Storybook"),
 		SideNav,
 		Content,
 	), carbon.With(carbon.ThemeG90)).Run()
@@ -52,6 +52,7 @@ func router(nav mvc.View) mvc.View {
 	return mvc.Router().
 		Active(nav.(mvc.ActiveGroup)).
 		Page("#headings", carbon.Page(headings.View()...), nav.(ItemSelector).Item("#headings")).
+		Page("#text", carbon.Page(headings.TextView()...), nav.(ItemSelector).Item("#text")).
 		Page("#buttons", carbon.Page(buttons.View()...), nav.(ItemSelector).Item("#buttons")).
 		Page("#button-groups", carbon.Page(buttons.GroupView()...), nav.(ItemSelector).Item("#button-groups"))
 }
