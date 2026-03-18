@@ -44,44 +44,49 @@ func GridCondensed(args ...any) *grid {
 	return mvc.NewView(new(grid), ViewGrid, "DIV", setView, mvc.WithClass("cds--css-grid", "cds--css-grid--condensed"), args).(*grid)
 }
 
+func gridColumn(span int, args ...any) *grid {
+	return mvc.NewView(new(grid), ViewGrid, "DIV", setView,
+		mvc.WithClass("cds--css-grid-column", fmt.Sprintf("cds--col-span-%d", span)), args).(*grid)
+}
+
 // Col spans 1 of 16 columns.
 func Col(args ...any) *grid {
-	return mvc.NewView(new(grid), ViewGrid, "DIV", setView, mvc.WithClass("cds--col-span-1"), args).(*grid)
+	return gridColumn(1, args...)
 }
 
 // Col2 spans 2 of 16 columns.
 func Col2(args ...any) *grid {
-	return mvc.NewView(new(grid), ViewGrid, "DIV", setView, mvc.WithClass("cds--col-span-2"), args).(*grid)
+	return gridColumn(2, args...)
 }
 
 // Col4 spans 4 of 16 columns (one quarter).
 func Col4(args ...any) *grid {
-	return mvc.NewView(new(grid), ViewGrid, "DIV", setView, mvc.WithClass("cds--col-span-4"), args).(*grid)
+	return gridColumn(4, args...)
 }
 
 // Col6 spans 6 of 16 columns.
 func Col6(args ...any) *grid {
-	return mvc.NewView(new(grid), ViewGrid, "DIV", setView, mvc.WithClass("cds--col-span-6"), args).(*grid)
+	return gridColumn(6, args...)
 }
 
 // Col8 spans 8 of 16 columns (one half).
 func Col8(args ...any) *grid {
-	return mvc.NewView(new(grid), ViewGrid, "DIV", setView, mvc.WithClass("cds--col-span-8"), args).(*grid)
+	return gridColumn(8, args...)
 }
 
 // Col10 spans 10 of 16 columns.
 func Col10(args ...any) *grid {
-	return mvc.NewView(new(grid), ViewGrid, "DIV", setView, mvc.WithClass("cds--col-span-10"), args).(*grid)
+	return gridColumn(10, args...)
 }
 
 // Col12 spans 12 of 16 columns (three quarters).
 func Col12(args ...any) *grid {
-	return mvc.NewView(new(grid), ViewGrid, "DIV", setView, mvc.WithClass("cds--col-span-12"), args).(*grid)
+	return gridColumn(12, args...)
 }
 
 // Col16 spans all 16 columns (full width).
 func Col16(args ...any) *grid {
-	return mvc.NewView(new(grid), ViewGrid, "DIV", setView, mvc.WithClass("cds--col-span-16"), args).(*grid)
+	return gridColumn(16, args...)
 }
 
 // ColSpan spans n of 16 columns, where n must be between 1 and 16.
@@ -89,6 +94,5 @@ func ColSpan(n int, args ...any) *grid {
 	if n < 1 || n > 16 {
 		panic(fmt.Sprintf("carbon.ColSpan: n must be 1–16, got %d", n))
 	}
-	return mvc.NewView(new(grid), ViewGrid, "DIV", setView,
-		mvc.WithClass(fmt.Sprintf("cds--col-span-%d", n)), args).(*grid)
+	return gridColumn(n, args...)
 }

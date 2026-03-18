@@ -17,10 +17,12 @@ func main() {
 			carbon.SideNavGroupItem("#markdown", "Markdown"),
 			carbon.SideNavGroupItem("#code", "Source Code"),
 			carbon.SideNavGroupItem("#icon", "Icons"),
+			carbon.SideNavGroupItem("#grid", "Grid"),
 		),
 		carbon.SideNavGroup("Components",
 			carbon.SideNavGroupItem("#button", "Buttons"),
 			carbon.SideNavGroupItem("#button-group", "Button Groups"),
+			carbon.SideNavGroupItem("#tag", "Tags"),
 		),
 		carbon.SideNavGroup("Forms",
 			carbon.SideNavGroupItem("#dropdown", "Dropdowns"),
@@ -58,6 +60,8 @@ func router(nav mvc.View) mvc.View {
 		Page("#markdown", carbon.Page(content.MarkdownView()...), nav.(ItemSelector).Item("#markdown")).
 		Page("#code", carbon.Page(content.CodeView()...), nav.(ItemSelector).Item("#code")).
 		Page("#icon", carbon.Page(content.IconView()...), nav.(ItemSelector).Item("#icon")).
+		Page("#grid", carbon.Page(content.GridView()...), nav.(ItemSelector).Item("#grid")).
+		Page("#tag", carbon.Page(content.TagView()...), nav.(ItemSelector).Item("#tag")).
 		Page("#button", carbon.Page(buttons.View()...), nav.(ItemSelector).Item("#button")).
 		Page("#button-group", carbon.Page(buttons.GroupView()...), nav.(ItemSelector).Item("#button-group"))
 }

@@ -36,6 +36,22 @@ const (
 	KindError      Attr = "error"
 )
 
+// Tag types.
+const (
+	TagRed          Attr = "red"
+	TagMagenta      Attr = "magenta"
+	TagPurple       Attr = "purple"
+	TagBlue         Attr = "blue"
+	TagCyan         Attr = "cyan"
+	TagTeal         Attr = "teal"
+	TagGreen        Attr = "green"
+	TagGray         Attr = "gray"
+	TagCoolGray     Attr = "cool-gray"
+	TagWarmGray     Attr = "warm-gray"
+	TagHighContrast Attr = "high-contrast"
+	TagOutline      Attr = "outline"
+)
+
 // Component sizes
 const (
 	SizeExtraSmall Attr = "xs"
@@ -78,6 +94,9 @@ var attrKey = func() map[Attr]string {
 	m := make(map[Attr]string)
 	for _, k := range []Attr{SizeExtraSmall, SizeSmall, SizeMedium, SizeLarge, SizeExtraLarge, Size2XLarge, IconSize16, IconSize20, IconSize24, IconSize32} {
 		m[k] = "size"
+	}
+	for _, k := range []Attr{TagRed, TagMagenta, TagPurple, TagBlue, TagCyan, TagTeal, TagGreen, TagGray, TagCoolGray, TagWarmGray, TagHighContrast, TagOutline} {
+		m[k] = "type"
 	}
 	for _, k := range []Attr{CheckboxOrientationHorizontal, CheckboxOrientationVertical} {
 		m[k] = "orientation"
