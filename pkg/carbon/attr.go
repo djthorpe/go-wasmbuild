@@ -76,6 +76,11 @@ const (
 	CheckboxOrientationVertical   Attr = "vertical"
 )
 
+// Link-specific flags.
+const (
+	LinkInline Attr = "inline"
+)
+
 // Carbon colour themes — applied as CSS class (.cds--white, .cds--g10, etc.).
 const (
 	ThemeWhite Attr = "white" // default light theme → .cds--white
@@ -101,8 +106,15 @@ var attrKey = func() map[Attr]string {
 	for _, k := range []Attr{CheckboxOrientationHorizontal, CheckboxOrientationVertical} {
 		m[k] = "orientation"
 	}
+	for _, k := range []Attr{LinkInline} {
+		m[k] = string(k)
+	}
 	return m
 }()
+
+var booleanAttrs = map[Attr]struct{}{
+	LinkInline: {},
+}
 
 var themeAttrs = map[Attr]struct{}{
 	ThemeWhite: {}, ThemeG10: {}, ThemeG90: {}, ThemeG100: {},
@@ -127,6 +139,12 @@ func IsSize(a Attr) bool { return keyForAttr(a) == "size" }
 // IsTheme reports whether a is a theme (applied as CSS class, not attribute).
 func IsTheme(a Attr) bool {
 	_, ok := themeAttrs[a]
+	return ok
+}
+
+// IsBooleanAttr reports whether a is represented as a boolean HTML attribute.
+func IsBooleanAttr(a Attr) bool {
+	_, ok := booleanAttrs[a]
 	return ok
 }
 
@@ -184,6 +202,8 @@ func With(attrs ...Attr) []mvc.Opt {
 				}
 			}
 			opts = append(opts, mvc.WithClass(ClassForTheme(a)))
+		} else if IsBooleanAttr(a) {
+			opts = append(opts, mvc.WithAttr(keyForAttr(a), ""))
 		} else {
 			opts = append(opts, mvc.WithAttr(keyForAttr(a), string(a)))
 		}

@@ -15,6 +15,7 @@ import '@carbon/web-components/es/components/form/index.js';
 import '@carbon/web-components/es/components/form-group/index.js';
 import '@carbon/web-components/es/components/text-input/index.js';
 import '@carbon/web-components/es/components/password-input/index.js';
+import '@carbon/web-components/es/components/link/index.js';
 import '@carbon/web-components/es/components/search/index.js';
 import '@carbon/web-components/es/components/number-input/index.js';
 import '@carbon/web-components/es/components/textarea/index.js';

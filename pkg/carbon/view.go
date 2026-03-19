@@ -18,6 +18,7 @@ const (
 	ViewInput          = "mvc-cds-input"
 	ViewSecureInput    = "mvc-cds-secure-input"
 	ViewNumberInput    = "mvc-cds-number-input"
+	ViewLink           = "mvc-cds-link"
 	ViewText           = "mvc-cds-text"
 	ViewMarkdown       = "mvc-cds-markdown"
 	ViewButton         = "mvc-cds-button"

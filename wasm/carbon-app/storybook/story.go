@@ -15,21 +15,92 @@ import (
 // DefaultThemes keeps the example stories aligned on the same Carbon theme set.
 var DefaultThemes = []carbon.Attr{carbon.ThemeWhite, carbon.ThemeG10, carbon.ThemeG90, carbon.ThemeG100}
 
+var codePanel struct {
+	panel mvc.VisibleState
+	title mvc.View
+	code  mvc.View
+}
+
+var codeExamples = map[string]string{}
+
+// SetCodePanel wires the shared example panel used by story headers.
+func SetCodePanel(panel mvc.VisibleState, title, code mvc.View) {
+	codePanel.panel = panel
+	codePanel.title = title
+	codePanel.code = code
+}
+
+// RegisterCodeExample stores a code sample for a story title.
+func RegisterCodeExample(title, code string) {
+	if strings.TrimSpace(title) == "" {
+		return
+	}
+	codeExamples[title] = strings.TrimSpace(code)
+}
+
 // Story builds a reusable component demo frame for the example app.
 func Story(title, description string, preview mvc.View, observed mvc.View, controls ...mvc.View) dom.Element {
+	// Add the title and description if provided, then the preview content
 	children := make([]any, 0, 5)
-	children = append(children,
-		carbon.Head(2, title),
-		carbon.Para(description),
-		preview,
-	)
+	if title != "" {
+		children = append(children, storyHeader(title))
+	}
+	if description != "" {
+		children = append(children, carbon.Para(description))
+	}
+	children = append(children, preview)
+
+	// Add any controls, then the event indicators if an observed view is provided.
 	if len(controls) > 0 {
 		children = append(children, controlsPanel(controls...))
 	}
 	if observed != nil {
 		children = append(children, eventIndicators(observed))
 	}
+
+	// Return the story
 	return mvc.HTML("DIV", append([]any{mvc.WithClass("component-story")}, children...)...)
+}
+
+func storyHeader(title string) dom.Element {
+	children := []any{carbon.Head(2, title)}
+	if link := codeLink(title); link != nil {
+		children = append(children, link)
+	}
+	return mvc.HTML("DIV",
+		append([]any{mvc.WithStyle("display:flex;align-items:center;gap:0.5rem")}, children...)...,
+	)
+}
+
+func codeLink(title string) mvc.View {
+	if codePanel.panel == nil || codePanel.title == nil || codePanel.code == nil {
+		return nil
+	}
+	link := carbon.Link(
+		"javascript:void(0)",
+		carbon.With(carbon.LinkInline, carbon.SizeSmall),
+		carbon.Icon(carbon.IconLaunch, carbon.With(carbon.IconSize16)),
+	).SetLabel("View code for " + title)
+	link.AddEventListener(carbon.EventClick, func(dom.Event) {
+		openCodeExample(title)
+	})
+	return link
+}
+
+func openCodeExample(title string) {
+	if codePanel.panel == nil || codePanel.title == nil || codePanel.code == nil {
+		return
+	}
+	codePanel.title.Content(title)
+	codePanel.code.Content(codeExample(title))
+	codePanel.panel.SetVisible(true)
+}
+
+func codeExample(title string) string {
+	if code, ok := codeExamples[title]; ok && strings.TrimSpace(code) != "" {
+		return code
+	}
+	return fmt.Sprintf("// Code example for %q has not been added yet.\n// Register one with storybook.RegisterCodeExample(...).", title)
 }
 
 // Dropdown builds a Carbon dropdown for a set of Attr options.

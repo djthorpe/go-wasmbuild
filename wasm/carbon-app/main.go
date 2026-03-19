@@ -2,13 +2,37 @@ package main
 
 import (
 	// Packages
+	dom "github.com/djthorpe/go-wasmbuild"
 	carbon "github.com/djthorpe/go-wasmbuild/pkg/carbon"
 	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
 	button "github.com/djthorpe/go-wasmbuild/wasm/carbon-app/button"
 	content "github.com/djthorpe/go-wasmbuild/wasm/carbon-app/content"
 	form "github.com/djthorpe/go-wasmbuild/wasm/carbon-app/form"
 	navigation "github.com/djthorpe/go-wasmbuild/wasm/carbon-app/navigation"
+	storybook "github.com/djthorpe/go-wasmbuild/wasm/carbon-app/storybook"
 )
+
+type codePanelController struct {
+	panel   mvc.View
+	visible bool
+}
+
+func (c *codePanelController) Visible() bool {
+	return c.visible
+}
+
+func (c *codePanelController) SetVisible(visible bool) mvc.View {
+	c.visible = visible
+	style := "position:fixed;top:3rem;right:0;height:calc(100vh - 3rem);overflow:auto;z-index:9000"
+	if visible {
+		style += ";inline-size:36rem;background:var(--cds-layer,#fff);border-inline-start:1px solid var(--cds-border-subtle,#e0e0e0)"
+	}
+	c.panel.Root().SetAttribute("style", style)
+	if panel, ok := c.panel.(mvc.VisibleState); ok {
+		panel.SetVisible(visible)
+	}
+	return c.panel
+}
 
 func main() {
 	// Side bar navigation
@@ -51,6 +75,25 @@ func main() {
 		),
 	)
 
+	codeTitle := carbon.Head(4, "Select a story")
+	codeBlock := carbon.CodeBlock("// Select a story's View code link to inspect its example.", carbon.With(carbon.ThemeG10))
+	codeBlock.SetWrapText(true)
+	closeBtn := carbon.CloseButton(mvc.WithStyle("position:absolute;top:0;right:0"))
+	codePanel := carbon.HeaderPanel(
+		mvc.HTML("DIV", mvc.WithStyle("position:relative;padding:1rem 1.5rem;display:grid;gap:1rem"),
+			carbon.Head(3, "Code Example"),
+			closeBtn,
+			codeTitle,
+			codeBlock,
+		),
+	)
+	codePanelState := &codePanelController{panel: codePanel}
+	closeBtn.AddEventListener(carbon.EventClick, func(dom.Event) {
+		codePanelState.SetVisible(false)
+	})
+	codePanelState.SetVisible(false)
+	storybook.SetCodePanel(codePanelState, codeTitle, codeBlock)
+
 	// Main content area — min-height fills the viewport below the fixed header.
 	Content := carbon.Section(
 		mvc.WithStyle("min-height:100vh"),
@@ -71,6 +114,7 @@ func main() {
 		).SetLabel("#", "Carbon Design System", "Storybook"),
 		SideNav,
 		Content,
+		codePanel,
 	), carbon.With(carbon.ThemeG90)).Run()
 }
 

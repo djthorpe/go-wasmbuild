@@ -8,6 +8,29 @@ import (
 	storybook "github.com/djthorpe/go-wasmbuild/wasm/carbon-app/storybook"
 )
 
+func init() {
+	storybook.RegisterCodeExample("Link", `inlineLink := carbon.Link(
+	"#text",
+	carbon.With(carbon.LinkInline, carbon.SizeMedium),
+	"Read the Carbon content guidelines",
+)
+
+standaloneIcon := carbon.Icon(carbon.IconLaunch, carbon.With(carbon.IconSize20))
+standaloneLink := carbon.Link(
+	"#text",
+	carbon.With(carbon.SizeMedium),
+	"Read the Carbon content guidelines",
+	standaloneIcon,
+)
+
+iconOnlyIcon := carbon.Icon(carbon.IconLaunch, carbon.With(carbon.IconSize20))
+iconOnlyLink := carbon.Link(
+	"#text",
+	carbon.With(carbon.SizeMedium),
+	iconOnlyIcon,
+).SetLabel("Open content guidelines")`)
+}
+
 func TextView() []any {
 	return []any{
 		mvc.HTML("DIV", mvc.WithStyle("padding:1.5rem 2rem"), carbon.Head(1, "Text")),
@@ -19,6 +42,7 @@ func TextView() []any {
 			compactStory(),
 			blockquoteStory(),
 			inlineStylesStory(),
+			linkStory(),
 		),
 	}
 }
@@ -119,6 +143,65 @@ func inlineStylesStory() dom.Element {
 		nil,
 		storybook.Dropdown("Theme", carbon.ThemeWhite, storybook.DefaultThemes, func(theme carbon.Attr) {
 			canvas.Apply(carbon.With(theme)...)
+		}),
+	)
+}
+
+func linkStory() dom.Element {
+	standaloneIcon := carbon.Icon(carbon.IconLaunch, carbon.With(carbon.IconSize20))
+	iconOnlyIcon := carbon.Icon(carbon.IconLaunch, carbon.With(carbon.IconSize20))
+	inlineLink := carbon.Link(
+		"#text",
+		carbon.With(carbon.LinkInline, carbon.SizeMedium),
+		"Read the Carbon content guidelines",
+	)
+	standaloneLink := carbon.Link(
+		"#text",
+		carbon.With(carbon.SizeMedium),
+		"Read the Carbon content guidelines",
+		standaloneIcon,
+	)
+	iconOnlyLink := carbon.Link(
+		"#text",
+		carbon.With(carbon.SizeMedium),
+		iconOnlyIcon,
+	).SetLabel("Open content guidelines")
+
+	canvas := carbon.Section(
+		mvc.WithClass("canvas"),
+		mvc.WithStyle("display:grid;gap:1rem;max-width:56rem;padding:0 1rem"),
+		carbon.Para(
+			"Links support inline navigation and can include a trailing icon for actions such as opening documentation or moving to related content. ",
+			inlineLink,
+			" within body copy to keep reading flow intact.",
+		),
+		carbon.Para(standaloneLink),
+		carbon.Para(iconOnlyLink),
+		carbon.Compact("This story shows inline, standalone, and icon-only link variants. The standalone link is wired to trigger events."),
+	)
+
+	return storybook.Story(
+		"Link",
+		"Carbon links support small, medium, and large sizes, optional inline presentation, and a slotted icon.",
+		canvas,
+		standaloneLink,
+		storybook.Dropdown("Theme", carbon.ThemeWhite, storybook.DefaultThemes, func(theme carbon.Attr) {
+			canvas.Apply(carbon.With(theme)...)
+		}),
+		storybook.Dropdown("Size", carbon.SizeMedium, []carbon.Attr{carbon.SizeSmall, carbon.SizeMedium, carbon.SizeLarge}, func(size carbon.Attr) {
+			standaloneLink.Apply(carbon.With(size)...)
+			iconOnlyLink.Apply(carbon.With(size)...)
+			iconSize := carbon.IconSize20
+			if size == carbon.SizeSmall {
+				iconSize = carbon.IconSize16
+			}
+			standaloneIcon.Apply(carbon.With(iconSize)...)
+			iconOnlyIcon.Apply(carbon.With(iconSize)...)
+		}),
+		storybook.CheckboxGroup("State", "Enabled", true, func(enabled bool) {
+			inlineLink.SetEnabled(enabled)
+			standaloneLink.SetEnabled(enabled)
+			iconOnlyLink.SetEnabled(enabled)
 		}),
 	)
 }
