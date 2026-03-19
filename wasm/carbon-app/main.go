@@ -15,7 +15,7 @@ func main() {
 	SideNav := carbon.SideNav(
 		carbon.SideNavGroup("Content",
 			carbon.SideNavGroupItem("#heading", "Headings"),
-			carbon.SideNavGroupItem("#text", "Texts"),
+			carbon.SideNavGroupItem("#text", "Text"),
 			carbon.SideNavGroupItem("#markdown", "Markdown"),
 			carbon.SideNavGroupItem("#code", "Source Code"),
 			carbon.SideNavGroupItem("#icon", "Icons"),
@@ -58,7 +58,7 @@ func main() {
 	mvc.New(carbon.Section(
 		carbon.Header(
 			carbon.HeaderNavGlobal(
-			carbon.Button(
+				carbon.Button(
 					carbon.Icon(carbon.IconLogoGithub, carbon.With(carbon.IconSize24)),
 					mvc.WithAttr("href", "https://github.com/djthorpe/go-wasmbuild"),
 					mvc.WithAttr("target", "_blank"),

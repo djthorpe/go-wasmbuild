@@ -60,8 +60,8 @@ func basicDropdownStory() dom.Element {
 
 	canvas := carbon.Section(
 		mvc.WithClass("canvas"),
-		mvc.WithStyle("display:grid;gap:1rem;max-width:20rem"),
-		dd,
+		mvc.WithStyle("display:grid;gap:1rem;width:100%"),
+		dropdownStage("20rem", dd),
 	)
 
 	refresh := func() {
@@ -107,8 +107,8 @@ func helperTextDropdownStory() dom.Element {
 
 	canvas := carbon.Section(
 		mvc.WithClass("canvas"),
-		mvc.WithStyle("display:grid;gap:1rem;max-width:24rem"),
-		dd,
+		mvc.WithStyle("display:grid;gap:1rem;width:100%"),
+		dropdownStage("24rem", dd),
 	)
 
 	refresh := func() {
@@ -145,8 +145,8 @@ func widthDropdownStory() dom.Element {
 
 	canvas := carbon.Section(
 		mvc.WithClass("canvas"),
-		mvc.WithStyle("display:grid;gap:1rem;max-width:32rem"),
-		dd,
+		mvc.WithStyle("display:grid;gap:1rem;width:100%"),
+		dropdownStage("32rem", dd),
 	)
 
 	refresh := func() {
@@ -200,4 +200,12 @@ func setDropdownSelection(dd interface{ SetActive(...mvc.View) }, items []dropdo
 		}
 	}
 	dd.SetActive(active...)
+}
+
+func dropdownStage(maxWidth string, child mvc.View) dom.Element {
+	style := "width:100%"
+	if maxWidth != "" {
+		style += ";max-width:" + maxWidth
+	}
+	return mvc.HTML("DIV", mvc.WithStyle(style), child)
 }
