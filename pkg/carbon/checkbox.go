@@ -44,10 +44,10 @@ var _ mvc.ActiveGroup = (*checkboxGroup)(nil)
 func init() {
 	mvc.RegisterView(ViewCheckbox, func(element dom.Element) mvc.View {
 		return mvc.NewViewWithElement(new(checkbox), element, setView)
-	}, EventCheckboxChanged)
+	}, EventChange)
 	mvc.RegisterView(ViewCheckboxGroup, func(element dom.Element) mvc.View {
 		return mvc.NewViewWithElement(new(checkboxGroup), element, setView)
-	}, EventCheckboxChanged)
+	}, EventChange)
 }
 
 // Checkbox returns a <cds-checkbox> web component. An optional leading string
@@ -63,6 +63,19 @@ func Checkbox(args ...any) *checkbox {
 	return mvc.NewView(new(checkbox), ViewCheckbox, "cds-checkbox", setView, args).(*checkbox)
 }
 
+// AddEventListener registers an event handler on the checkbox.
+// EventChange is mapped to Carbon's cds-checkbox-changed custom event.
+func (c *checkbox) AddEventListener(event string, handler func(dom.Event)) mvc.View {
+	c.View.AddEventListener(checkboxEvent(event), handler)
+	return c
+}
+
+// RemoveEventListener removes an event handler from the checkbox.
+func (c *checkbox) RemoveEventListener(event string) mvc.View {
+	c.View.RemoveEventListener(checkboxEvent(event))
+	return c
+}
+
 // CheckboxGroup returns a <cds-checkbox-group> web component.
 // helperText is shown below the group; pass an empty string for none.
 func CheckboxGroup(helperText string, args ...any) *checkboxGroup {
@@ -70,6 +83,19 @@ func CheckboxGroup(helperText string, args ...any) *checkboxGroup {
 		args = append([]any{mvc.WithAttr("helper-text", helperText)}, args...)
 	}
 	return mvc.NewView(new(checkboxGroup), ViewCheckboxGroup, "cds-checkbox-group", setView, args).(*checkboxGroup)
+}
+
+// AddEventListener registers an event handler on the checkbox group.
+// EventChange is mapped to Carbon's cds-checkbox-changed custom event.
+func (g *checkboxGroup) AddEventListener(event string, handler func(dom.Event)) mvc.View {
+	g.View.AddEventListener(checkboxEvent(event), handler)
+	return g
+}
+
+// RemoveEventListener removes an event handler from the checkbox group.
+func (g *checkboxGroup) RemoveEventListener(event string) mvc.View {
+	g.View.RemoveEventListener(checkboxEvent(event))
+	return g
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -261,4 +287,11 @@ func setBoolProperty(element dom.Element, name string, value bool) {
 		node.Set(name, value)
 	}
 	setBoolAttr(element, name, value)
+}
+
+func checkboxEvent(event string) string {
+	if event == EventChange {
+		return checkboxChangeEvent
+	}
+	return event
 }

@@ -13,6 +13,11 @@ import (
 // The view names for Carbon Design System components
 const (
 	ViewSection        = "mvc-cds-section"
+	ViewForm           = "mvc-cds-form"
+	ViewFormGroup      = "mvc-cds-form-group"
+	ViewInput          = "mvc-cds-input"
+	ViewSecureInput    = "mvc-cds-secure-input"
+	ViewNumberInput    = "mvc-cds-number-input"
 	ViewText           = "mvc-cds-text"
 	ViewMarkdown       = "mvc-cds-markdown"
 	ViewButton         = "mvc-cds-button"

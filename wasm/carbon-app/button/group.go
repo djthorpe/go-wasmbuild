@@ -47,9 +47,9 @@ func basicButtonGroupStory() dom.Element {
 		}
 		grp.SetEnabled(views...)
 	}
-	enabled1.AddEventListener(carbon.EventCheckboxChanged, func(dom.Event) { syncEnabled() })
-	enabled2.AddEventListener(carbon.EventCheckboxChanged, func(dom.Event) { syncEnabled() })
-	enabled3.AddEventListener(carbon.EventCheckboxChanged, func(dom.Event) { syncEnabled() })
+	enabled1.AddEventListener(carbon.EventChange, func(dom.Event) { syncEnabled() })
+	enabled2.AddEventListener(carbon.EventChange, func(dom.Event) { syncEnabled() })
+	enabled3.AddEventListener(carbon.EventChange, func(dom.Event) { syncEnabled() })
 	enabledControl.Content(enabled1, enabled2, enabled3)
 
 	return storybook.Story(

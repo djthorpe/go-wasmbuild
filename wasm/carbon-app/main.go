@@ -28,6 +28,8 @@ func main() {
 			carbon.SideNavGroupItem("#tag", "Tags"),
 		),
 		carbon.SideNavGroup("Forms",
+			carbon.SideNavGroupItem("#form-introduction", "Introduction"),
+			carbon.SideNavGroupItem("#input", "Input"),
 			carbon.SideNavGroupItem("#checkbox", "Checkboxes"),
 			carbon.SideNavGroupItem("#dropdown", "Dropdowns"),
 		),
@@ -88,6 +90,8 @@ func router(nav mvc.View) mvc.View {
 		Page("#button-group", carbon.Page(button.GroupView()...), nav.(ItemSelector).Item("#button-group")).
 		Page("#tile", carbon.Page(content.TileView()...), nav.(ItemSelector).Item("#tile")).
 		Page("#tag", carbon.Page(content.TagView()...), nav.(ItemSelector).Item("#tag")).
+		Page("#form-introduction", carbon.Page(form.IntroductionView()...), nav.(ItemSelector).Item("#form-introduction")).
+		Page("#input", carbon.Page(form.InputView()...), nav.(ItemSelector).Item("#input")).
 		Page("#checkbox", carbon.Page(form.CheckboxView()...), nav.(ItemSelector).Item("#checkbox")).
 		Page("#dropdown", carbon.Page(form.DropdownView()...), nav.(ItemSelector).Item("#dropdown")).
 		Page("#sidenav", carbon.Page(navigation.PanelView()...), nav.(ItemSelector).Item("#sidenav"))

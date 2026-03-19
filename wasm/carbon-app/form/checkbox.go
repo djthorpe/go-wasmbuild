@@ -38,9 +38,10 @@ func basicCheckboxStory() dom.Element {
 
 	status := carbon.Para(checkboxStatus(chk))
 
-	// cds-checkbox-changed fires on the element itself after state changes,
+	// EventChange on the checkbox maps to Carbon's internal checkbox-specific
+	// custom event, so we can still read Active() directly after each toggle.
 	// so we can read Active() directly without ViewFromEventTarget.
-	chk.AddEventListener(carbon.EventCheckboxChanged, func(dom.Event) {
+	chk.AddEventListener(carbon.EventChange, func(dom.Event) {
 		status.Content(checkboxStatus(chk))
 	})
 
@@ -59,7 +60,7 @@ func basicCheckboxStory() dom.Element {
 
 	return storybook.Story(
 		"Basic Checkbox",
-		"A single checkbox toggles a boolean value and emits cds-checkbox-changed on every state transition. The status line below reads back the checked property after each event.",
+		"A single checkbox toggles a boolean value and emits EventChange on every state transition. The status line below reads back the checked property after each event.",
 		canvas,
 		chk,
 		storybook.Dropdown("Theme", currentTheme, storybook.DefaultThemes, func(theme carbon.Attr) {
@@ -110,9 +111,9 @@ func checkboxGroupStory() dom.Element {
 	group := carbon.CheckboxGroup("Select one or more options.", args...).
 		SetLabel("States")
 
-	// One listener on the group catches bubbled cds-checkbox-changed from all
+	// One listener on the group catches bubbled EventChange from all
 	// child checkboxes — more reliable than wiring N per-child listeners.
-	group.AddEventListener(carbon.EventCheckboxChanged, func(dom.Event) {
+	group.AddEventListener(carbon.EventChange, func(dom.Event) {
 		status.Content(checkboxGroupStatus(labels, boxes))
 	})
 

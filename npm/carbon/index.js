@@ -11,6 +11,8 @@ import '@carbon/web-components/es/components/tag/index.js';
 import '@carbon/web-components/es/components/notification/index.js';
 import '@carbon/web-components/es/components/accordion/index.js';
 import '@carbon/web-components/es/components/tabs/index.js';
+import '@carbon/web-components/es/components/form/index.js';
+import '@carbon/web-components/es/components/form-group/index.js';
 import '@carbon/web-components/es/components/text-input/index.js';
 import '@carbon/web-components/es/components/password-input/index.js';
 import '@carbon/web-components/es/components/search/index.js';

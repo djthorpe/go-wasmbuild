@@ -6,6 +6,9 @@ package carbon
 // Event type constants for Carbon views.
 const (
 	EventClick                  = "click"
+	EventInput                  = "input"
+	EventChange                 = "change"
+	EventInvalid                = "invalid"
 	EventHover                  = "mouseenter"
 	EventNoHover                = "pointerleave" // mouseleave unreliable on web components; pointerleave respects pointer capture
 	EventFocus                  = "focus"
@@ -16,15 +19,20 @@ const (
 	EventSectionToggle          = "cds-side-nav-menu-toggled"
 	EventSectionToggling        = "cds-side-nav-menu-beingtoggled"
 	EventSelected               = "cds-dropdown-selected"
-	EventCheckboxChanged        = "cds-checkbox-changed"
 	EventTagDismissibleClosed   = "cds-dismissible-tag-closed"
 	EventTagOperationalSelected = "cds-operational-tag-selected"
 )
+
+const checkboxChangeEvent = "cds-checkbox-changed"
+const numberInputChangeEvent = "cds-number-input"
 
 // EventName maps a raw DOM event type string to its Go constant name.
 // Returns the raw string if no mapping is found.
 var EventName = map[string]string{
 	EventClick:                  "EventClick",
+	EventInput:                  "EventInput",
+	EventChange:                 "EventChange",
+	EventInvalid:                "EventInvalid",
 	EventHover:                  "EventHover",
 	EventNoHover:                "EventNoHover",
 	EventFocus:                  "EventFocus",
@@ -35,9 +43,9 @@ var EventName = map[string]string{
 	EventSectionToggle:          "EventSectionToggle",
 	EventSectionToggling:        "EventSectionToggling",
 	EventSelected:               "EventSelected",
-	EventCheckboxChanged:        "EventCheckboxChanged",
 	EventTagDismissibleClosed:   "EventTagDismissibleClosed",
 	EventTagOperationalSelected: "EventTagOperationalSelected",
+	numberInputChangeEvent:      "EventChange",
 }
 
 // GoName returns the Go constant name for a raw DOM event type, or the raw
