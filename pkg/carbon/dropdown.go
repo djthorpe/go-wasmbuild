@@ -56,7 +56,6 @@ func dropdownTitleText(args ...any) dom.Element {
 	return mvc.HTML("SPAN", append([]any{mvc.WithAttr("slot", "title-text")}, args...)...)
 }
 
-
 func (d *dropdown) Apply(opts ...mvc.Opt) mvc.View {
 	d.View.Apply(opts...)
 	d.applyThemePresentation()
@@ -115,7 +114,7 @@ func (d *dropdown) SetEnabled(enabled bool) *dropdown {
 // SetActive marks the specified items as selected and deselects all others.
 // Also updates the dropdown's value to match the first active item.
 // With no arguments, all items are deselected.
-func (d *dropdown) SetActive(views ...mvc.View) {
+func (d *dropdown) SetActive(views ...mvc.View) mvc.View {
 	active := make(map[dom.Element]struct{}, len(views))
 	for _, v := range views {
 		if v != nil {
@@ -133,6 +132,7 @@ func (d *dropdown) SetActive(views ...mvc.View) {
 			}
 		}
 	}
+	return d
 }
 
 // Value returns the dropdown's selected value.

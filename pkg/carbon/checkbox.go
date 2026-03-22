@@ -222,7 +222,7 @@ func (g *checkboxGroup) Content(args ...any) mvc.View {
 
 // SetActive marks the specified checkboxes active and deactivates the rest.
 // Calling SetActive with no arguments deactivates all members.
-func (g *checkboxGroup) SetActive(views ...mvc.View) {
+func (g *checkboxGroup) SetActive(views ...mvc.View) mvc.View {
 	active := make(map[dom.Element]struct{}, len(views))
 	for _, v := range views {
 		if v != nil {
@@ -237,6 +237,7 @@ func (g *checkboxGroup) SetActive(views ...mvc.View) {
 			}
 		}
 	}
+	return g
 }
 
 // Label returns the group's legend text.

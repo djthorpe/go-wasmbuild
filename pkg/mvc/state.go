@@ -22,7 +22,7 @@ type VisibleState interface {
 // ActiveGroup is implemented by a container that manages which of its member
 // views are active. Calling SetActive with no arguments deactivates all members.
 type ActiveGroup interface {
-	SetActive(views ...View)
+	SetActive(views ...View) View
 }
 
 // EnabledGroup is implemented by a container that manages the enabled/disabled

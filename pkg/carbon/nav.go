@@ -143,7 +143,7 @@ func (n *navgroup) SetLabel(href, prefix string, args ...any) *navgroup {
 }
 
 // SetActive marks the supplied nav items active and clears the rest.
-func (n *navgroup) SetActive(views ...mvc.View) {
+func (n *navgroup) SetActive(views ...mvc.View) mvc.View {
 	active := make(map[dom.Element]struct{}, len(views))
 	for _, view := range views {
 		if view != nil {
@@ -153,6 +153,7 @@ func (n *navgroup) SetActive(views ...mvc.View) {
 	for _, item := range n.items {
 		setNavItemActive(item, active)
 	}
+	return n
 }
 
 // Item returns the first navigation item whose href matches the supplied value.

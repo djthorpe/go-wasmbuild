@@ -175,7 +175,7 @@ func (g *buttonGroup) RemoveEventListener(event string) mvc.View {
 
 // SetActive marks the specified buttons active and clears the rest.
 // With no arguments, all buttons are deactivated.
-func (g *buttonGroup) SetActive(views ...mvc.View) {
+func (g *buttonGroup) SetActive(views ...mvc.View) mvc.View {
 	active := make(map[mvc.View]bool, len(views))
 	for _, v := range views {
 		active[v] = true
@@ -185,6 +185,7 @@ func (g *buttonGroup) SetActive(views ...mvc.View) {
 			b.SetActive(active[child])
 		}
 	}
+	return g
 }
 
 // SetEnabled enables the specified buttons and disables all others in the group.

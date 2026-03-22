@@ -147,7 +147,7 @@ func (g *tagGroup) Content(args ...any) mvc.View {
 
 // SetActive marks the specified tags active and deactivates the rest.
 // With no arguments, all children are deactivated.
-func (g *tagGroup) SetActive(views ...mvc.View) {
+func (g *tagGroup) SetActive(views ...mvc.View) mvc.View {
 	active := make(map[mvc.View]bool, len(views))
 	for _, v := range views {
 		active[v] = true
@@ -157,6 +157,7 @@ func (g *tagGroup) SetActive(views ...mvc.View) {
 			t.SetActive(active[child])
 		}
 	}
+	return g
 }
 
 // SetEnabled enables the specified tags and disables the rest.
