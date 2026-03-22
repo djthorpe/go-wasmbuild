@@ -27,6 +27,8 @@ const (
 	ViewNav            = "mvc-cds-nav"
 	ViewNavGlobal      = "mvc-cds-nav-global"
 	ViewHeaderPanel    = "mvc-cds-header-panel"
+	ViewOverflowMenu   = "mvc-cds-overflow-menu"
+	ViewOverflowItem   = "mvc-cds-overflow-menu-item"
 	ViewNavItem        = "mvc-cds-navitem"
 	ViewGrid           = "mvc-cds-grid"
 	ViewTile           = "mvc-cds-tile"

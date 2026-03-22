@@ -25,6 +25,7 @@ const carbonIconLookup = "goWasmBuildCarbonIcon"
 const (
 	IconAdd           IconName = "add"
 	IconArrowRight    IconName = "arrow-right"
+	IconCheckmark     IconName = "checkmark"
 	IconClose         IconName = "close"
 	IconFavorite      IconName = "favorite"
 	IconLaunch        IconName = "launch"

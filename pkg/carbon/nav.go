@@ -85,7 +85,7 @@ func Header(args ...any) *navgroup {
 // HeaderNavGlobal returns the right-aligned global actions container for a header.
 func HeaderNavGlobal(args ...any) *navglobal {
 	adapted := adaptHeaderGlobalArgs(args...)
-	return mvc.NewView(new(navglobal), ViewNavGlobal, "div", setView, append([]any{mvc.WithClass("cds--header__global")}, adapted...)...).(*navglobal)
+	return mvc.NewView(new(navglobal), ViewNavGlobal, "div", setView, append([]any{mvc.WithClass("cds--header__global"), mvc.WithAttr("data-floating-menu-container", "")}, adapted...)...).(*navglobal)
 }
 
 // HeaderNavItem returns a <cds-header-nav-item> link for the header menu bar.
@@ -354,6 +354,8 @@ func adaptHeaderGlobalArgs(args ...any) []any {
 			adapted = append(adapted, adaptHeaderGlobalArgs(value...)...)
 		case *button:
 			adapted = append(adapted, adaptHeaderGlobalButton(value))
+		case *overflowMenu:
+			adapted = append(adapted, adaptHeaderGlobalOverflowMenu(value))
 		default:
 			adapted = append(adapted, value)
 		}
@@ -392,6 +394,17 @@ func adaptHeaderGlobalButton(b *button) *button {
 	adapted := mvc.NewView(new(button), ViewButton, "cds-header-global-action", setView, args...).(*button)
 	setView(b, adapted)
 	return b
+}
+
+func adaptHeaderGlobalOverflowMenu(menu *overflowMenu) *overflowMenu {
+	if menu == nil {
+		return nil
+	}
+	root := menu.Root()
+	root.SetAttribute("toolbar-action", "")
+	menu.SetFlipped(true)
+	root.ClassList().Add("cds--header__action")
+	return menu
 }
 
 func bindNavItemClicks(items []*navitem, onClick func(*navitem)) {
