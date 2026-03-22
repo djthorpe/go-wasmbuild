@@ -27,6 +27,9 @@ type View interface {
 	// Return the view's parent view
 	Parent() View
 
+	// Return the view's direct child views from the default content slot
+	Children() []View
+
 	// Return self
 	Self() View
 
@@ -57,10 +60,11 @@ type View interface {
 
 // Implementation of View interface
 type view struct {
-	self View
-	name string
-	root dom.Element
-	slot map[string]dom.Element
+	self     View
+	name     string
+	root     dom.Element
+	slot     map[string]dom.Element
+	children map[string][]View
 }
 
 // Ensure that view implements View interface
@@ -102,6 +106,12 @@ func RegisterView(name string, constructor ViewConstructorFunc, eventtypes ...st
 	events[name] = eventtypes
 }
 
+// RegisteredEvents returns the event types registered for the named view.
+// Returns nil if the view is not registered.
+func RegisteredEvents(name string) []string {
+	return events[name]
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
 
@@ -123,7 +133,7 @@ func NewView(self View, name string, template string, fn func(View, View), args 
 	}
 
 	// Create the view
-	v := &view{self: self, name: name, root: root, slot: slot}
+	v := &view{self: self, name: name, root: root, slot: slot, children: make(map[string][]View)}
 
 	// Set component identifier
 	root.SetAttribute(DataComponentAttrKey, name)
@@ -159,9 +169,10 @@ func NewViewWithElement(self View, element dom.Element, fn func(View, View), opt
 
 	// Create the view
 	v := &view{
-		self: self,
-		name: element.GetAttribute(DataComponentAttrKey),
-		root: element,
+		self:     self,
+		name:     element.GetAttribute(DataComponentAttrKey),
+		root:     element,
+		children: make(map[string][]View),
 	}
 	if v.name == "" {
 		panic("NewViewWithElement: element missing data-mvc attribute")
@@ -225,6 +236,26 @@ func (v *view) Parent() View {
 		}
 	}
 	return nil
+}
+
+// Return direct child views from the default content slot.
+func (v *view) Children() []View {
+	slot := v.Slot(ContentSlot)
+	if slot == nil {
+		slot = v.root
+	}
+	if children, ok := v.children[ContentSlot]; ok {
+		result := make([]View, len(children))
+		copy(result, children)
+		return result
+	}
+	children := make([]View, 0, len(slot.Children()))
+	for _, child := range slot.Children() {
+		if view, err := viewFromElement(child); err == nil && view != nil {
+			children = append(children, view)
+		}
+	}
+	return children
 }
 
 // Return self
@@ -300,6 +331,14 @@ func (v *view) ReplaceSlotChildren(name string, args ...any) View {
 		}
 	}
 
+	tracked := make([]View, 0, len(children))
+	for _, child := range children {
+		if view, ok := child.(View); ok {
+			tracked = append(tracked, view)
+		}
+	}
+	v.children[name] = tracked
+
 	// Insert content into the slot
 	slot.SetInnerHTML("")
 	for _, child := range children {
@@ -331,6 +370,12 @@ func (v *view) RemoveEventListener(event string) View {
 ///////////////////////////////////////////////////////////////////////////////
 // UTILITY METHODS
 
+// ViewFromElement returns the View registered for the given element, or nil
+// if the element has no data-mvc attribute or the view is not registered.
+func ViewFromElement(element dom.Element) (View, error) {
+	return viewFromElement(element)
+}
+
 // ViewFromEvent returns a View from an Event, or nil if the type is unsupported
 // or not found. If one or more view names are provided, only views with those names
 // are returned.
@@ -353,6 +398,26 @@ func ViewFromEvent(e dom.Event, views ...string) View {
 			element = element.ParentElement()
 			if element == nil {
 				break
+			}
+		}
+	}
+	return nil
+}
+
+// ViewFromEventTarget returns a View only if the event target itself is a
+// registered view. Unlike ViewFromEvent, it does not walk ancestor elements.
+func ViewFromEventTarget(e dom.Event, views ...string) View {
+	if e == nil {
+		return nil
+	}
+	switch element := e.Target().(type) {
+	case dom.Element:
+		if view, err := viewFromElement(element); err != nil {
+			fmt.Fprintf(os.Stderr, "ViewFromEventTarget: %v\n", err)
+			return nil
+		} else if view != nil {
+			if len(views) == 0 || slices.Contains(views, view.Name()) {
+				return view
 			}
 		}
 	}

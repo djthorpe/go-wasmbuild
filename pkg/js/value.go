@@ -13,6 +13,9 @@ type Value struct {
 	v any
 }
 
+// Func is a no-op function wrapper used for non-WASM builds.
+type Func struct{}
+
 // Proto is the type representing the type
 type Proto uint
 
@@ -31,6 +34,7 @@ const (
 	AttrProto
 	NodeProto
 	EventProto
+	CustomEventProto
 )
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -66,6 +70,11 @@ func NewMap() Value {
 		t: MapProto,
 		v: make(map[any]any),
 	}
+}
+
+// NewFunc creates a no-op function wrapper for non-WASM builds.
+func NewFunc(fn func(this Value, args []Value) any) Func {
+	return Func{}
 }
 
 // GetProto returns js.Undefined() for the non-wasm build.
@@ -149,6 +158,22 @@ func (v Value) Get(key string) Value {
 func (v Value) Set(key string, value any) {
 }
 
+// Invoke is a stub that returns undefined in non-WASM builds.
+func (v Value) Invoke(args ...any) Value {
+	return Undefined()
+}
+
+// Bool returns the value as a bool (stub for non-WASM builds).
+func (v Value) Bool() bool {
+	if v.v == nil {
+		return false
+	}
+	if b, ok := v.v.(bool); ok {
+		return b
+	}
+	return false
+}
+
 // String returns the value as a string.
 func (v Value) String() string {
 	if v.v == nil {
@@ -159,3 +184,6 @@ func (v Value) String() string {
 	}
 	return fmt.Sprint(v.v)
 }
+
+// Release is a no-op for non-WASM builds.
+func (Func) Release() {}

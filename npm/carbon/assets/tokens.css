@@ -1,0 +1,303 @@
+/*
+ * Carbon Design System — standalone type utility classes
+ *
+ * @carbon/styles compiled CSS applies `p { font-size: body-02 }` globally but
+ * does NOT export the type-scale tokens as standalone utility classes — they are
+ * only used internally inside component selectors.  We define them here so that
+ * the pkg/carbon Go package can apply them via class attributes.
+ */
+
+/* ── Global reset ───────────────────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 100%;
+}
+
+body {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 0.875rem;
+    /* body-compact-01 default */
+    line-height: 1.42857;
+    font-weight: 400;
+    color: var(--cds-text-primary, #161616);
+    background-color: var(--cds-background, #f4f4f4);
+    margin: 0;
+    padding: 0;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-weight: 400;
+    margin: 0 0 var(--cds-spacing-05, 1rem);
+}
+
+p {
+    margin: 0 0 var(--cds-spacing-05, 1rem);
+}
+
+/* ── Paragraph spacing ──────────────────────────────────────────────────────── */
+p[data-mvc] {
+    margin-bottom: var(--cds-spacing-05, 1rem);
+}
+
+/* Tighten gap when a paragraph directly precedes a code snippet (e.g. label + snippet) */
+p[data-mvc]:has(+ cds-code-snippet) {
+    margin-bottom: var(--cds-spacing-03, 0.5rem);
+}
+
+/* ── Body ───────────────────────────────────────────────────────────────────── */
+.cds--body-01 {
+    font-size: var(--cds-body-01-font-size, 0.875rem);
+    line-height: var(--cds-body-01-line-height, 1.42857);
+    letter-spacing: var(--cds-body-01-letter-spacing, 0.16px);
+    font-weight: var(--cds-body-01-font-weight, 400);
+}
+
+.cds--body-02 {
+    font-size: var(--cds-body-02-font-size, 1rem);
+    line-height: var(--cds-body-02-line-height, 1.5);
+    letter-spacing: var(--cds-body-02-letter-spacing, 0);
+    font-weight: var(--cds-body-02-font-weight, 400);
+}
+
+.cds--body-compact-01 {
+    font-size: var(--cds-body-compact-01-font-size, 0.875rem);
+    line-height: var(--cds-body-compact-01-line-height, 1.28572);
+    letter-spacing: var(--cds-body-compact-01-letter-spacing, 0.16px);
+    font-weight: var(--cds-body-compact-01-font-weight, 400);
+}
+
+/* ── UI labels / supporting text ────────────────────────────────────────────── */
+.cds--caption-01 {
+    font-size: var(--cds-caption-01-font-size, 0.75rem);
+    line-height: var(--cds-caption-01-line-height, 1.33333);
+    letter-spacing: var(--cds-caption-01-letter-spacing, 0.32px);
+    font-weight: var(--cds-caption-01-font-weight, 400);
+}
+
+.cds--helper-text-01 {
+    font-size: var(--cds-helper-text-01-font-size, 0.75rem);
+    line-height: var(--cds-helper-text-01-line-height, 1.33333);
+    letter-spacing: var(--cds-helper-text-01-letter-spacing, 0.32px);
+    font-weight: var(--cds-helper-text-01-font-weight, 400);
+    font-style: italic;
+}
+
+.cds--label-01 {
+    font-size: var(--cds-label-01-font-size, 0.75rem);
+    line-height: var(--cds-label-01-line-height, 1.33333);
+    letter-spacing: var(--cds-label-01-letter-spacing, 0.32px);
+    font-weight: var(--cds-label-01-font-weight, 400);
+}
+
+/* ── Productive heading scale (h1 → heading-06 … h6 → heading-01) ──────────── */
+.cds--heading-06 {
+    font-size: var(--cds-heading-06-font-size, 2.625rem);
+    font-weight: var(--cds-heading-06-font-weight, 300);
+    letter-spacing: var(--cds-heading-06-letter-spacing, 0);
+    line-height: var(--cds-heading-06-line-height, 1.199);
+}
+
+.cds--heading-05 {
+    font-size: var(--cds-heading-05-font-size, 2rem);
+    font-weight: var(--cds-heading-05-font-weight, 400);
+    letter-spacing: var(--cds-heading-05-letter-spacing, 0);
+    line-height: var(--cds-heading-05-line-height, 1.25);
+}
+
+.cds--heading-04 {
+    font-size: var(--cds-heading-04-font-size, 1.75rem);
+    font-weight: var(--cds-heading-04-font-weight, 400);
+    letter-spacing: var(--cds-heading-04-letter-spacing, 0);
+    line-height: var(--cds-heading-04-line-height, 1.28572);
+}
+
+.cds--heading-03 {
+    font-size: var(--cds-heading-03-font-size, 1.25rem);
+    font-weight: var(--cds-heading-03-font-weight, 400);
+    letter-spacing: var(--cds-heading-03-letter-spacing, 0);
+    line-height: var(--cds-heading-03-line-height, 1.4);
+}
+
+.cds--heading-02 {
+    font-size: var(--cds-heading-02-font-size, 1rem);
+    font-weight: var(--cds-heading-02-font-weight, 600);
+    letter-spacing: var(--cds-heading-02-letter-spacing, 0);
+    line-height: var(--cds-heading-02-line-height, 1.5);
+}
+
+.cds--heading-01 {
+    font-size: var(--cds-heading-01-font-size, 0.875rem);
+    font-weight: var(--cds-heading-01-font-weight, 600);
+    letter-spacing: var(--cds-heading-01-letter-spacing, 0.16px);
+    line-height: var(--cds-heading-01-line-height, 1.42857);
+}
+
+/* ── Code ───────────────────────────────────────────────────────────────────── */
+.cds--code-01 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: var(--cds-code-01-font-size, 0.75rem);
+    letter-spacing: var(--cds-code-01-letter-spacing, 0.32px);
+    line-height: var(--cds-code-01-line-height, 1.33333);
+}
+
+/* ── Link ───────────────────────────────────────────────────────────────────── */
+.cds--link {
+    color: var(--cds-link-primary, #0f62fe);
+    text-decoration: none;
+    outline: none;
+    cursor: pointer;
+}
+
+.cds--link:hover {
+    color: var(--cds-link-primary-hover, #0043ce);
+    text-decoration: underline;
+}
+
+.cds--link:visited {
+    color: var(--cds-link-visited, #8a3ffc);
+}
+
+.cds--link:focus {
+    outline: 2px solid var(--cds-focus, #0f62fe);
+    outline-offset: 2px;
+}
+
+/* Inline variant — underline always visible, used within body text */
+.cds--link--inline {
+    text-decoration: underline;
+}
+
+/* ── Code Snippet Web Components ──────────────────────────────────────────── */
+/* single/multi: force block layout before the web component JS upgrades (browser
+   default for unknown custom elements is display:inline, causing FOUC). */
+cds-code-snippet[type="single"],
+cds-code-snippet[type="multi"] {
+    display: block;
+    margin-block-end: var(--cds-spacing-05, 1rem);
+}
+
+/* ── Button spacing ───────────────────────────────────────────────────────── */
+.cds--button-group {
+    display: flex;
+    flex-wrap: wrap;
+    margin-block-end: var(--cds-spacing-05, 1rem);
+}
+
+.cds--button-group cds-button {
+    margin-inline-end: 0;
+    margin-block-end: 0;
+}
+
+/* ── Canvas preview area ─────────────────────────────────────────────────── */
+/* data-carbon-theme scopes the CSS custom properties so --cds-background
+   automatically reflects the selected theme. */
+.canvas {
+    background-color: var(--cds-background, #ffffff);
+    border: 1px solid var(--cds-border-subtle-01, #e0e0e0);
+    border-radius: var(--cds-border-radius-02, 4px);
+    padding: var(--cds-spacing-07, 2rem);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 8rem;
+    margin-block-end: var(--cds-spacing-05, 1rem);
+}
+
+/* ── Controls row ────────────────────────────────────────────────────────── */
+.controls {
+    display: flex;
+    gap: var(--cds-spacing-05, 1rem);
+    flex-wrap: wrap;
+    align-items: flex-end;
+}
+
+.controls-panel {
+    background-color: var(--cds-layer, #ffffff);
+    border: 1px solid var(--cds-border-subtle-01, #e8e8e8);
+    border-radius: var(--cds-border-radius-02, 4px);
+    position: relative;
+    overflow: visible;
+    z-index: 1;
+    margin-block-end: var(--cds-spacing-05, 1rem);
+}
+
+.controls-panel__grid.cds--css-grid {
+    gap: 0;
+}
+
+.controls-panel__cell {
+    position: relative;
+    min-width: 0;
+    padding: var(--cds-spacing-04, 0.75rem) var(--cds-spacing-05, 1rem);
+    border-inline-end: 1px solid var(--cds-border-subtle-01, #e8e8e8);
+}
+
+.controls-panel cds-dropdown {
+    position: relative;
+    z-index: 2;
+}
+
+.controls-panel__cell:last-child {
+    border-inline-end: 0;
+}
+
+.controls-panel__cell>* {
+    margin-block-end: 0;
+}
+
+.component-story {
+    margin-block-end: var(--cds-spacing-09, 3rem);
+}
+
+.component-story:last-child {
+    margin-block-end: 0;
+}
+
+@media (max-width: 1055px) {
+    .controls-panel__cell {
+        border-inline-end: 0;
+        border-block-end: 1px solid var(--cds-border-subtle-01, #e8e8e8);
+    }
+
+    .controls-panel__cell:last-child {
+        border-block-end: 0;
+    }
+}
+
+/* ── Shell content layout ─────────────────────────────────────────────────── */
+/* Keeps content padding generic.
+   When a header is present as a sibling, offset content below the fixed 48px header.
+   When a side nav is present as a sibling, also offset content by 256px.
+   Mirrors what @carbon/styles .cds--content provides but also handles the
+   responsive breakpoint where cds-side-nav[collapse-mode="responsive"]
+   collapses (Carbon breakpoint-lg = 1056px). */
+.cds--content {
+    padding: var(--cds-spacing-07, 2rem) 0;
+}
+
+cds-header~.cds--content {
+    margin-top: 3rem;
+}
+
+cds-side-nav~.cds--content {
+    margin-left: 256px;
+    transition: margin-left 110ms cubic-bezier(0.2, 0, 1, 0.9);
+    will-change: margin-left;
+}
+
+@media (max-width: 1055px) {
+    cds-side-nav~.cds--content {
+        margin-left: 0;
+    }
+}

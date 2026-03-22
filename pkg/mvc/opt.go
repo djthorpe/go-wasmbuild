@@ -82,7 +82,7 @@ func applyOpts(element dom.Element, opts ...Opt) error {
 	}
 
 	// Apply classes if set
-	if len(o.class) > 0 {
+	if len(o.class) > 0 || element.HasAttribute("class") {
 		element.SetAttribute("class", strings.Join(o.Classes(), " "))
 	}
 
