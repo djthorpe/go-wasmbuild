@@ -102,7 +102,7 @@ func (d *dropdown) Enabled() bool {
 }
 
 // SetEnabled enables or disables the dropdown.
-func (d *dropdown) SetEnabled(enabled bool) *dropdown {
+func (d *dropdown) SetEnabled(enabled bool) mvc.View {
 	if enabled {
 		d.Root().RemoveAttribute("disabled")
 	} else {
@@ -114,6 +114,18 @@ func (d *dropdown) SetEnabled(enabled bool) *dropdown {
 // SetActive marks the specified items as selected and deselects all others.
 // Also updates the dropdown's value to match the first active item.
 // With no arguments, all items are deselected.
+func (d *dropdown) Active() []mvc.View {
+	active := make([]mvc.View, 0)
+	for _, child := range d.Root().Children() {
+		if v, err := mvc.ViewFromElement(child); err == nil {
+			if item, ok := v.(*dropdownItem); ok && item.Active() {
+				active = append(active, item)
+			}
+		}
+	}
+	return active
+}
+
 func (d *dropdown) SetActive(views ...mvc.View) mvc.View {
 	active := make(map[dom.Element]struct{}, len(views))
 	for _, v := range views {
@@ -208,7 +220,7 @@ func (i *dropdownItem) Active() bool {
 }
 
 // SetActive marks the item as active or inactive.
-func (i *dropdownItem) SetActive(active bool) *dropdownItem {
+func (i *dropdownItem) SetActive(active bool) mvc.View {
 	if active {
 		i.Root().SetAttribute("selected", "")
 	} else {

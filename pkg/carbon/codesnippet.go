@@ -60,7 +60,7 @@ func (c *codeSnippet) Enabled() bool {
 }
 
 // SetEnabled enables or disables the copy button.
-func (c *codeSnippet) SetEnabled(enabled bool) *codeSnippet {
+func (c *codeSnippet) SetEnabled(enabled bool) mvc.View {
 	if enabled {
 		c.Root().RemoveAttribute("disabled")
 	} else {

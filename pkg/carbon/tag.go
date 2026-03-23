@@ -83,7 +83,7 @@ func (t *tag) Enabled() bool {
 	return !tagBoolProperty(t.Root(), "disabled")
 }
 
-func (t *tag) SetEnabled(enabled bool) *tag {
+func (t *tag) SetEnabled(enabled bool) mvc.View {
 	setTagBoolProperty(t.Root(), "disabled", !enabled)
 	return t
 }
@@ -104,7 +104,7 @@ func (t *tag) Active() bool {
 	return tagBoolProperty(t.Root(), "selected")
 }
 
-func (t *tag) SetActive(active bool) *tag {
+func (t *tag) SetActive(active bool) mvc.View {
 	setTagBoolProperty(t.Root(), "selected", active)
 	return t
 }
@@ -147,6 +147,16 @@ func (g *tagGroup) Content(args ...any) mvc.View {
 
 // SetActive marks the specified tags active and deactivates the rest.
 // With no arguments, all children are deactivated.
+func (g *tagGroup) Active() []mvc.View {
+	active := make([]mvc.View, 0)
+	for _, child := range g.Children() {
+		if t, ok := child.(*tag); ok && t.Active() {
+			active = append(active, t)
+		}
+	}
+	return active
+}
+
 func (g *tagGroup) SetActive(views ...mvc.View) mvc.View {
 	active := make(map[mvc.View]bool, len(views))
 	for _, v := range views {
@@ -162,7 +172,17 @@ func (g *tagGroup) SetActive(views ...mvc.View) mvc.View {
 
 // SetEnabled enables the specified tags and disables the rest.
 // With no arguments, all children are disabled.
-func (g *tagGroup) SetEnabled(views ...mvc.View) {
+func (g *tagGroup) Enabled() []mvc.View {
+	enabled := make([]mvc.View, 0)
+	for _, child := range g.Children() {
+		if t, ok := child.(*tag); ok && t.Enabled() {
+			enabled = append(enabled, t)
+		}
+	}
+	return enabled
+}
+
+func (g *tagGroup) SetEnabled(views ...mvc.View) mvc.View {
 	enabled := make(map[mvc.View]bool, len(views))
 	for _, v := range views {
 		enabled[v] = true
@@ -172,11 +192,22 @@ func (g *tagGroup) SetEnabled(views ...mvc.View) {
 			t.SetEnabled(enabled[child])
 		}
 	}
+	return g
 }
 
 // SetVisible makes the specified tags visible and hides the rest.
 // With no arguments, all children are hidden.
-func (g *tagGroup) SetVisible(views ...mvc.View) {
+func (g *tagGroup) Visible() []mvc.View {
+	visible := make([]mvc.View, 0)
+	for _, child := range g.Children() {
+		if t, ok := child.(*tag); ok && t.Visible() {
+			visible = append(visible, t)
+		}
+	}
+	return visible
+}
+
+func (g *tagGroup) SetVisible(views ...mvc.View) mvc.View {
 	visible := make(map[mvc.View]bool, len(views))
 	for _, v := range views {
 		visible[v] = true
@@ -186,6 +217,7 @@ func (g *tagGroup) SetVisible(views ...mvc.View) {
 			t.SetVisible(visible[child])
 		}
 	}
+	return g
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -60,7 +60,7 @@ func (m *overflowMenu) Enabled() bool {
 	return !tagBoolProperty(m.Root(), "disabled")
 }
 
-func (m *overflowMenu) SetEnabled(enabled bool) *overflowMenu {
+func (m *overflowMenu) SetEnabled(enabled bool) mvc.View {
 	setTagBoolProperty(m.Root(), "disabled", !enabled)
 	return m
 }
@@ -168,7 +168,7 @@ func (i *overflowMenuItem) Enabled() bool {
 	return !i.Root().HasAttribute("disabled")
 }
 
-func (i *overflowMenuItem) SetEnabled(enabled bool) *overflowMenuItem {
+func (i *overflowMenuItem) SetEnabled(enabled bool) mvc.View {
 	if enabled {
 		i.Root().RemoveAttribute("disabled")
 	} else {

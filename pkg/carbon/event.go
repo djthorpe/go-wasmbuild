@@ -19,6 +19,8 @@ const (
 	EventSectionToggle          = "cds-side-nav-menu-toggled"
 	EventSectionToggling        = "cds-side-nav-menu-beingtoggled"
 	EventSelected               = "cds-dropdown-selected"
+	EventPaginationChanged      = "cds-pagination-changed-current"
+	EventPaginationPageSize     = "cds-page-sizes-select-changed"
 	EventOverflowMenuItemClick  = "cds-overflow-menu-item-clicked"
 	EventTagDismissibleClosed   = "cds-dismissible-tag-closed"
 	EventTagOperationalSelected = "cds-operational-tag-selected"
@@ -44,6 +46,8 @@ var EventName = map[string]string{
 	EventSectionToggle:          "EventSectionToggle",
 	EventSectionToggling:        "EventSectionToggling",
 	EventSelected:               "EventSelected",
+	EventPaginationChanged:      "EventPaginationChanged",
+	EventPaginationPageSize:     "EventPaginationPageSize",
 	EventOverflowMenuItemClick:  "EventOverflowMenuItemClick",
 	EventTagDismissibleClosed:   "EventTagDismissibleClosed",
 	EventTagOperationalSelected: "EventTagOperationalSelected",

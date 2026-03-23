@@ -67,3 +67,7 @@ func (e *eventtarget) AddEventListener(eventType string, callback func(Event)) {
 func (e *eventtarget) RemoveEventListener(eventType string) {
 	// NO-OP
 }
+
+func (e *eventtarget) DispatchEvent(evt Event) {
+	// NO-OP
+}

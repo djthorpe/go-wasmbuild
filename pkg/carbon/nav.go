@@ -143,6 +143,14 @@ func (n *navgroup) SetLabel(href, prefix string, args ...any) *navgroup {
 }
 
 // SetActive marks the supplied nav items active and clears the rest.
+func (n *navgroup) Active() []mvc.View {
+	active := make([]mvc.View, 0)
+	for _, item := range n.items {
+		collectActiveNavItems(item, &active)
+	}
+	return active
+}
+
 func (n *navgroup) SetActive(views ...mvc.View) mvc.View {
 	active := make(map[dom.Element]struct{}, len(views))
 	for _, view := range views {
@@ -211,7 +219,7 @@ func (n *navitem) Enabled() bool {
 }
 
 // SetEnabled enables or disables the navigation item.
-func (n *navitem) SetEnabled(enabled bool) *navitem {
+func (n *navitem) SetEnabled(enabled bool) mvc.View {
 	if enabled {
 		n.Root().RemoveAttribute("disabled")
 	} else {
@@ -226,7 +234,7 @@ func (n *navitem) Active() bool {
 }
 
 // SetActive marks the navigation item active or inactive.
-func (n *navitem) SetActive(active bool) *navitem {
+func (n *navitem) SetActive(active bool) mvc.View {
 	setNavItemActiveElement(n.Root(), active)
 	return n
 }
@@ -464,4 +472,16 @@ func navItemActiveAttrs(tagName string) []string {
 		return []string{"is-active"}
 	}
 	return []string{"active"}
+}
+
+func collectActiveNavItems(item *navitem, active *[]mvc.View) {
+	if item == nil {
+		return
+	}
+	if item.Active() {
+		*active = append(*active, item)
+	}
+	for _, child := range item.items {
+		collectActiveNavItems(child, active)
+	}
 }

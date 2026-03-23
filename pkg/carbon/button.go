@@ -47,7 +47,7 @@ func (b *button) Active() bool {
 }
 
 // SetActive sets the pressed/active state of the button via aria-pressed.
-func (b *button) SetActive(active bool) *button {
+func (b *button) SetActive(active bool) mvc.View {
 	if active {
 		b.Root().SetAttribute("aria-pressed", "true")
 	} else {
@@ -65,7 +65,7 @@ func (b *button) Enabled() bool {
 	return !b.Root().HasAttribute("disabled")
 }
 
-func (b *button) SetEnabled(enabled bool) *button {
+func (b *button) SetEnabled(enabled bool) mvc.View {
 	if enabled {
 		b.Root().RemoveAttribute("disabled")
 	} else {
@@ -175,6 +175,16 @@ func (g *buttonGroup) RemoveEventListener(event string) mvc.View {
 
 // SetActive marks the specified buttons active and clears the rest.
 // With no arguments, all buttons are deactivated.
+func (g *buttonGroup) Active() []mvc.View {
+	active := make([]mvc.View, 0)
+	for _, child := range g.Children() {
+		if b, ok := child.(*button); ok && b.Active() {
+			active = append(active, b)
+		}
+	}
+	return active
+}
+
 func (g *buttonGroup) SetActive(views ...mvc.View) mvc.View {
 	active := make(map[mvc.View]bool, len(views))
 	for _, v := range views {
@@ -190,7 +200,17 @@ func (g *buttonGroup) SetActive(views ...mvc.View) mvc.View {
 
 // SetEnabled enables the specified buttons and disables all others in the group.
 // With no arguments, all buttons are disabled.
-func (g *buttonGroup) SetEnabled(views ...mvc.View) {
+func (g *buttonGroup) Enabled() []mvc.View {
+	enabled := make([]mvc.View, 0)
+	for _, child := range g.Children() {
+		if b, ok := child.(*button); ok && b.Enabled() {
+			enabled = append(enabled, b)
+		}
+	}
+	return enabled
+}
+
+func (g *buttonGroup) SetEnabled(views ...mvc.View) mvc.View {
 	enabled := make(map[mvc.View]bool, len(views))
 	for _, v := range views {
 		enabled[v] = true
@@ -200,6 +220,7 @@ func (g *buttonGroup) SetEnabled(views ...mvc.View) {
 			b.SetEnabled(enabled[child])
 		}
 	}
+	return g
 }
 
 ///////////////////////////////////////////////////////////////////////////////

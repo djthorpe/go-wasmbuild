@@ -40,7 +40,7 @@ func (l *link) Enabled() bool {
 	return !boolProperty(l.Root(), "disabled")
 }
 
-func (l *link) SetEnabled(enabled bool) *link {
+func (l *link) SetEnabled(enabled bool) mvc.View {
 	setBoolProperty(l.Root(), "disabled", !enabled)
 	return l
 }

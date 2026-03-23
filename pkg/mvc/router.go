@@ -15,6 +15,7 @@ type router struct {
 	View
 	pages []page
 	sel   ActiveGroup
+	cur   View
 }
 
 type page struct {
@@ -29,7 +30,9 @@ var _ View = (*router)(nil)
 // GLOBALS
 
 const (
-	ViewRouter = "mvc-router"
+	ViewRouter            = "mvc-router"
+	EventRouterActivate   = "mvc-router-activate"
+	EventRouterDeactivate = "mvc-router-deactivate"
 )
 
 func init() {
@@ -108,7 +111,14 @@ func (router *router) refresh(hash string) {
 	if active == nil {
 		return
 	}
+	if router.cur != nil && router.cur != active.view {
+		router.cur.Root().DispatchEvent(dom.NewEvent(EventRouterDeactivate))
+	}
 	router.ReplaceSlotChildren(ContentSlot, active.view)
+	if active.view != nil && router.cur != active.view {
+		active.view.Root().DispatchEvent(dom.NewEvent(EventRouterActivate))
+	}
+	router.cur = active.view
 	if router.sel != nil {
 		router.sel.SetActive(active.sel...)
 	}

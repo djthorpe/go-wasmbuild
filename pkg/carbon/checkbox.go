@@ -108,14 +108,26 @@ func (c *checkbox) Enabled() bool {
 	return !boolProperty(c.Root(), "disabled")
 }
 
-func (c *checkbox) SetEnabled(enabled bool) *checkbox {
+func (c *checkbox) SetEnabled(enabled bool) mvc.View {
 	setBoolProperty(c.Root(), "disabled", !enabled)
 	return c
 }
 
 // SetEnabled enables the specified checkboxes and disables the rest.
 // Calling SetEnabled with no arguments disables all members.
-func (g *checkboxGroup) SetEnabled(views ...mvc.View) {
+func (g *checkboxGroup) Enabled() []mvc.View {
+	enabled := make([]mvc.View, 0)
+	for _, child := range g.Root().Children() {
+		if v, err := mvc.ViewFromElement(child); err == nil {
+			if chk, ok := v.(*checkbox); ok && chk.Enabled() {
+				enabled = append(enabled, chk)
+			}
+		}
+	}
+	return enabled
+}
+
+func (g *checkboxGroup) SetEnabled(views ...mvc.View) mvc.View {
 	for _, child := range g.Root().Children() {
 		if v, err := mvc.ViewFromElement(child); err == nil {
 			if chk, ok := v.(*checkbox); ok {
@@ -133,6 +145,7 @@ func (g *checkboxGroup) SetEnabled(views ...mvc.View) {
 			}
 		}
 	}
+	return g
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -171,7 +184,7 @@ func (c *checkbox) Active() bool {
 }
 
 // SetActive checks or unchecks the checkbox.
-func (c *checkbox) SetActive(active bool) *checkbox {
+func (c *checkbox) SetActive(active bool) mvc.View {
 	if active {
 		c.SetState(CheckboxStateTrue)
 	} else {
@@ -222,6 +235,18 @@ func (g *checkboxGroup) Content(args ...any) mvc.View {
 
 // SetActive marks the specified checkboxes active and deactivates the rest.
 // Calling SetActive with no arguments deactivates all members.
+func (g *checkboxGroup) Active() []mvc.View {
+	active := make([]mvc.View, 0)
+	for _, child := range g.Root().Children() {
+		if v, err := mvc.ViewFromElement(child); err == nil {
+			if chk, ok := v.(*checkbox); ok && chk.Active() {
+				active = append(active, chk)
+			}
+		}
+	}
+	return active
+}
+
 func (g *checkboxGroup) SetActive(views ...mvc.View) mvc.View {
 	active := make(map[dom.Element]struct{}, len(views))
 	for _, v := range views {
