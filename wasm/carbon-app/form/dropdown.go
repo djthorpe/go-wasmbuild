@@ -191,7 +191,7 @@ func makeDropdownItems(values []carbon.Attr) ([]dropdownChoice, []any) {
 	return items, args
 }
 
-func setDropdownSelection(dd interface{ SetActive(...mvc.View) }, items []dropdownChoice, selected carbon.Attr) {
+func setDropdownSelection(dd mvc.ActiveGroup, items []dropdownChoice, selected carbon.Attr) {
 	active := make([]mvc.View, 0, 1)
 	for _, item := range items {
 		if item.Value() == string(selected) {

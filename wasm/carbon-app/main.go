@@ -12,16 +12,16 @@ import (
 	storybook "github.com/djthorpe/go-wasmbuild/wasm/carbon-app/storybook"
 )
 
-type codePanelController struct {
+type docsPanelController struct {
 	panel   mvc.View
 	visible bool
 }
 
-func (c *codePanelController) Visible() bool {
+func (c *docsPanelController) Visible() bool {
 	return c.visible
 }
 
-func (c *codePanelController) SetVisible(visible bool) mvc.View {
+func (c *docsPanelController) SetVisible(visible bool) mvc.View {
 	c.visible = visible
 	style := "position:fixed;top:3rem;right:0;height:calc(100vh - 3rem);overflow:auto;z-index:9000"
 	if visible {
@@ -46,8 +46,9 @@ func main() {
 			carbon.SideNavGroupItem("#grid", "Grids"),
 		),
 		carbon.SideNavGroup("Components",
-			carbon.SideNavGroupItem("#button", "Buttons"),
-			carbon.SideNavGroupItem("#button-group", "Button Groups"),
+			carbon.SideNavGroupItem("#button", "Button"),
+			carbon.SideNavGroupItem("#closebutton", "CloseButton"),
+			carbon.SideNavGroupItem("#buttongroup", "ButtonGroup"),
 			carbon.SideNavGroupItem("#tile", "Tiles"),
 			carbon.SideNavGroupItem("#tag", "Tags"),
 		),
@@ -75,24 +76,24 @@ func main() {
 		),
 	)
 
-	codeTitle := carbon.Head(4, "Select a story")
-	codeBlock := carbon.CodeBlock("// Select a story's View code link to inspect its example.", carbon.With(carbon.ThemeG10))
-	codeBlock.SetWrapText(true)
+	docsBody := carbon.Section(
+		mvc.WithStyle("display:grid;gap:1rem"),
+		carbon.Markdown("Select a story's top-right link to inspect its component documentation."),
+	)
 	closeBtn := carbon.CloseButton(mvc.WithStyle("position:absolute;top:0;right:0"))
-	codePanel := carbon.HeaderPanel(
+	docsPanel := carbon.HeaderPanel(
+		carbon.With(carbon.ThemeG10),
 		mvc.HTML("DIV", mvc.WithStyle("position:relative;padding:1rem 1.5rem;display:grid;gap:1rem"),
-			carbon.Head(3, "Code Example"),
 			closeBtn,
-			codeTitle,
-			codeBlock,
+			docsBody,
 		),
 	)
-	codePanelState := &codePanelController{panel: codePanel}
+	docsPanelState := &docsPanelController{panel: docsPanel}
 	closeBtn.AddEventListener(carbon.EventClick, func(dom.Event) {
-		codePanelState.SetVisible(false)
+		docsPanelState.SetVisible(false)
 	})
-	codePanelState.SetVisible(false)
-	storybook.SetCodePanel(codePanelState, codeTitle, codeBlock)
+	docsPanelState.SetVisible(false)
+	storybook.SetDocsPanel(docsPanelState, docsBody)
 
 	// Main content area — min-height fills the viewport below the fixed header.
 	Content := carbon.Section(
@@ -114,7 +115,7 @@ func main() {
 		).SetLabel("#", "Carbon Design System", "Storybook"),
 		SideNav,
 		Content,
-		codePanel,
+		docsPanel,
 	), carbon.With(carbon.ThemeG90)).Run()
 }
 
@@ -131,7 +132,8 @@ func router(nav mvc.View) mvc.View {
 		Page("#icon", carbon.Page(content.IconView()...), nav.(ItemSelector).Item("#icon")).
 		Page("#grid", carbon.Page(content.GridView()...), nav.(ItemSelector).Item("#grid")).
 		Page("#button", carbon.Page(button.View()...), nav.(ItemSelector).Item("#button")).
-		Page("#button-group", carbon.Page(button.GroupView()...), nav.(ItemSelector).Item("#button-group")).
+		Page("#closebutton", carbon.Page(button.CloseButtonView()...), nav.(ItemSelector).Item("#closebutton")).
+		Page("#buttongroup", carbon.Page(button.GroupView()...), nav.(ItemSelector).Item("#buttongroup")).
 		Page("#tile", carbon.Page(content.TileView()...), nav.(ItemSelector).Item("#tile")).
 		Page("#tag", carbon.Page(content.TagView()...), nav.(ItemSelector).Item("#tag")).
 		Page("#form-introduction", carbon.Page(form.IntroductionView()...), nav.(ItemSelector).Item("#form-introduction")).

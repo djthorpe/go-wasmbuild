@@ -17,6 +17,18 @@ type PaginationState interface {
 	SetCount(uint) View
 }
 
+// LabelState is implemented by a view that can set a label on a control
+type LabelState interface {
+	Label() string
+	SetLabel(string) View
+}
+
+// ValueState is implemented by a view that exposes a string value.
+type ValueState interface {
+	Value() string
+	SetValue(string) View
+}
+
 // ActiveState is implemented by a view that can be marked active or inactive.
 type ActiveState interface {
 	Active() bool

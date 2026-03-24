@@ -8,29 +8,6 @@ import (
 	storybook "github.com/djthorpe/go-wasmbuild/wasm/carbon-app/storybook"
 )
 
-func init() {
-	storybook.RegisterCodeExample("Link", `inlineLink := carbon.Link(
-	"#text",
-	carbon.With(carbon.LinkInline, carbon.SizeMedium),
-	"Read the Carbon content guidelines",
-)
-
-standaloneIcon := carbon.Icon(carbon.IconLaunch, carbon.With(carbon.IconSize20))
-standaloneLink := carbon.Link(
-	"#text",
-	carbon.With(carbon.SizeMedium),
-	"Read the Carbon content guidelines",
-	standaloneIcon,
-)
-
-iconOnlyIcon := carbon.Icon(carbon.IconLaunch, carbon.With(carbon.IconSize20))
-iconOnlyLink := carbon.Link(
-	"#text",
-	carbon.With(carbon.SizeMedium),
-	iconOnlyIcon,
-).SetLabel("Open content guidelines")`)
-}
-
 func TextView() []any {
 	return []any{
 		mvc.HTML("DIV", mvc.WithStyle("padding:1.5rem 2rem"), carbon.Head(1, "Text")),

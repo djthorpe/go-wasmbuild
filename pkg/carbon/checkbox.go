@@ -13,10 +13,7 @@ import (
 // TYPES
 
 type checkbox struct{ base }
-
-type checkboxGroup struct {
-	base
-}
+type checkboxGroup struct{ base }
 
 // CheckboxState represents the tri-state value of a checkbox.
 //
