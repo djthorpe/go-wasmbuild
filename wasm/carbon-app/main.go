@@ -54,6 +54,8 @@ func main() {
 			carbon.SideNavGroupItem("#codeblock", "CodeBlock"),
 			carbon.SideNavGroupItem("#icon", "Icon"),
 			carbon.SideNavGroupItem("#grid", "Grid"),
+			carbon.SideNavGroupItem("#section", "Section"),
+			carbon.SideNavGroupItem("#page", "Page"),
 		),
 		carbon.SideNavGroup("Components",
 			carbon.SideNavGroupItem("#button", "Button"),
@@ -151,6 +153,8 @@ func router(nav mvc.View) mvc.View {
 		Page("#codeblock", carbon.Page(content.CodeBlockView()...), nav.(ItemSelector).Item("#codeblock")).
 		Page("#icon", carbon.Page(content.IconView()...), nav.(ItemSelector).Item("#icon")).
 		Page("#grid", carbon.Page(content.GridView()...), nav.(ItemSelector).Item("#grid")).
+		Page("#section", carbon.Page(content.SectionView()...), nav.(ItemSelector).Item("#section")).
+		Page("#page", carbon.Page(content.PageView()...), nav.(ItemSelector).Item("#page")).
 		Page("#button", carbon.Page(button.View()...), nav.(ItemSelector).Item("#button")).
 		Page("#closebutton", carbon.Page(button.CloseButtonView()...), nav.(ItemSelector).Item("#closebutton")).
 		Page("#buttongroup", carbon.Page(button.GroupView()...), nav.(ItemSelector).Item("#buttongroup")).

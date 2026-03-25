@@ -42,4 +42,6 @@ wide := carbon.GridFullWidth(
 
 ## References
 
+* [Section](Section.md)
+* [Page](Page.md)
 * [Carbon Design System](https://carbondesignsystem.com/elements/2x-grid/overview/)
