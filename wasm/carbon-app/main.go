@@ -7,6 +7,7 @@ import (
 	mvc "github.com/djthorpe/go-wasmbuild/pkg/mvc"
 	button "github.com/djthorpe/go-wasmbuild/wasm/carbon-app/button"
 	content "github.com/djthorpe/go-wasmbuild/wasm/carbon-app/content"
+	data "github.com/djthorpe/go-wasmbuild/wasm/carbon-app/data"
 	form "github.com/djthorpe/go-wasmbuild/wasm/carbon-app/form"
 	navigation "github.com/djthorpe/go-wasmbuild/wasm/carbon-app/navigation"
 	storybook "github.com/djthorpe/go-wasmbuild/wasm/carbon-app/storybook"
@@ -73,20 +74,13 @@ func main() {
 			carbon.SideNavGroupItem("#dropdown", "Dropdowns"),
 		),
 		carbon.SideNavGroup("Data",
-			carbon.SideNavGroupItem("#table", "Tables"),
+			carbon.SideNavGroupItem("#table", "Table"),
 			carbon.SideNavGroupItem("#pagination", "Pagination"),
 		),
 		carbon.SideNavGroup("Navigation",
-			carbon.SideNavGroupItem("#header", "Headers"),
-			carbon.SideNavGroupItem("#sidenav", "Panels"),
-			carbon.SideNavGroupItem("#breadcrumb", "Breadcrumbs"),
-			carbon.SideNavGroupItem("#tabs", "Tabs"),
-		),
-		carbon.SideNavGroup("Feedback",
-			carbon.SideNavGroupItem("#modal", "Modals"),
-			carbon.SideNavGroupItem("#notification", "Notifications"),
-			carbon.SideNavGroupItem("#toast", "Toasts"),
-			carbon.SideNavGroupItem("#progress-bar", "Progress Bars"),
+			carbon.SideNavGroupItem("#header", "Header"),
+			carbon.SideNavGroupItem("#sidenav", "SideNav"),
+			carbon.SideNavGroupItem("#headerpanel", "HeaderPanel"),
 		),
 	)
 
@@ -168,5 +162,9 @@ func router(nav mvc.View) mvc.View {
 		Page("#checkbox", carbon.Page(form.CheckboxView()...), nav.(ItemSelector).Item("#checkbox")).
 		Page("#dropdown", carbon.Page(form.DropdownView()...), nav.(ItemSelector).Item("#dropdown")).
 		Page("#structuredlist", carbon.Page(content.StructuredListView()...), nav.(ItemSelector).Item("#structuredlist")).
-		Page("#sidenav", carbon.Page(navigation.PanelView()...), nav.(ItemSelector).Item("#sidenav"))
+		Page("#table", carbon.Page(data.TableView()...), nav.(ItemSelector).Item("#table")).
+		Page("#pagination", carbon.Page(data.PaginationView()...), nav.(ItemSelector).Item("#pagination")).
+		Page("#header", carbon.Page(navigation.HeaderView()...), nav.(ItemSelector).Item("#header")).
+		Page("#sidenav", carbon.Page(navigation.SideNavView()...), nav.(ItemSelector).Item("#sidenav")).
+		Page("#headerpanel", carbon.Page(navigation.PanelView()...), nav.(ItemSelector).Item("#headerpanel"))
 }

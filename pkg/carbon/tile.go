@@ -34,19 +34,6 @@ func Tile(args ...any) *tile {
 	return tile
 }
 
-// TileDecorator returns a <cds-tile> for backward compatibility.
-// Carbon's tile decorator treatment is supplied via slotted content assigned
-// to the `decorator` slot rather than a host attribute.
-//
-//	carbon.Tile(
-//		mvc.HTML("SPAN", mvc.WithAttr("slot", "decorator"), "AI"),
-//		carbon.Head(3, "Title"),
-//		carbon.Para("Body text"),
-//	)
-func TileDecorator(args ...any) *tile {
-	return Tile(args...)
-}
-
 func (t *tile) Apply(opts ...mvc.Opt) mvc.View {
 	t.View.Apply(opts...)
 	t.applyPresentation()

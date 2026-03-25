@@ -9,7 +9,6 @@ description: Dropdowns wrap Carbon's single-select menu field with label, helper
 |Constructor|Description|
 |----|----|
 |`carbon.Dropdown(helperText string, args ...any)`|Returns a `cds-dropdown` view. Non-empty `helperText` sets the `helper-text` attribute.|
-|`carbon.DropdownItem(args ...any)`|Returns a `cds-dropdown-item` view.|
 
 ## Basic Usage
 
@@ -75,4 +74,5 @@ status.AddEventListener(carbon.EventSelected, func(e dom.Event) {
 
 ## References
 
+* [DropdownItem](DropdownItem.md)
 * [Carbon Design System](https://carbondesignsystem.com/components/dropdown/usage/)

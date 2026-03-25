@@ -20,6 +20,7 @@ const (
 	ViewNumberInput         = "mvc-cds-number-input"
 	ViewLink                = "mvc-cds-link"
 	ViewText                = "mvc-cds-text"
+	ViewBlockquote          = "mvc-cds-blockquote"
 	ViewList                = "mvc-cds-list"
 	ViewMarkdown            = "mvc-cds-markdown"
 	ViewButton              = "mvc-cds-button"

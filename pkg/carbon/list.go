@@ -31,18 +31,6 @@ func List(args ...any) *list {
 	return l
 }
 
-// OrderedList returns an ordered list (<ol>) view.
-func OrderedList(args ...any) *list {
-	l := mvc.NewView(new(list), ViewList, "OL", setView, args).(*list)
-	l.syncPresentation()
-	return l
-}
-
-// ListItem returns a list item (<li>) view.
-func ListItem(args ...any) *list {
-	return mvc.NewView(new(list), ViewList, "LI", setView, args).(*list)
-}
-
 func (l *list) Apply(opts ...mvc.Opt) mvc.View {
 	l.View.Apply(opts...)
 	l.syncPresentation()

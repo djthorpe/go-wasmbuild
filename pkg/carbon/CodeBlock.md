@@ -1,5 +1,5 @@
 ---
-description: CodeBlock documents Carbon's block code-snippet variants for copyable single-line commands and expandable multi-line source samples.
+description: CodeBlock documents Carbon's multi-line Carbon code snippet component for expandable source samples and longer examples.
 ---
 
 # CodeBlock
@@ -8,14 +8,11 @@ description: CodeBlock documents Carbon's block code-snippet variants for copyab
 
 |Constructor|Description|
 |----|----|
-|`carbon.CodeSnippet(args ...any)`|Returns a `cds-code-snippet` with `type="single"` for one-line commands or expressions with copy support.|
 |`carbon.CodeBlock(args ...any)`|Returns a `cds-code-snippet` with `type="multi"` for longer multi-line snippets that can expand and collapse.|
 
 ## Basic Usage
 
 ```go
-single := carbon.CodeSnippet("GOOS=js GOARCH=wasm go build ./...")
-
 block := carbon.CodeBlock(`package main
 
 func main() {
@@ -27,7 +24,7 @@ func main() {
 
 |Property|`With` and `Apply` values|
 |----|----|
-|Variant|`carbon.CodeSnippet(...)` sets `type="single"`; `carbon.CodeBlock(...)` sets `type="multi"`|
+|Variant|Always `type="multi"` via `carbon.CodeBlock(...)`|
 |Boolean appearance attrs|`CodeWrapText`, `CodeHideCopyButton`|
 |Custom appearance opts|`WithCodeFeedback(string)`, `WithCodeCopyText(string)`|
 |Theme|`ThemeWhite`, `ThemeG10`, `ThemeG90`, `ThemeG100` on the surrounding container|
@@ -52,12 +49,13 @@ carbon.CodeBlock(
 
 ## Notes
 
-* Use `carbon.CodeSnippet(...)` for single commands users are likely to copy directly.
 * Use `carbon.CodeBlock(...)` for longer examples, source samples, or configuration fragments.
+* Single-line snippets use `carbon.CodeSnippet(...)`.
 * Inline snippets use the separate `carbon.Code(...)` constructor.
 * `CodeWrapText`, `CodeHideCopyButton`, `WithCodeFeedback(...)`, and `WithCodeCopyText(...)` are presentation options, so apply them during construction or with `Apply(...)`.
 
 ## References
 
 * [Code](Code.md)
+* [CodeSnippet](CodeSnippet.md)
 * [Carbon Design System](https://carbondesignsystem.com/components/code-snippet/usage/)

@@ -15,19 +15,9 @@ type structuredList struct {
 	base
 	changeBaseline dom.Element
 }
-type structuredListHeader struct{ base }
-type structuredListRow struct{ base }
-type structuredListHeaderCell struct{ base }
-type structuredListCell struct{ base }
 
 var _ mvc.View = (*structuredList)(nil)
-var _ mvc.View = (*structuredListHeader)(nil)
-var _ mvc.View = (*structuredListRow)(nil)
-var _ mvc.View = (*structuredListHeaderCell)(nil)
-var _ mvc.View = (*structuredListCell)(nil)
 var _ mvc.ActiveGroup = (*structuredList)(nil)
-var _ mvc.ActiveState = (*structuredListRow)(nil)
-var _ mvc.ValueState = (*structuredListRow)(nil)
 
 ///////////////////////////////////////////////////////////////////////////////
 // GLOBALS
@@ -46,18 +36,6 @@ func init() {
 	mvc.RegisterView(ViewStructuredList, func(element dom.Element) mvc.View {
 		return mvc.NewViewWithElement(new(structuredList), element, setView)
 	}, EventChange)
-	mvc.RegisterView(ViewStructuredListHead, func(element dom.Element) mvc.View {
-		return mvc.NewViewWithElement(new(structuredListHeader), element, setView)
-	})
-	mvc.RegisterView(ViewStructuredListRow, func(element dom.Element) mvc.View {
-		return mvc.NewViewWithElement(new(structuredListRow), element, setView)
-	})
-	mvc.RegisterView(ViewStructuredListTH, func(element dom.Element) mvc.View {
-		return mvc.NewViewWithElement(new(structuredListHeaderCell), element, setView)
-	})
-	mvc.RegisterView(ViewStructuredListCell, func(element dom.Element) mvc.View {
-		return mvc.NewViewWithElement(new(structuredListCell), element, setView)
-	})
 }
 
 // StructuredList returns a Carbon structured list with a header slot and body slot.
@@ -66,29 +44,6 @@ func StructuredList(args ...any) *structuredList {
 	s.syncPresentation()
 	return s
 }
-
-// StructuredListHeader returns a structured list header row.
-func StructuredListHeader(args ...any) *structuredListHeader {
-	return mvc.NewView(new(structuredListHeader), ViewStructuredListHead, "cds-structured-list-header-row", setView, args).(*structuredListHeader)
-}
-
-// StructuredListRow returns a structured list body row.
-func StructuredListRow(args ...any) *structuredListRow {
-	return mvc.NewView(new(structuredListRow), ViewStructuredListRow, "cds-structured-list-row", setView, args).(*structuredListRow)
-}
-
-// StructuredListHeaderCell returns a structured list header cell.
-func StructuredListHeaderCell(args ...any) *structuredListHeaderCell {
-	return mvc.NewView(new(structuredListHeaderCell), ViewStructuredListTH, "cds-structured-list-header-cell", setView, args).(*structuredListHeaderCell)
-}
-
-// StructuredListCell returns a structured list body cell.
-func StructuredListCell(args ...any) *structuredListCell {
-	return mvc.NewView(new(structuredListCell), ViewStructuredListCell, "cds-structured-list-cell", setView, args).(*structuredListCell)
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// PUBLIC METHODS
 
 // AddEventListener registers an event handler on the structured list.
 // EventChange is bridged from row selection changes because Carbon does not
@@ -162,56 +117,6 @@ func (s *structuredList) SetActive(views ...mvc.View) mvc.View {
 		}
 	}
 	return s
-}
-
-func (h *structuredListHeader) Content(args ...any) mvc.View {
-	for i, arg := range args {
-		if !isStructuredListCell(arg, "CDS-STRUCTURED-LIST-HEADER-CELL") {
-			switch arg.(type) {
-			case string, dom.Element, mvc.View:
-				args[i] = StructuredListHeaderCell(arg)
-			}
-		}
-	}
-	return h.View.Content(args...)
-}
-
-func (r *structuredListRow) Content(args ...any) mvc.View {
-	for i, arg := range args {
-		if !isStructuredListCell(arg, "CDS-STRUCTURED-LIST-CELL") {
-			switch arg.(type) {
-			case string, dom.Element, mvc.View:
-				args[i] = StructuredListCell(arg)
-			}
-		}
-	}
-	return r.View.Content(args...)
-}
-
-// Active reports whether the row is currently selected.
-func (r *structuredListRow) Active() bool {
-	return boolProperty(r.Root(), "selected")
-}
-
-// SetActive selects or deselects the row.
-func (r *structuredListRow) SetActive(active bool) mvc.View {
-	setBoolProperty(r.Root(), "selected", active)
-	return r
-}
-
-// Value returns the row selection value.
-func (r *structuredListRow) Value() string {
-	return r.Root().GetAttribute("selection-value")
-}
-
-// SetValue sets the row selection value used by the selectable variant.
-func (r *structuredListRow) SetValue(value string) mvc.View {
-	if value == "" {
-		r.Root().RemoveAttribute("selection-value")
-	} else {
-		r.Root().SetAttribute("selection-value", value)
-	}
-	return r
 }
 
 ///////////////////////////////////////////////////////////////////////////////

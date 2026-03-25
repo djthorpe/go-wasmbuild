@@ -1,5 +1,5 @@
 ---
-description: Tile and TileDecorator provide Carbon's simple content surface, with optional fill, height, background, and decorator-slot presentation helpers.
+description: Tile provides Carbon's simple content surface, with optional fill, height, background, and decorator-slot presentation helpers.
 ---
 
 # Tile
@@ -9,7 +9,6 @@ description: Tile and TileDecorator provide Carbon's simple content surface, wit
 |Constructor|Description|
 |----|----|
 |`carbon.Tile(args ...any)`|Returns a `cds-tile` view.|
-|`carbon.TileDecorator(args ...any)`|Alias for `Tile(...)`, kept for backward compatibility. Decorator treatment comes from slotted child content, not a different host element.|
 
 ## Basic Usage
 
@@ -63,8 +62,8 @@ metric := carbon.Tile(
 
 * `Tile` is intentionally static; it does not add a selection model or custom events.
 * Generated inline presentation styles are merged with any caller-provided `style` attribute.
-* `TileDecorator(...)` exists only for API continuity; new code can use `Tile(...)` directly.
 
 ## References
 
+* [TileDecorator](TileDecorator.md)
 * [Carbon Design System](https://carbondesignsystem.com/components/tile/usage/)

@@ -42,5 +42,6 @@ Inline code does not expose additional code-snippet-specific appearance helpers.
 
 ## References
 
+* [CodeSnippet](CodeSnippet.md)
 * [CodeBlock](CodeBlock.md)
 * [Carbon Design System](https://carbondesignsystem.com/components/code-snippet/usage/)

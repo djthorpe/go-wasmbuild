@@ -68,59 +68,6 @@ func init() {
 }
 
 // Header returns a <cds-header> UI shell header.
-func Header(args ...any) *navgroup {
-	opts, body, global := splitHeaderArgs(args...)
-	n := mvc.NewView(new(navgroup), ViewNav, templateShellHeader, setView, opts).(*navgroup)
-	n.items = navItems(body...)
-	n.ReplaceSlotChildren("body", body...)
-	if global != nil {
-		n.ReplaceSlot("global", global)
-	}
-	bindNavItemClicks(n.items, func(item *navitem) {
-		n.SetActive(item)
-	})
-	return n
-}
-
-// HeaderNavGlobal returns the right-aligned global actions container for a header.
-func HeaderNavGlobal(args ...any) *navglobal {
-	adapted := adaptHeaderGlobalArgs(args...)
-	return mvc.NewView(new(navglobal), ViewNavGlobal, "div", setView, append([]any{mvc.WithClass("cds--header__global"), mvc.WithAttr("data-floating-menu-container", "")}, adapted...)...).(*navglobal)
-}
-
-// HeaderNavItem returns a <cds-header-nav-item> link for the header menu bar.
-func HeaderNavItem(href string, args ...any) *navitem {
-	return mvc.NewView(new(navitem), ViewNavItem, "cds-header-nav-item", setView, append([]any{mvc.WithAttr("href", href)}, args...)...).(*navitem)
-}
-
-// SideNav returns a <cds-side-nav> shell panel.
-func SideNav(args ...any) *navgroup {
-	n := mvc.NewView(new(navgroup), ViewNav, templateShellSideNav, setView, args).(*navgroup)
-	n.items = navItems(args...)
-	return n
-}
-
-// SideNavLink returns a <cds-side-nav-link> top-level navigation entry.
-func SideNavLink(href string, args ...any) *navitem {
-	return mvc.NewView(new(navitem), ViewNavItem, "cds-side-nav-link", setView, append([]any{mvc.WithAttr("href", href)}, args...)...).(*navitem)
-}
-
-// SideNavGroup returns a <cds-side-nav-menu> collapsible navigation group.
-func SideNavGroup(title string, args ...any) *navitem {
-	n := mvc.NewView(new(navitem), ViewNavItem, "cds-side-nav-menu", setView, append([]any{mvc.WithAttr("title", title), mvc.WithAttr("expanded", "")}, args...)...).(*navitem)
-	if strings.TrimSpace(n.Root().Value()) == "" && !n.Root().HasAttribute("value") {
-		n.Root().SetValue(title)
-		n.Root().SetAttribute("value", title)
-	}
-	n.items = navItems(args...)
-	return n
-}
-
-// SideNavGroupItem returns a <cds-side-nav-menu-item> for a SideNavGroup.
-func SideNavGroupItem(href string, args ...any) *navitem {
-	return mvc.NewView(new(navitem), ViewNavItem, "cds-side-nav-menu-item", setView, append([]any{mvc.WithAttr("href", href)}, args...)...).(*navitem)
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS - NAV
 

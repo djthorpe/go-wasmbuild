@@ -1,5 +1,5 @@
 ---
-description: Checkboxes expose boolean and tri-state selection, and checkbox groups coordinate shared label, helper text, and group-level state.
+description: Checkbox exposes boolean and tri-state selection through Carbon's checkbox component.
 ---
 
 # Checkbox
@@ -9,7 +9,6 @@ description: Checkboxes expose boolean and tri-state selection, and checkbox gro
 |Constructor|Description|
 |----|----|
 |`carbon.Checkbox(args ...any)`|Returns a `cds-checkbox` view. A leading string becomes the `label-text` attribute.|
-|`carbon.CheckboxGroup(helperText string, args ...any)`|Returns a `cds-checkbox-group` view. The `helperText` argument becomes the `helper-text` attribute when non-empty.|
 
 ## Basic Usage
 
@@ -17,20 +16,11 @@ description: Checkboxes expose boolean and tri-state selection, and checkbox gro
 marketing := carbon.Checkbox("Marketing emails").
  SetValue("marketing").
  SetActive(true)
-
-group := carbon.CheckboxGroup("Choose all that apply.",
- marketing,
- carbon.Checkbox("Product updates").SetValue("product"),
-).SetLabel("Notifications")
 ```
 
 ## Appearance
 
-Checkbox groups can be laid out vertically or horizontally:
-
-|Property|Values|
-|----|----|
-|Orientation|`CheckboxOrientationVertical`, `CheckboxOrientationHorizontal`|
+Checkbox appearance is controlled by its own label, value, active state, and enabled state.
 
 ## State
 
@@ -46,12 +36,6 @@ Checkbox groups can be laid out vertically or horizontally:
 |`SetLabel(string)`|Sets the `label-text` attribute.|
 |`Value() string`|Returns the current `value`.|
 |`SetValue(string)`|Sets the `value` property and attribute.|
-|`Content(args ...any)`|Replaces a checkbox group's children with the provided checkboxes.|
-|`Active() []mvc.View`|Returns the currently checked child checkboxes in a group.|
-|`SetActive(views ...mvc.View)`|Checks the supplied group children and unchecks the rest.|
-|`Enabled() []mvc.View`|Returns the currently enabled child checkboxes in a group.|
-|`SetEnabled(views ...mvc.View)`|Enables the supplied group children and disables the rest.|
-|`SetOrientation(CheckboxOrientation)`|Switches a checkbox group between vertical and horizontal layout.|
 
 Tri-state checkboxes use `CheckboxStateUndefined` for the indeterminate state:
 
@@ -60,11 +44,9 @@ consent := carbon.Checkbox("Partial consent")
 consent.SetState(carbon.CheckboxStateUndefined)
 ```
 
-`CheckboxGroup` manages checkbox children only. `Content(args ...any)` panics if any child is not a `*checkbox`.
-
 ## Events
 
-Both `Checkbox` and `CheckboxGroup` normalize Carbon's checkbox change event to `EventChange`.
+`Checkbox` normalizes Carbon's checkbox change event to `EventChange`.
 
 |Event|Description|
 |----|----|
@@ -73,9 +55,9 @@ Both `Checkbox` and `CheckboxGroup` normalize Carbon's checkbox change event to 
 ## Notes
 
 * `Checkbox.Active()` reports only the checked state. Use `State()` when indeterminate matters.
-* Group-level `EventChange` is useful because child checkbox events bubble.
-* `CheckboxGroup.SetEnabled()` with no arguments disables every child checkbox.
+* Use `CheckboxGroup` for coordinated group label, helper text, orientation, and child state.
 
 ## References
 
+* [CheckboxGroup](CheckboxGroup.md)
 * [Carbon Design System](https://carbondesignsystem.com/components/checkbox/usage/)

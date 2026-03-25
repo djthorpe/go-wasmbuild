@@ -9,10 +9,6 @@ description: StructuredList provides Carbon's table-like structured list for rea
 |Constructor|Description|
 |----|----|
 |`carbon.StructuredList(args ...any)`|Returns a Carbon structured list wrapper with header and body slots.|
-|`carbon.StructuredListHeader(args ...any)`|Returns a structured list header row. Raw children are wrapped in header cells.|
-|`carbon.StructuredListRow(args ...any)`|Returns a structured list body row. Raw children are wrapped in body cells.|
-|`carbon.StructuredListHeaderCell(args ...any)`|Returns an explicit structured list header cell.|
-|`carbon.StructuredListCell(args ...any)`|Returns an explicit structured list body cell.|
 
 ## Basic Usage
 
@@ -78,5 +74,9 @@ Use low-level DOM `click`, `focus`, or keyboard listeners on rows only if you ne
 
 ## References
 
+* [StructuredListHeader](StructuredListHeader.md)
+* [StructuredListRow](StructuredListRow.md)
+* [StructuredListHeaderCell](StructuredListHeaderCell.md)
+* [StructuredListCell](StructuredListCell.md)
 * [List](List.md)
 * [Carbon Design System](https://carbondesignsystem.com/components/structured-list/usage/)
