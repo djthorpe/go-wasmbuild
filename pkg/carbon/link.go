@@ -15,6 +15,8 @@ type link struct{ base }
 
 var _ mvc.View = (*link)(nil)
 var _ mvc.EnabledState = (*link)(nil)
+var _ mvc.ValueState = (*link)(nil)
+var _ mvc.LabelState = (*link)(nil)
 
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
@@ -22,7 +24,7 @@ var _ mvc.EnabledState = (*link)(nil)
 func init() {
 	mvc.RegisterView(ViewLink, func(element dom.Element) mvc.View {
 		return mvc.NewViewWithElement(new(link), element, setView)
-	}, EventClick)
+	}, EventClick, EventHover, EventNoHover)
 }
 
 // Link returns a <cds-link> web component.
@@ -46,7 +48,7 @@ func (l *link) SetEnabled(enabled bool) mvc.View {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// LABELLING
+// LABEL STATE
 
 // Label returns the link's accessible name (aria-label).
 func (l *link) Label() string {
@@ -54,11 +56,29 @@ func (l *link) Label() string {
 }
 
 // SetLabel sets or clears the link's accessible name (aria-label).
-func (l *link) SetLabel(label string) *link {
+func (l *link) SetLabel(label string) mvc.View {
 	if label == "" {
 		l.Root().RemoveAttribute("aria-label")
 	} else {
 		l.Root().SetAttribute("aria-label", label)
+	}
+	return l
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// VALUE STATE
+
+// Value returns the link href attribute.
+func (l *link) Value() string {
+	return l.Root().GetAttribute("href")
+}
+
+// SetValue updates the link href attribute.
+func (l *link) SetValue(value string) mvc.View {
+	if value == "" {
+		l.Root().RemoveAttribute("href")
+	} else {
+		l.Root().SetAttribute("href", value)
 	}
 	return l
 }

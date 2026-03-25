@@ -10,11 +10,21 @@ import (
 
 func CodeView() []any {
 	return []any{
-		mvc.HTML("DIV", mvc.WithStyle("padding:1.5rem 2rem"), carbon.Head(1, "Source Code")),
+		storybook.PageHeader("Code", "Code.md"),
 		carbon.Section(
 			mvc.WithStyle("padding:1.5rem 2rem"),
 			carbon.With(carbon.ThemeWhite),
 			codeInlineStory(),
+		),
+	}
+}
+
+func CodeBlockView() []any {
+	return []any{
+		storybook.PageHeader("CodeBlock", "CodeBlock.md"),
+		carbon.Section(
+			mvc.WithStyle("padding:1.5rem 2rem"),
+			carbon.With(carbon.ThemeWhite),
 			codeSingleStory(),
 			codeMultiStory(),
 		),
@@ -74,7 +84,11 @@ func codeSingleStory() dom.Element {
 			snippet.SetEnabled(!v)
 		}),
 		storybook.CheckboxGroup("Copy button", "Hide copy button", false, func(v bool) {
-			snippet.SetHideCopyButton(v)
+			if v {
+				snippet.Apply(carbon.With(carbon.CodeHideCopyButton)...)
+			} else {
+				snippet.Apply(mvc.WithoutAttr(string(carbon.CodeHideCopyButton)))
+			}
 		}),
 	)
 }
@@ -118,10 +132,18 @@ func main() {
 			block.SetEnabled(!v)
 		}),
 		storybook.CheckboxGroup("Copy button", "Hide copy button", false, func(v bool) {
-			block.SetHideCopyButton(v)
+			if v {
+				block.Apply(carbon.With(carbon.CodeHideCopyButton)...)
+			} else {
+				block.Apply(mvc.WithoutAttr(string(carbon.CodeHideCopyButton)))
+			}
 		}),
 		storybook.CheckboxGroup("Wrap text", "Wrap long lines", false, func(v bool) {
-			block.SetWrapText(v)
+			if v {
+				block.Apply(carbon.With(carbon.CodeWrapText)...)
+			} else {
+				block.Apply(mvc.WithoutAttr(string(carbon.CodeWrapText)))
+			}
 		}),
 	)
 }

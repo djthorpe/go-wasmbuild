@@ -35,7 +35,7 @@ var dropdownAssignees = []carbon.Attr{
 
 func DropdownView() []any {
 	return []any{
-		mvc.HTML("DIV", mvc.WithStyle("padding:1.5rem 2rem"), carbon.Head(1, "Dropdowns")),
+		storybook.PageHeader("Dropdowns", "Dropdown.md"),
 		carbon.Section(
 			mvc.WithStyle("padding:1.5rem 2rem"),
 			carbon.With(carbon.ThemeWhite),

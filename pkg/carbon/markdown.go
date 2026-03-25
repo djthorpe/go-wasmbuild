@@ -146,7 +146,8 @@ func markdownNode(node ast.Node, cfg markdownConfig) any {
 		if language := n.Language(); language != "" {
 			codeArgs = append([]any{mvc.WithAttr("data-language", language)}, codeArgs...)
 		}
-		return CodeBlock(codeArgs...).SetWrapText(true)
+		codeArgs = append(codeArgs, With(CodeWrapText))
+		return CodeBlock(codeArgs...)
 
 	case *md.Link:
 		href := resolveMarkdownURL(n.URL(), cfg)

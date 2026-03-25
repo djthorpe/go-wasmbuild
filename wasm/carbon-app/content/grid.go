@@ -10,7 +10,7 @@ import (
 
 func GridView() []any {
 	return []any{
-		mvc.HTML("DIV", mvc.WithStyle("padding:1.5rem 2rem"), carbon.Head(1, "Grid")),
+		storybook.PageHeader("Grid", "Grid.md"),
 		carbon.Section(
 			mvc.WithStyle("padding:1.5rem 2rem"),
 			carbon.With(carbon.ThemeWhite),
@@ -212,7 +212,7 @@ func gridCell(span int, accent bool, title, copy string) mvc.View {
 	if !accent {
 		style = gridCellStyleB
 	}
-	return carbon.ColSpan(span,
+	return carbon.Col(span,
 		gridPanel(
 			style,
 			carbon.Strong(title),

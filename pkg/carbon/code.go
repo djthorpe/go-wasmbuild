@@ -29,8 +29,10 @@ func init() {
 //
 //	carbon.Code("go build ./...")
 func Code(args ...any) *codeSnippet {
-	return mvc.NewView(new(codeSnippet), ViewCodeSnippet, "cds-code-snippet", setView,
+	snippet := mvc.NewView(new(codeSnippet), ViewCodeSnippet, "cds-code-snippet", setView,
 		mvc.WithAttr("type", "inline"), args).(*codeSnippet)
+	snippet.syncPresentation()
+	return snippet
 }
 
 // CodeSnippet returns a <cds-code-snippet type="single"> — a one-line code
@@ -38,8 +40,10 @@ func Code(args ...any) *codeSnippet {
 //
 //	carbon.CodeSnippet("GOOS=js GOARCH=wasm go build .")
 func CodeSnippet(args ...any) *codeSnippet {
-	return mvc.NewView(new(codeSnippet), ViewCodeSnippet, "cds-code-snippet", setView,
+	snippet := mvc.NewView(new(codeSnippet), ViewCodeSnippet, "cds-code-snippet", setView,
 		mvc.WithAttr("type", "single"), args).(*codeSnippet)
+	snippet.syncPresentation()
+	return snippet
 }
 
 // CodeBlock returns a <cds-code-snippet type="multi"> — a multi-line code
@@ -47,12 +51,23 @@ func CodeSnippet(args ...any) *codeSnippet {
 //
 //	carbon.CodeBlock("line1\nline2\nline3")
 func CodeBlock(args ...any) *codeSnippet {
-	return mvc.NewView(new(codeSnippet), ViewCodeSnippet, "cds-code-snippet", setView,
+	snippet := mvc.NewView(new(codeSnippet), ViewCodeSnippet, "cds-code-snippet", setView,
 		mvc.WithAttr("type", "multi"), args).(*codeSnippet)
+	snippet.syncPresentation()
+	return snippet
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
+
+func (c *codeSnippet) Apply(opts ...mvc.Opt) mvc.View {
+	c.View.Apply(opts...)
+	c.syncPresentation()
+	return c
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// ENABLED STATE
 
 // Enabled reports whether the snippet's copy button is active.
 func (c *codeSnippet) Enabled() bool {
@@ -69,45 +84,32 @@ func (c *codeSnippet) SetEnabled(enabled bool) mvc.View {
 	return c
 }
 
-// SetWrapText controls whether long lines wrap instead of scroll.
-// Only meaningful for single-line snippets.
-func (c *codeSnippet) SetWrapText(wrap bool) *codeSnippet {
-	// Set the Lit component property directly — setAttribute alone is not
-	// reliable for Lit boolean properties on already-rendered elements.
-	if node, ok := c.Root().JSValue().(js.Value); ok {
-		node.Set("wrapText", wrap)
-	}
-	return c
-}
-
-// SetFeedback sets the message shown briefly after the user copies the snippet.
-// Defaults to "Copied!" when unset.
-func (c *codeSnippet) SetFeedback(msg string) *codeSnippet {
+// WithCodeFeedback returns an option that overrides the temporary copied
+// feedback message shown by the snippet. When empty, the component default is
+// used.
+func WithCodeFeedback(msg string) mvc.Opt {
 	if msg == "" {
-		c.Root().RemoveAttribute("feedback")
-	} else {
-		c.Root().SetAttribute("feedback", msg)
+		return mvc.WithoutAttr("feedback")
 	}
-	return c
+	return mvc.WithAttr("feedback", msg)
 }
 
-// SetCopyText overrides the text placed on the clipboard. When empty the
-// component copies its own visible content.
-func (c *codeSnippet) SetCopyText(text string) *codeSnippet {
+// WithCodeCopyText returns an option that overrides the text placed on the
+// clipboard. When empty, the component copies its own visible content.
+func WithCodeCopyText(text string) mvc.Opt {
 	if text == "" {
-		c.Root().RemoveAttribute("copy-text")
-	} else {
-		c.Root().SetAttribute("copy-text", text)
+		return mvc.WithoutAttr("copy-text")
 	}
-	return c
+	return mvc.WithAttr("copy-text", text)
 }
 
-// SetHideCopyButton hides or shows the copy-to-clipboard button.
-func (c *codeSnippet) SetHideCopyButton(hide bool) *codeSnippet {
-	if hide {
-		c.Root().SetAttribute("hide-copy-button", "true")
-	} else {
-		c.Root().RemoveAttribute("hide-copy-button")
+///////////////////////////////////////////////////////////////////////////////
+// PRIVATE METHODS
+
+func (c *codeSnippet) syncPresentation() {
+	root := c.Root()
+	if node, ok := root.JSValue().(js.Value); ok && !node.IsUndefined() && !node.IsNull() {
+		node.Set("wrapText", root.HasAttribute(string(CodeWrapText)))
 	}
-	return c
+	setTagBoolProperty(root, string(CodeHideCopyButton), root.HasAttribute(string(CodeHideCopyButton)))
 }

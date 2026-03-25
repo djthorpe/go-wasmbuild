@@ -38,12 +38,22 @@ func main() {
 	// Side bar navigation
 	SideNav := carbon.SideNav(
 		carbon.SideNavGroup("Content",
-			carbon.SideNavGroupItem("#heading", "Headings"),
-			carbon.SideNavGroupItem("#text", "Text"),
+			carbon.SideNavGroupItem("#heading", "Head"),
+			carbon.SideNavGroupItem("#para", "Para"),
+			carbon.SideNavGroupItem("#lead", "Lead"),
+			carbon.SideNavGroupItem("#compact", "Compact"),
+			carbon.SideNavGroupItem("#blockquote", "Blockquote"),
+			carbon.SideNavGroupItem("#link", "Link"),
+			carbon.SideNavGroupItem("#deleted", "Deleted"),
+			carbon.SideNavGroupItem("#highlighted", "Highlighted"),
+			carbon.SideNavGroupItem("#strong", "Strong"),
+			carbon.SideNavGroupItem("#smaller", "Smaller"),
+			carbon.SideNavGroupItem("#em", "Em"),
 			carbon.SideNavGroupItem("#markdown", "Markdown"),
-			carbon.SideNavGroupItem("#code", "Source Code"),
-			carbon.SideNavGroupItem("#icon", "Icons"),
-			carbon.SideNavGroupItem("#grid", "Grids"),
+			carbon.SideNavGroupItem("#code", "Code"),
+			carbon.SideNavGroupItem("#codeblock", "CodeBlock"),
+			carbon.SideNavGroupItem("#icon", "Icon"),
+			carbon.SideNavGroupItem("#grid", "Grid"),
 		),
 		carbon.SideNavGroup("Components",
 			carbon.SideNavGroupItem("#button", "Button"),
@@ -126,9 +136,19 @@ func router(nav mvc.View) mvc.View {
 	return mvc.Router().
 		Active(nav.(mvc.ActiveGroup)).
 		Page("#heading", carbon.Page(content.HeadingView()...), nav.(ItemSelector).Item("#heading")).
-		Page("#text", carbon.Page(content.TextView()...), nav.(ItemSelector).Item("#text")).
+		Page("#para", carbon.Page(content.ParaView()...), nav.(ItemSelector).Item("#para")).
+		Page("#lead", carbon.Page(content.LeadView()...), nav.(ItemSelector).Item("#lead")).
+		Page("#compact", carbon.Page(content.CompactView()...), nav.(ItemSelector).Item("#compact")).
+		Page("#blockquote", carbon.Page(content.BlockquoteView()...), nav.(ItemSelector).Item("#blockquote")).
+		Page("#link", carbon.Page(content.LinkView()...), nav.(ItemSelector).Item("#link")).
+		Page("#deleted", carbon.Page(content.DeletedView()...), nav.(ItemSelector).Item("#deleted")).
+		Page("#highlighted", carbon.Page(content.HighlightedView()...), nav.(ItemSelector).Item("#highlighted")).
+		Page("#strong", carbon.Page(content.StrongView()...), nav.(ItemSelector).Item("#strong")).
+		Page("#smaller", carbon.Page(content.SmallerView()...), nav.(ItemSelector).Item("#smaller")).
+		Page("#em", carbon.Page(content.EmView()...), nav.(ItemSelector).Item("#em")).
 		Page("#markdown", carbon.Page(content.MarkdownView()...), nav.(ItemSelector).Item("#markdown")).
 		Page("#code", carbon.Page(content.CodeView()...), nav.(ItemSelector).Item("#code")).
+		Page("#codeblock", carbon.Page(content.CodeBlockView()...), nav.(ItemSelector).Item("#codeblock")).
 		Page("#icon", carbon.Page(content.IconView()...), nav.(ItemSelector).Item("#icon")).
 		Page("#grid", carbon.Page(content.GridView()...), nav.(ItemSelector).Item("#grid")).
 		Page("#button", carbon.Page(button.View()...), nav.(ItemSelector).Item("#button")).

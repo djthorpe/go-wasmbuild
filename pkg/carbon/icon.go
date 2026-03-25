@@ -37,6 +37,7 @@ const (
 )
 
 var _ mvc.View = (*icon)(nil)
+var _ mvc.ValueState = (*icon)(nil)
 
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
@@ -51,7 +52,7 @@ func init() {
 // Only the icons exported by this package are guaranteed to resolve.
 func Icon(name IconName, args ...any) *icon {
 	i := mvc.NewView(new(icon), ViewIcon, "cds-icon", setView, args).(*icon)
-	i.SetIcon(name)
+	i.SetValue(string(name))
 	return i
 }
 
@@ -60,33 +61,29 @@ func Icon(name IconName, args ...any) *icon {
 
 func (i *icon) Apply(opts ...mvc.Opt) mvc.View {
 	i.View.Apply(opts...)
-	if name := i.IconName(); name != "" {
-		setIconProperty(i.Root(), iconProperty(name, i.Size()))
+	if name := IconName(i.Value()); name != "" {
+		setIconProperty(i.Root(), iconProperty(name, currentIconSize(i.Root())))
 	}
 	return i
 }
 
-// IconName returns the current bundled icon name.
-func (i *icon) IconName() IconName {
-	return IconName(i.Root().GetAttribute("data-carbon-icon"))
+// Value returns the current bundled icon name.
+func (i *icon) Value() string {
+	return i.Root().GetAttribute("data-carbon-icon")
 }
 
-// SetIcon updates the icon property on the underlying Carbon web component.
-func (i *icon) SetIcon(name IconName) *icon {
+// SetValue updates the icon glyph using a bundled icon name.
+func (i *icon) SetValue(value string) mvc.View {
 	root := i.Root()
+	name := IconName(value)
 	if name == "" {
 		root.RemoveAttribute("data-carbon-icon")
 		setIconProperty(root, js.Undefined())
 		return i
 	}
 	root.SetAttribute("data-carbon-icon", string(name))
-	setIconProperty(root, iconProperty(name, i.Size()))
+	setIconProperty(root, iconProperty(name, currentIconSize(root)))
 	return i
-}
-
-// Size returns the icon size, defaulting to 16 when unset or invalid.
-func (i *icon) Size() IconSize {
-	return normalizeIconSize(IconSize(i.Root().GetAttribute("size")))
 }
 
 // Label returns the icon's accessible name (aria-label).
@@ -118,6 +115,10 @@ func normalizeIconSize(size IconSize) IconSize {
 	default:
 		return IconSize16
 	}
+}
+
+func currentIconSize(root dom.Element) IconSize {
+	return normalizeIconSize(IconSize(root.GetAttribute("size")))
 }
 
 func iconProperty(name IconName, size IconSize) js.Value {

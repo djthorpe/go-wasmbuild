@@ -2,18 +2,15 @@
 description: Buttons are used to initialize an action. Button labels express what action will occur when the user interacts with it.
 ---
 
-#### Constructors
+# Button
+
+## Constructors
 
 |Constructor|Description|
 |----|----|
 |`carbon.Button(args ...any)`|Returns a `cds-button` view. Accepts content, `carbon.With(...)` options, and standard `mvc` options.|
 
-Related components:
-
-* [CloseButton](CloseButton.md)
-* [ButtonGroup](ButtonGroup.md)
-
-#### Basic usage
+## Basic Usage
 
 ```go
 save := carbon.Button(
@@ -29,18 +26,18 @@ save.AddEventListener(carbon.EventClick, func(e dom.Event) {
 Buttons can contain text, an icon, or both.
 
 ```go
+icon := carbon.Icon(
+  carbon.IconArrowRight, 
+  carbon.With(carbon.IconSize20),
+)
 next := carbon.Button(
  carbon.With(carbon.KindSecondary),
  "Next",
- carbon.Icon(carbon.IconArrowRight, carbon.With(carbon.IconSize20)),
+ icon,
 )
 ```
 
-#### Icon-only buttons
-
-If a button contains only an icon and no text, choose the button kind explicitly to match the emphasis you want.
-
-Icon-only buttons should have an accessible label:
+If a button contains only an icon and no text, choose the button kind explicitly to match the emphasis you want. Icon-only buttons should have an accessible label:
 
 ```go
 settings := carbon.Button(
@@ -51,7 +48,7 @@ settings := carbon.Button(
 
 `SetLabel` updates both `aria-label` and the Carbon tooltip text.
 
-#### Appearance
+## Appearance
 
 |Property|`With` and `Apply` values|
 |----|----|
@@ -77,7 +74,7 @@ carbon.Button(
 )
 ```
 
-#### State and values
+## State
 
 Buttons support enabled, value, and label helpers:
 
@@ -101,22 +98,24 @@ run.AddEventListener(carbon.EventClick, func(e dom.Event) {
 })
 ```
 
-#### Events
+## Events
 
 |Event|Description|
 |----|----|
-|EventClick|User clicks the button.|
-|EventHover|Pointer enters the button.|
-|EventNoHover|Pointer leaves the button.|
-|EventFocus|Button gains focus.|
-|EventNoFocus|Button loses focus.|
+|`EventClick`|User clicks the button.|
+|`EventHover`|Pointer enters the button.|
+|`EventNoHover`|Pointer leaves the button.|
+|`EventFocus`|Button gains focus.|
+|`EventNoFocus`|Button loses focus.|
 
-#### Notes
+## Notes
 
 * Icons added to a button are automatically placed into the `icon` slot.
 * Button icons default to `aria-hidden="true"` unless you assign them an accessible label.
 * Icon-only buttons should set their kind explicitly with `carbon.With(...)`.
 
-#### References
+## References
 
+* [CloseButton](CloseButton.md)
+* [ButtonGroup](ButtonGroup.md)
 * [Carbon Design System](https://carbondesignsystem.com/components/button/usage/)

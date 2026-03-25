@@ -10,9 +10,7 @@ import (
 // TYPES
 
 type table struct{ base }
-
 type tableHeader struct{ base }
-
 type tableRow struct{ base }
 
 var _ mvc.View = (*table)(nil)

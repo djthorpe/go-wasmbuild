@@ -81,6 +81,12 @@ const (
 	LinkInline Attr = "inline"
 )
 
+// Code snippet appearance flags.
+const (
+	CodeWrapText       Attr = "wrap-text"
+	CodeHideCopyButton Attr = "hide-copy-button"
+)
+
 // Carbon colour themes — applied as CSS class (.cds--white, .cds--g10, etc.).
 const (
 	ThemeWhite Attr = "white" // default light theme → .cds--white
@@ -109,11 +115,16 @@ var attrKey = func() map[Attr]string {
 	for _, k := range []Attr{LinkInline} {
 		m[k] = string(k)
 	}
+	for _, k := range []Attr{CodeWrapText, CodeHideCopyButton} {
+		m[k] = string(k)
+	}
 	return m
 }()
 
 var booleanAttrs = map[Attr]struct{}{
-	LinkInline: {},
+	LinkInline:         {},
+	CodeWrapText:       {},
+	CodeHideCopyButton: {},
 }
 
 var themeAttrs = map[Attr]struct{}{

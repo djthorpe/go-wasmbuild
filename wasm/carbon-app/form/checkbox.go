@@ -18,7 +18,7 @@ type checkable interface {
 
 func CheckboxView() []any {
 	return []any{
-		mvc.HTML("DIV", mvc.WithStyle("padding:1.5rem 2rem"), carbon.Head(1, "Checkboxes")),
+		storybook.PageHeader("Checkboxes", "Checkbox.md"),
 		carbon.Section(
 			mvc.WithStyle("padding:1.5rem 2rem"),
 			carbon.With(carbon.ThemeWhite),
