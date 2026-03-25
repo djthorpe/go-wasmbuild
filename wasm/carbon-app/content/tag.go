@@ -29,7 +29,7 @@ var tagSizes = []carbon.Attr{carbon.SizeSmall, carbon.SizeMedium, carbon.SizeLar
 
 func TagView() []any {
 	return []any{
-		mvc.HTML("DIV", mvc.WithStyle("padding:1.5rem 2rem"), carbon.Head(1, "Tags")),
+		storybook.PageHeader("Tags", "Tag.md"),
 		carbon.Section(
 			mvc.WithStyle("padding:1.5rem 2rem"),
 			carbon.With(carbon.ThemeWhite),

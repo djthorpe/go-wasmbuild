@@ -51,6 +51,7 @@ type Event interface {
 type EventTarget interface {
 	AddEventListener(string, func(Event))
 	RemoveEventListener(string)
+	DispatchEvent(Event)
 }
 
 // Element implements https://developer.mozilla.org/en-US/docs/Web/API/Element

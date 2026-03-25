@@ -29,7 +29,7 @@ type inputValue interface {
 
 func InputView() []any {
 	return []any{
-		mvc.HTML("DIV", mvc.WithStyle("padding:1.5rem 2rem"), carbon.Head(1, "Inputs")),
+		storybook.PageHeader("Inputs", "Input.md"),
 		carbon.Section(
 			mvc.WithStyle("padding:1.5rem 2rem"),
 			carbon.With(carbon.ThemeWhite),

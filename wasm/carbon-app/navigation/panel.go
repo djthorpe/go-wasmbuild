@@ -12,7 +12,7 @@ var panelSizes = []carbon.Attr{"16rem", "24rem", "32rem"}
 
 func PanelView() []any {
 	return []any{
-		mvc.HTML("DIV", mvc.WithStyle("padding:1.5rem 2rem"), carbon.Head(1, "Panels")),
+		storybook.PageHeader("HeaderPanel", "HeaderPanel.md"),
 		carbon.Section(
 			mvc.WithStyle("padding:1.5rem 2rem"),
 			carbon.With(carbon.ThemeWhite),

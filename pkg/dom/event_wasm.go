@@ -117,3 +117,15 @@ func (e *eventtarget) RemoveEventListener(eventType string) {
 		delete(e.listeners, eventType)
 	}
 }
+
+func (e *eventtarget) DispatchEvent(evt Event) {
+	if e.IsUndefined() || e.IsNull() {
+		panic("EventTarget Value is nil")
+	}
+	if evt == nil {
+		return
+	}
+	if event, ok := evt.(*event); ok {
+		e.Value.Call("dispatchEvent", event.Value)
+	}
+}

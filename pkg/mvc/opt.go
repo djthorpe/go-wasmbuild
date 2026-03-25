@@ -86,6 +86,17 @@ func applyOpts(element dom.Element, opts ...Opt) error {
 		element.SetAttribute("class", strings.Join(o.Classes(), " "))
 	}
 
+	// Remove attributes that were deleted by options.
+	for _, attr := range element.Attributes() {
+		attrName := attr.Name()
+		if attrName == "id" || attrName == "class" || attrName == DataComponentAttrKey {
+			continue
+		}
+		if _, exists := o.attr[attrName]; !exists {
+			element.RemoveAttribute(attrName)
+		}
+	}
+
 	// Apply attributes if set
 	for key, value := range o.attr {
 		element.SetAttribute(key, value)

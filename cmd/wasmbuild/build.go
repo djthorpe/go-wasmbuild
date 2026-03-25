@@ -220,6 +220,12 @@ func (c Config) BuildContext(ctx *Context, path, output string, watch bool) (*Bu
 			}
 			return filepath.Base(path) + ".wasm"
 		},
+		"Build": func() bool {
+			return watch
+		},
+		"Serve": func() bool {
+			return watch == false
+		},
 	}
 	wasmExecHTML, err := NewFileFromTemplate(etc.WasmExecHTML, "wasm_exec.html", c.Vars, funcs)
 	if err != nil {

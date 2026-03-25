@@ -15,27 +15,25 @@ import (
 // DefaultThemes keeps the example stories aligned on the same Carbon theme set.
 var DefaultThemes = []carbon.Attr{carbon.ThemeWhite, carbon.ThemeG10, carbon.ThemeG90, carbon.ThemeG100}
 
-var codePanel struct {
+var docsPanel struct {
 	panel mvc.VisibleState
-	title mvc.View
-	code  mvc.View
+	body  mvc.View
 }
 
-var codeExamples = map[string]string{}
+var componentDocs = map[string]string{}
 
-// SetCodePanel wires the shared example panel used by story headers.
-func SetCodePanel(panel mvc.VisibleState, title, code mvc.View) {
-	codePanel.panel = panel
-	codePanel.title = title
-	codePanel.code = code
+// SetDocsPanel wires the shared documentation panel used by page headers.
+func SetDocsPanel(panel mvc.VisibleState, body mvc.View) {
+	docsPanel.panel = panel
+	docsPanel.body = body
 }
 
-// RegisterCodeExample stores a code sample for a story title.
-func RegisterCodeExample(title, code string) {
+// RegisterComponentDoc associates a story title with an embedded component doc.
+func RegisterComponentDoc(title, filename string) {
 	if strings.TrimSpace(title) == "" {
 		return
 	}
-	codeExamples[title] = strings.TrimSpace(code)
+	componentDocs[title] = strings.TrimSpace(filename)
 }
 
 // Story builds a reusable component demo frame for the example app.
@@ -63,44 +61,58 @@ func Story(title, description string, preview mvc.View, observed mvc.View, contr
 }
 
 func storyHeader(title string) dom.Element {
-	children := []any{carbon.Head(2, title)}
-	if link := codeLink(title); link != nil {
-		children = append(children, link)
-	}
 	return mvc.HTML("DIV",
-		append([]any{mvc.WithStyle("display:flex;align-items:center;gap:0.5rem")}, children...)...,
+		mvc.WithStyle("display:flex;align-items:center;gap:0.5rem"),
+		carbon.Head(2, title),
 	)
 }
 
-func codeLink(title string) mvc.View {
-	if codePanel.panel == nil || codePanel.title == nil || codePanel.code == nil {
+// PageHeader builds a top-level component page heading with a single docs link.
+func PageHeader(title, filename string) dom.Element {
+	RegisterComponentDoc(title, filename)
+	row := []any{carbon.Head(1, title)}
+	if link := docsLink(title); link != nil {
+		row = append(row, link)
+	}
+	children := []any{mvc.HTML("DIV",
+		append([]any{mvc.WithStyle("display:flex;align-items:center;gap:0.75rem")}, row...)...,
+	)}
+	if description, err := componentDocDescription(filename); err == nil && description != "" {
+		children = append(children, carbon.Lead(description))
+	}
+	return mvc.HTML("DIV",
+		append([]any{mvc.WithStyle("padding:1.5rem 2rem")}, children...)...,
+	)
+}
+
+func docsLink(title string) mvc.View {
+	if docsPanel.panel == nil || docsPanel.body == nil {
+		return nil
+	}
+	if strings.TrimSpace(componentDocs[title]) == "" {
 		return nil
 	}
 	link := carbon.Link(
 		"javascript:void(0)",
 		carbon.With(carbon.LinkInline, carbon.SizeSmall),
 		carbon.Icon(carbon.IconLaunch, carbon.With(carbon.IconSize16)),
-	).SetLabel("View code for " + title)
+	).SetLabel("View docs for " + title)
 	link.AddEventListener(carbon.EventClick, func(dom.Event) {
-		openCodeExample(title)
+		openComponentDoc(title)
 	})
 	return link
 }
 
-func openCodeExample(title string) {
-	if codePanel.panel == nil || codePanel.title == nil || codePanel.code == nil {
+func openComponentDoc(title string) {
+	if docsPanel.panel == nil || docsPanel.body == nil {
 		return
 	}
-	codePanel.title.Content(title)
-	codePanel.code.Content(codeExample(title))
-	codePanel.panel.SetVisible(true)
-}
-
-func codeExample(title string) string {
-	if code, ok := codeExamples[title]; ok && strings.TrimSpace(code) != "" {
-		return code
+	filename := componentDocs[title]
+	if strings.TrimSpace(filename) == "" {
+		return
 	}
-	return fmt.Sprintf("// Code example for %q has not been added yet.\n// Register one with storybook.RegisterCodeExample(...).", title)
+	docsPanel.body.Content(ComponentDoc(filename))
+	docsPanel.panel.SetVisible(true)
 }
 
 // Dropdown builds a Carbon dropdown for a set of Attr options.

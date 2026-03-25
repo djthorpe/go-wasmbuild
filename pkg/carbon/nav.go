@@ -68,59 +68,6 @@ func init() {
 }
 
 // Header returns a <cds-header> UI shell header.
-func Header(args ...any) *navgroup {
-	opts, body, global := splitHeaderArgs(args...)
-	n := mvc.NewView(new(navgroup), ViewNav, templateShellHeader, setView, opts).(*navgroup)
-	n.items = navItems(body...)
-	n.ReplaceSlotChildren("body", body...)
-	if global != nil {
-		n.ReplaceSlot("global", global)
-	}
-	bindNavItemClicks(n.items, func(item *navitem) {
-		n.SetActive(item)
-	})
-	return n
-}
-
-// HeaderNavGlobal returns the right-aligned global actions container for a header.
-func HeaderNavGlobal(args ...any) *navglobal {
-	adapted := adaptHeaderGlobalArgs(args...)
-	return mvc.NewView(new(navglobal), ViewNavGlobal, "div", setView, append([]any{mvc.WithClass("cds--header__global")}, adapted...)...).(*navglobal)
-}
-
-// HeaderNavItem returns a <cds-header-nav-item> link for the header menu bar.
-func HeaderNavItem(href string, args ...any) *navitem {
-	return mvc.NewView(new(navitem), ViewNavItem, "cds-header-nav-item", setView, append([]any{mvc.WithAttr("href", href)}, args...)...).(*navitem)
-}
-
-// SideNav returns a <cds-side-nav> shell panel.
-func SideNav(args ...any) *navgroup {
-	n := mvc.NewView(new(navgroup), ViewNav, templateShellSideNav, setView, args).(*navgroup)
-	n.items = navItems(args...)
-	return n
-}
-
-// SideNavLink returns a <cds-side-nav-link> top-level navigation entry.
-func SideNavLink(href string, args ...any) *navitem {
-	return mvc.NewView(new(navitem), ViewNavItem, "cds-side-nav-link", setView, append([]any{mvc.WithAttr("href", href)}, args...)...).(*navitem)
-}
-
-// SideNavGroup returns a <cds-side-nav-menu> collapsible navigation group.
-func SideNavGroup(title string, args ...any) *navitem {
-	n := mvc.NewView(new(navitem), ViewNavItem, "cds-side-nav-menu", setView, append([]any{mvc.WithAttr("title", title), mvc.WithAttr("expanded", "")}, args...)...).(*navitem)
-	if strings.TrimSpace(n.Root().Value()) == "" && !n.Root().HasAttribute("value") {
-		n.Root().SetValue(title)
-		n.Root().SetAttribute("value", title)
-	}
-	n.items = navItems(args...)
-	return n
-}
-
-// SideNavGroupItem returns a <cds-side-nav-menu-item> for a SideNavGroup.
-func SideNavGroupItem(href string, args ...any) *navitem {
-	return mvc.NewView(new(navitem), ViewNavItem, "cds-side-nav-menu-item", setView, append([]any{mvc.WithAttr("href", href)}, args...)...).(*navitem)
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS - NAV
 
@@ -143,7 +90,15 @@ func (n *navgroup) SetLabel(href, prefix string, args ...any) *navgroup {
 }
 
 // SetActive marks the supplied nav items active and clears the rest.
-func (n *navgroup) SetActive(views ...mvc.View) {
+func (n *navgroup) Active() []mvc.View {
+	active := make([]mvc.View, 0)
+	for _, item := range n.items {
+		collectActiveNavItems(item, &active)
+	}
+	return active
+}
+
+func (n *navgroup) SetActive(views ...mvc.View) mvc.View {
 	active := make(map[dom.Element]struct{}, len(views))
 	for _, view := range views {
 		if view != nil {
@@ -153,6 +108,7 @@ func (n *navgroup) SetActive(views ...mvc.View) {
 	for _, item := range n.items {
 		setNavItemActive(item, active)
 	}
+	return n
 }
 
 // Item returns the first navigation item whose href matches the supplied value.
@@ -210,7 +166,7 @@ func (n *navitem) Enabled() bool {
 }
 
 // SetEnabled enables or disables the navigation item.
-func (n *navitem) SetEnabled(enabled bool) *navitem {
+func (n *navitem) SetEnabled(enabled bool) mvc.View {
 	if enabled {
 		n.Root().RemoveAttribute("disabled")
 	} else {
@@ -225,7 +181,7 @@ func (n *navitem) Active() bool {
 }
 
 // SetActive marks the navigation item active or inactive.
-func (n *navitem) SetActive(active bool) *navitem {
+func (n *navitem) SetActive(active bool) mvc.View {
 	setNavItemActiveElement(n.Root(), active)
 	return n
 }
@@ -353,6 +309,8 @@ func adaptHeaderGlobalArgs(args ...any) []any {
 			adapted = append(adapted, adaptHeaderGlobalArgs(value...)...)
 		case *button:
 			adapted = append(adapted, adaptHeaderGlobalButton(value))
+		case *overflowMenu:
+			adapted = append(adapted, adaptHeaderGlobalOverflowMenu(value))
 		default:
 			adapted = append(adapted, value)
 		}
@@ -391,6 +349,17 @@ func adaptHeaderGlobalButton(b *button) *button {
 	adapted := mvc.NewView(new(button), ViewButton, "cds-header-global-action", setView, args...).(*button)
 	setView(b, adapted)
 	return b
+}
+
+func adaptHeaderGlobalOverflowMenu(menu *overflowMenu) *overflowMenu {
+	if menu == nil {
+		return nil
+	}
+	root := menu.Root()
+	root.SetAttribute("toolbar-action", "")
+	menu.SetFlipped(true)
+	root.ClassList().Add("cds--header__action")
+	return menu
 }
 
 func bindNavItemClicks(items []*navitem, onClick func(*navitem)) {
@@ -450,4 +419,16 @@ func navItemActiveAttrs(tagName string) []string {
 		return []string{"is-active"}
 	}
 	return []string{"active"}
+}
+
+func collectActiveNavItems(item *navitem, active *[]mvc.View) {
+	if item == nil {
+		return
+	}
+	if item.Active() {
+		*active = append(*active, item)
+	}
+	for _, child := range item.items {
+		collectActiveNavItems(child, active)
+	}
 }

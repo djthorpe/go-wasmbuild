@@ -35,7 +35,7 @@ var dropdownAssignees = []carbon.Attr{
 
 func DropdownView() []any {
 	return []any{
-		mvc.HTML("DIV", mvc.WithStyle("padding:1.5rem 2rem"), carbon.Head(1, "Dropdowns")),
+		storybook.PageHeader("Dropdowns", "Dropdown.md"),
 		carbon.Section(
 			mvc.WithStyle("padding:1.5rem 2rem"),
 			carbon.With(carbon.ThemeWhite),
@@ -191,7 +191,7 @@ func makeDropdownItems(values []carbon.Attr) ([]dropdownChoice, []any) {
 	return items, args
 }
 
-func setDropdownSelection(dd interface{ SetActive(...mvc.View) }, items []dropdownChoice, selected carbon.Attr) {
+func setDropdownSelection(dd mvc.ActiveGroup, items []dropdownChoice, selected carbon.Attr) {
 	active := make([]mvc.View, 0, 1)
 	for _, item := range items {
 		if item.Value() == string(selected) {

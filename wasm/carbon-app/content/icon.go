@@ -30,7 +30,7 @@ func IconView() []any {
 	})
 
 	return []any{
-		mvc.HTML("DIV", mvc.WithStyle("padding:1.5rem 2rem"), carbon.Head(1, "Icons")),
+		storybook.PageHeader("Icon", "Icon.md"),
 		carbon.Section(
 			mvc.WithStyle("padding:1.5rem 2rem"),
 			carbon.With(carbon.ThemeWhite),
@@ -71,9 +71,9 @@ func iconPlaygroundStory(onSelect *func(IconEntry)) dom.Element {
 	)
 
 	refresh := func() {
-		// Set size attribute before calling SetIcon so i.Size() picks it up.
+		// Set size before applying the icon value so the resolved icon asset uses the current size.
 		iconEl.Root().SetAttribute("size", string(currentSize))
-		iconEl.SetIcon(currentEntry.ID)
+		iconEl.SetValue(string(currentEntry.ID))
 		nameLabel.Root().SetInnerHTML(currentEntry.Name)
 		idLabel.Root().SetInnerHTML(string(currentEntry.ID))
 

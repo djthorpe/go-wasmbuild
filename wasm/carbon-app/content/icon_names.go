@@ -4,7 +4,6 @@ package content
 
 import (
 	"strings"
-
 	carbon "github.com/djthorpe/go-wasmbuild/pkg/carbon"
 )
 

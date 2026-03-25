@@ -47,7 +47,7 @@ var (
 
 func View() []any {
 	return []any{
-		mvc.HTML("DIV", mvc.WithStyle("padding:1.5rem 2rem"), carbon.Head(1, "Buttons")),
+		storybook.PageHeader("Button", "Button.md"),
 		carbon.Section(
 			mvc.WithStyle("padding:1.5rem 2rem"),
 			carbon.With(carbon.ThemeG10),
@@ -60,7 +60,8 @@ func View() []any {
 
 func basicButtonStory() dom.Element {
 	// Create the button and the canvas
-	btn := carbon.Button(carbon.With(carbon.KindPrimary), "Example button").SetValue("example-button")
+	btn := carbon.Button(carbon.With(carbon.KindPrimary), "Example button")
+	btn.SetValue("example-button")
 	canvas := carbon.Section(mvc.WithClass("canvas"), btn)
 
 	// Return the story
@@ -87,7 +88,8 @@ func basicButtonStory() dom.Element {
 func iconButtonStory() dom.Element {
 	// Create the icon, button and the canvas
 	icon := carbon.Icon(carbon.IconLaunch, carbon.With(carbon.IconSize16))
-	btn := carbon.Button(carbon.With(carbon.KindPrimary), "Icon button", icon).SetValue("icon-button")
+	btn := carbon.Button(carbon.With(carbon.KindPrimary), "Icon button", icon)
+	btn.SetValue("icon-button")
 	canvas := carbon.Section(mvc.WithClass("canvas"), btn)
 
 	return storybook.Story(
@@ -105,7 +107,7 @@ func iconButtonStory() dom.Element {
 			btn.Apply(carbon.With(a)...)
 		}),
 		storybook.IconDropdown("Icon", carbon.IconLaunch, buttonIcons, func(name carbon.IconName) {
-			icon.SetIcon(name)
+			icon.SetValue(string(name))
 		}),
 	)
 }
@@ -113,7 +115,9 @@ func iconButtonStory() dom.Element {
 func iconOnlyButtonStory() dom.Element {
 	// Create the icon, button and the canvas
 	icon := carbon.Icon(carbon.IconLaunch, carbon.With(carbon.IconSize16))
-	btn := carbon.Button(carbon.With(carbon.KindPrimary), icon).SetValue("icon-only-button").SetLabel(buttonIconLabels[carbon.IconLaunch])
+	btn := carbon.Button(carbon.With(carbon.KindPrimary), icon)
+	btn.SetValue("icon-only-button")
+	btn.SetLabel(buttonIconLabels[carbon.IconLaunch])
 	canvas := carbon.Section(mvc.WithClass("canvas"), btn)
 
 	return storybook.Story(
@@ -131,7 +135,7 @@ func iconOnlyButtonStory() dom.Element {
 			btn.Apply(carbon.With(a)...)
 		}),
 		storybook.IconDropdown("Icon", carbon.IconSettings, buttonIcons, func(name carbon.IconName) {
-			icon.SetIcon(name)
+			icon.SetValue(string(name))
 			btn.SetLabel(buttonIconLabels[name])
 		}),
 	)

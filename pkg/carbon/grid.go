@@ -49,8 +49,8 @@ func gridColumn(span int, args ...any) *grid {
 		mvc.WithClass("cds--css-grid-column", fmt.Sprintf("cds--col-span-%d", span)), args).(*grid)
 }
 
-// Col spans 1 of 16 columns.
-func Col(args ...any) *grid {
+// Col1 spans 1 of 16 columns.
+func Col1(args ...any) *grid {
 	return gridColumn(1, args...)
 }
 
@@ -89,10 +89,10 @@ func Col16(args ...any) *grid {
 	return gridColumn(16, args...)
 }
 
-// ColSpan spans n of 16 columns, where n must be between 1 and 16.
-func ColSpan(n int, args ...any) *grid {
+// Col spans n of 16 columns, where n must be between 1 and 16.
+func Col(n int, args ...any) *grid {
 	if n < 1 || n > 16 {
-		panic(fmt.Sprintf("carbon.ColSpan: n must be 1–16, got %d", n))
+		panic(fmt.Sprintf("carbon.Col: n must be 1–16, got %d", n))
 	}
 	return gridColumn(n, args...)
 }

@@ -11,10 +11,7 @@ import (
 
 type form struct{ base }
 
-type formGroup struct{ base }
-
 var _ mvc.View = (*form)(nil)
-var _ mvc.View = (*formGroup)(nil)
 
 ///////////////////////////////////////////////////////////////////////////////
 // LIFECYCLE
@@ -23,9 +20,6 @@ func init() {
 	mvc.RegisterView(ViewForm, func(element dom.Element) mvc.View {
 		return mvc.NewViewWithElement(new(form), element, setView)
 	}, EventInput, EventChange, EventInvalid, EventFocusBubbled, EventNoFocus)
-	mvc.RegisterView(ViewFormGroup, func(element dom.Element) mvc.View {
-		return mvc.NewViewWithElement(new(formGroup), element, setView)
-	}, EventFocusBubbled, EventNoFocus)
 }
 
 // Form returns a <cds-form> web component.
@@ -59,36 +53,6 @@ func (f *form) RemoveEventListener(event string) mvc.View {
 	}
 	f.View.RemoveEventListener(formContainerEvent(event))
 	return f
-}
-
-// FormGroup returns a <cds-form-group> web component.
-func FormGroup(args ...any) *formGroup {
-	return mvc.NewView(new(formGroup), ViewFormGroup, "cds-form-group", setView, args).(*formGroup)
-}
-
-// AddEventListener registers an event handler on the form group.
-// Focus is mapped to the bubbling focusin signal so descendant field focus is
-// observable from the group root.
-func (g *formGroup) AddEventListener(event string, handler func(dom.Event)) mvc.View {
-	g.View.AddEventListener(formContainerEvent(event), handler)
-	return g
-}
-
-// RemoveEventListener removes an event handler from the form group.
-func (g *formGroup) RemoveEventListener(event string) mvc.View {
-	g.View.RemoveEventListener(formContainerEvent(event))
-	return g
-}
-
-// Label returns the form group's legend text.
-func (g *formGroup) Label() string {
-	return g.Root().GetAttribute("legend-text")
-}
-
-// SetLabel sets the form group's legend text.
-func (g *formGroup) SetLabel(text string) *formGroup {
-	g.Root().SetAttribute("legend-text", text)
-	return g
 }
 
 func formContainerEvent(event string) string {

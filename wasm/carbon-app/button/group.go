@@ -10,7 +10,7 @@ import (
 
 func GroupView() []any {
 	return []any{
-		mvc.HTML("DIV", mvc.WithStyle("padding:1.5rem 2rem"), carbon.Head(1, "Button Groups")),
+		storybook.PageHeader("ButtonGroup", "ButtonGroup.md"),
 		carbon.Section(
 			mvc.WithStyle("padding:1.5rem 2rem"),
 			carbon.With(carbon.ThemeG10),
@@ -70,10 +70,18 @@ func basicButtonGroupStory() dom.Element {
 }
 
 func toolbarButtonGroupStory() dom.Element {
-	newBtn := carbon.Button(carbon.Icon(carbon.IconAdd, carbon.With(carbon.IconSize20))).SetValue("toolbar-new").SetLabel("New")
-	searchBtn := carbon.Button(carbon.Icon(carbon.IconSearch, carbon.With(carbon.IconSize20))).SetValue("toolbar-search").SetLabel("Search")
-	settingsBtn := carbon.Button(carbon.Icon(carbon.IconSettings, carbon.With(carbon.IconSize20))).SetValue("toolbar-settings").SetLabel("Settings")
-	profileBtn := carbon.Button(carbon.Icon(carbon.IconUserAvatar, carbon.With(carbon.IconSize20))).SetValue("toolbar-profile").SetLabel("Profile")
+	newBtn := carbon.Button(carbon.Icon(carbon.IconAdd, carbon.With(carbon.IconSize20)))
+	newBtn.SetValue("toolbar-new")
+	newBtn.SetLabel("New")
+	searchBtn := carbon.Button(carbon.Icon(carbon.IconSearch, carbon.With(carbon.IconSize20)))
+	searchBtn.SetValue("toolbar-search")
+	searchBtn.SetLabel("Search")
+	settingsBtn := carbon.Button(carbon.Icon(carbon.IconSettings, carbon.With(carbon.IconSize20)))
+	settingsBtn.SetValue("toolbar-settings")
+	settingsBtn.SetLabel("Settings")
+	profileBtn := carbon.Button(carbon.Icon(carbon.IconUserAvatar, carbon.With(carbon.IconSize20)))
+	profileBtn.SetValue("toolbar-profile")
+	profileBtn.SetLabel("Profile")
 
 	leftGroup := carbon.ButtonGroup()
 	leftGroup.Content(newBtn, searchBtn)

@@ -22,7 +22,14 @@ import '@carbon/web-components/es/components/textarea/index.js';
 import '@carbon/web-components/es/components/select/index.js';
 import '@carbon/web-components/es/components/checkbox/index.js';
 import '@carbon/web-components/es/components/dropdown/index.js';
-import '@carbon/web-components/es/components/data-table/index.js';
+import '@carbon/web-components/es/components/data-table/table.js';
+import '@carbon/web-components/es/components/data-table/table-head.js';
+import '@carbon/web-components/es/components/data-table/table-body.js';
+import '@carbon/web-components/es/components/data-table/table-header-row.js';
+import '@carbon/web-components/es/components/data-table/table-header-cell.js';
+import '@carbon/web-components/es/components/data-table/table-row.js';
+import '@carbon/web-components/es/components/data-table/table-cell.js';
+import '@carbon/web-components/es/components/structured-list/index.js';
 import '@carbon/web-components/es/components/pagination/index.js';
 import '@carbon/web-components/es/components/tile/index.js';
 

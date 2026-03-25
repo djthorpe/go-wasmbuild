@@ -8,41 +8,114 @@ import (
 	storybook "github.com/djthorpe/go-wasmbuild/wasm/carbon-app/storybook"
 )
 
-func init() {
-	storybook.RegisterCodeExample("Link", `inlineLink := carbon.Link(
-	"#text",
-	carbon.With(carbon.LinkInline, carbon.SizeMedium),
-	"Read the Carbon content guidelines",
-)
-
-standaloneIcon := carbon.Icon(carbon.IconLaunch, carbon.With(carbon.IconSize20))
-standaloneLink := carbon.Link(
-	"#text",
-	carbon.With(carbon.SizeMedium),
-	"Read the Carbon content guidelines",
-	standaloneIcon,
-)
-
-iconOnlyIcon := carbon.Icon(carbon.IconLaunch, carbon.With(carbon.IconSize20))
-iconOnlyLink := carbon.Link(
-	"#text",
-	carbon.With(carbon.SizeMedium),
-	iconOnlyIcon,
-).SetLabel("Open content guidelines")`)
-}
-
-func TextView() []any {
+func ParaView() []any {
 	return []any{
-		mvc.HTML("DIV", mvc.WithStyle("padding:1.5rem 2rem"), carbon.Head(1, "Text")),
+		storybook.PageHeader("Para", "Para.md"),
 		carbon.Section(
 			mvc.WithStyle("padding:1.5rem 2rem"),
 			carbon.With(carbon.ThemeWhite),
 			paragraphStory(),
+		),
+	}
+}
+
+func LeadView() []any {
+	return []any{
+		storybook.PageHeader("Lead", "Lead.md"),
+		carbon.Section(
+			mvc.WithStyle("padding:1.5rem 2rem"),
+			carbon.With(carbon.ThemeWhite),
 			leadStory(),
+		),
+	}
+}
+
+func CompactView() []any {
+	return []any{
+		storybook.PageHeader("Compact", "Compact.md"),
+		carbon.Section(
+			mvc.WithStyle("padding:1.5rem 2rem"),
+			carbon.With(carbon.ThemeWhite),
 			compactStory(),
+		),
+	}
+}
+
+func BlockquoteView() []any {
+	return []any{
+		storybook.PageHeader("Blockquote", "Blockquote.md"),
+		carbon.Section(
+			mvc.WithStyle("padding:1.5rem 2rem"),
+			carbon.With(carbon.ThemeWhite),
 			blockquoteStory(),
-			inlineStylesStory(),
-			linkStory(),
+		),
+	}
+}
+
+func LinkView() []any {
+	return []any{
+		storybook.PageHeader("Link", "Link.md"),
+		carbon.Section(
+			mvc.WithStyle("padding:1.5rem 2rem"),
+			carbon.With(carbon.ThemeWhite),
+			inlineLinkStory(),
+			linkWithIconStory(),
+			iconOnlyLinkStory(),
+		),
+	}
+}
+
+func DeletedView() []any {
+	return []any{
+		storybook.PageHeader("Deleted", "Deleted.md"),
+		carbon.Section(
+			mvc.WithStyle("padding:1.5rem 2rem"),
+			carbon.With(carbon.ThemeWhite),
+			deletedStory(),
+		),
+	}
+}
+
+func HighlightedView() []any {
+	return []any{
+		storybook.PageHeader("Highlighted", "Highlighted.md"),
+		carbon.Section(
+			mvc.WithStyle("padding:1.5rem 2rem"),
+			carbon.With(carbon.ThemeWhite),
+			highlightedStory(),
+		),
+	}
+}
+
+func StrongView() []any {
+	return []any{
+		storybook.PageHeader("Strong", "Strong.md"),
+		carbon.Section(
+			mvc.WithStyle("padding:1.5rem 2rem"),
+			carbon.With(carbon.ThemeWhite),
+			strongStory(),
+		),
+	}
+}
+
+func SmallerView() []any {
+	return []any{
+		storybook.PageHeader("Smaller", "Smaller.md"),
+		carbon.Section(
+			mvc.WithStyle("padding:1.5rem 2rem"),
+			carbon.With(carbon.ThemeWhite),
+			smallerStory(),
+		),
+	}
+}
+
+func EmView() []any {
+	return []any{
+		storybook.PageHeader("Em", "Em.md"),
+		carbon.Section(
+			mvc.WithStyle("padding:1.5rem 2rem"),
+			carbon.With(carbon.ThemeWhite),
+			emStory(),
 		),
 	}
 }
@@ -51,7 +124,7 @@ func paragraphStory() dom.Element {
 	const copy = "Carbon body text is used for supporting copy, descriptions, and longer-form content throughout the interface. It should stay readable across themes and layouts, giving product teams a consistent baseline for explanatory content, inline guidance, and general-purpose narrative text that supports the primary task without competing with headings or controls."
 	canvas := carbon.Section(
 		mvc.WithClass("canvas"),
-		mvc.WithStyle("display:grid;gap:1rem;max-width:48rem;padding:0 1rem"),
+		mvc.WithStyle("display:grid;gap:1rem;width:100%;padding:1rem 1rem 0"),
 		carbon.Para(copy),
 	)
 
@@ -70,7 +143,7 @@ func leadStory() dom.Element {
 	const copy = "Lead text introduces a page, section, or feature with more visual presence than standard paragraph copy. It works well for summaries, opening statements, and the first block of explanatory content when you want to establish context quickly before the reader moves into denser details or supporting information."
 	canvas := carbon.Section(
 		mvc.WithClass("canvas"),
-		mvc.WithStyle("display:grid;gap:1rem;max-width:56rem;padding:0 1rem"),
+		mvc.WithStyle("display:grid;gap:1rem;width:100%;padding:1rem 1rem 0"),
 		carbon.Lead(copy),
 	)
 
@@ -89,7 +162,7 @@ func compactStory() dom.Element {
 	const copy = "Compact text is useful when space is constrained and the content plays a more supporting role, such as metadata, short descriptions, dense panels, or interface regions where the vertical rhythm needs to stay tight without sacrificing readability."
 	canvas := carbon.Section(
 		mvc.WithClass("canvas"),
-		mvc.WithStyle("display:grid;gap:1rem;max-width:56rem;padding:0 1rem"),
+		mvc.WithStyle("display:grid;gap:1rem;width:100%;padding:1rem 1rem 0"),
 		carbon.Compact(copy),
 	)
 
@@ -107,10 +180,10 @@ func compactStory() dom.Element {
 func blockquoteStory() dom.Element {
 	canvas := carbon.Section(
 		mvc.WithClass("canvas"),
-		mvc.WithStyle("display:grid;gap:1rem;max-width:56rem;padding:0 1rem"),
+		mvc.WithStyle("display:grid;gap:1rem;width:100%;padding:1rem 1rem 0"),
 		carbon.Blockquote(
 			"Good content systems need a clear typographic hierarchy so that long-form material remains readable without losing structure or emphasis.",
-		).Label("Carbon text storybook"),
+		).SetLabel("Carbon text storybook"),
 	)
 
 	return storybook.Story(
@@ -124,21 +197,56 @@ func blockquoteStory() dom.Element {
 	)
 }
 
-func inlineStylesStory() dom.Element {
+func deletedStory() dom.Element {
+	return inlineTextStory(
+		"Deleted",
+		"Deleted text is useful for showing removed or superseded inline content.",
+		carbon.Para("Previous wording: ", carbon.Deleted("deprecated")),
+	)
+}
+
+func highlightedStory() dom.Element {
+	return inlineTextStory(
+		"Highlighted",
+		"Highlighted text draws attention to inline content without changing document flow.",
+		carbon.Para("Status: ", carbon.Highlighted("needs review")),
+	)
+}
+
+func strongStory() dom.Element {
+	return inlineTextStory(
+		"Strong",
+		"Strong emphasis increases visual weight for important inline text.",
+		carbon.Para(carbon.Strong("Important:"), " Confirm the deployment window before release."),
+	)
+}
+
+func smallerStory() dom.Element {
+	return inlineTextStory(
+		"Smaller",
+		"Smaller text is suited to compact supporting details and secondary metadata.",
+		carbon.Para("Build 218 ", carbon.Smaller("experimental")),
+	)
+}
+
+func emStory() dom.Element {
+	return inlineTextStory(
+		"Em",
+		"Emphasis adds inline stress without switching to strong weight.",
+		carbon.Para("This setting is ", carbon.Em("recommended"), " for most deployments."),
+	)
+}
+
+func inlineTextStory(title, description string, sample mvc.View) dom.Element {
 	canvas := carbon.Section(
 		mvc.WithClass("canvas"),
-		mvc.WithStyle("display:grid;gap:0.75rem;max-width:56rem;padding:0 1rem"),
-		carbon.Para(carbon.Deleted("This sentence is presented as deleted text.")),
-		carbon.Para(carbon.Highlighted("This sentence is highlighted for emphasis.")),
-		carbon.Para(carbon.Strong("This sentence uses strong emphasis.")),
-		carbon.Para(carbon.Smaller("This sentence uses smaller supporting text.")),
-		carbon.Para(carbon.Em("This sentence uses italic emphasis.")),
-		carbon.Para(carbon.Code("const theme = \"white\"")),
+		mvc.WithStyle("display:grid;gap:0.75rem;width:100%;padding:1rem 1rem 0"),
+		sample,
 	)
 
 	return storybook.Story(
-		"Inline Styles",
-		"Inline text elements cover deletion, highlighting, emphasis, small supporting text, and inline code.",
+		title,
+		description,
 		canvas,
 		nil,
 		storybook.Dropdown("Theme", carbon.ThemeWhite, storybook.DefaultThemes, func(theme carbon.Attr) {
@@ -147,61 +255,116 @@ func inlineStylesStory() dom.Element {
 	)
 }
 
-func linkStory() dom.Element {
-	standaloneIcon := carbon.Icon(carbon.IconLaunch, carbon.With(carbon.IconSize20))
-	iconOnlyIcon := carbon.Icon(carbon.IconLaunch, carbon.With(carbon.IconSize20))
+func inlineLinkStory() dom.Element {
+	const href = "#link"
 	inlineLink := carbon.Link(
-		"#text",
+		href,
 		carbon.With(carbon.LinkInline, carbon.SizeMedium),
 		"Read the Carbon content guidelines",
 	)
-	standaloneLink := carbon.Link(
-		"#text",
-		carbon.With(carbon.SizeMedium),
-		"Read the Carbon content guidelines",
-		standaloneIcon,
-	)
-	iconOnlyLink := carbon.Link(
-		"#text",
-		carbon.With(carbon.SizeMedium),
-		iconOnlyIcon,
-	).SetLabel("Open content guidelines")
 
 	canvas := carbon.Section(
 		mvc.WithClass("canvas"),
-		mvc.WithStyle("display:grid;gap:1rem;max-width:56rem;padding:0 1rem"),
+		mvc.WithStyle("display:grid;gap:1rem;width:100%;padding:1rem 1rem 0"),
 		carbon.Para(
 			"Links support inline navigation and can include a trailing icon for actions such as opening documentation or moving to related content. ",
 			inlineLink,
 			" within body copy to keep reading flow intact.",
 		),
-		carbon.Para(standaloneLink),
-		carbon.Para(iconOnlyLink),
-		carbon.Compact("This story shows inline, standalone, and icon-only link variants. The standalone link is wired to trigger events."),
+		carbon.Compact("Inline links keep navigation within running body copy without breaking reading flow."),
 	)
 
 	return storybook.Story(
-		"Link",
-		"Carbon links support small, medium, and large sizes, optional inline presentation, and a slotted icon.",
+		"Inline Link",
+		"Inline links stay embedded in paragraph copy and support the same size and enabled state controls as other Carbon links.",
 		canvas,
-		standaloneLink,
+		inlineLink,
 		storybook.Dropdown("Theme", carbon.ThemeWhite, storybook.DefaultThemes, func(theme carbon.Attr) {
 			canvas.Apply(carbon.With(theme)...)
 		}),
 		storybook.Dropdown("Size", carbon.SizeMedium, []carbon.Attr{carbon.SizeSmall, carbon.SizeMedium, carbon.SizeLarge}, func(size carbon.Attr) {
-			standaloneLink.Apply(carbon.With(size)...)
-			iconOnlyLink.Apply(carbon.With(size)...)
+			inlineLink.Apply(carbon.With(size)...)
+		}),
+		storybook.CheckboxGroup("State", "Enabled", true, func(enabled bool) {
+			inlineLink.SetEnabled(enabled)
+		}),
+	)
+}
+
+func linkWithIconStory() dom.Element {
+	const href = "#link"
+	icon := carbon.Icon(carbon.IconLaunch, carbon.With(carbon.IconSize20))
+	link := carbon.Link(
+		href,
+		carbon.With(carbon.SizeMedium),
+		"Read the Carbon content guidelines",
+		icon,
+	)
+
+	canvas := carbon.Section(
+		mvc.WithClass("canvas"),
+		mvc.WithStyle("display:grid;gap:1rem;width:100%;padding:1rem 1rem 0"),
+		carbon.Para(link),
+		carbon.Compact("A trailing icon helps communicate navigation intent while preserving the link label as visible text."),
+	)
+
+	return storybook.Story(
+		"Link With Icon",
+		"Standalone links can include a slotted Carbon icon that inherits the link color.",
+		canvas,
+		link,
+		storybook.Dropdown("Theme", carbon.ThemeWhite, storybook.DefaultThemes, func(theme carbon.Attr) {
+			canvas.Apply(carbon.With(theme)...)
+		}),
+		storybook.Dropdown("Size", carbon.SizeMedium, []carbon.Attr{carbon.SizeSmall, carbon.SizeMedium, carbon.SizeLarge}, func(size carbon.Attr) {
+			link.Apply(carbon.With(size)...)
 			iconSize := carbon.IconSize20
 			if size == carbon.SizeSmall {
 				iconSize = carbon.IconSize16
 			}
-			standaloneIcon.Apply(carbon.With(iconSize)...)
-			iconOnlyIcon.Apply(carbon.With(iconSize)...)
+			icon.Apply(carbon.With(iconSize)...)
 		}),
 		storybook.CheckboxGroup("State", "Enabled", true, func(enabled bool) {
-			inlineLink.SetEnabled(enabled)
-			standaloneLink.SetEnabled(enabled)
-			iconOnlyLink.SetEnabled(enabled)
+			link.SetEnabled(enabled)
+		}),
+	)
+}
+
+func iconOnlyLinkStory() dom.Element {
+	const href = "#link"
+	icon := carbon.Icon(carbon.IconLaunch, carbon.With(carbon.IconSize20))
+	link := carbon.Link(
+		href,
+		carbon.With(carbon.SizeMedium),
+		icon,
+	)
+	link.SetLabel("Open content guidelines")
+
+	canvas := carbon.Section(
+		mvc.WithClass("canvas"),
+		mvc.WithStyle("display:grid;gap:1rem;width:100%;padding:1rem 1rem 0"),
+		carbon.Para(link),
+		carbon.Compact("Icon-only links require an accessible label because the icon itself is decorative by default."),
+	)
+
+	return storybook.Story(
+		"Icon-Only Link",
+		"Icon-only links use the same component but rely on an accessible label instead of visible text.",
+		canvas,
+		link,
+		storybook.Dropdown("Theme", carbon.ThemeWhite, storybook.DefaultThemes, func(theme carbon.Attr) {
+			canvas.Apply(carbon.With(theme)...)
+		}),
+		storybook.Dropdown("Size", carbon.SizeMedium, []carbon.Attr{carbon.SizeSmall, carbon.SizeMedium, carbon.SizeLarge}, func(size carbon.Attr) {
+			link.Apply(carbon.With(size)...)
+			iconSize := carbon.IconSize20
+			if size == carbon.SizeSmall {
+				iconSize = carbon.IconSize16
+			}
+			icon.Apply(carbon.With(iconSize)...)
+		}),
+		storybook.CheckboxGroup("State", "Enabled", true, func(enabled bool) {
+			link.SetEnabled(enabled)
 		}),
 	)
 }
