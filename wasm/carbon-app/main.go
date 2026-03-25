@@ -56,6 +56,8 @@ func main() {
 			carbon.SideNavGroupItem("#grid", "Grid"),
 			carbon.SideNavGroupItem("#section", "Section"),
 			carbon.SideNavGroupItem("#page", "Page"),
+			carbon.SideNavGroupItem("#list", "List"),
+			carbon.SideNavGroupItem("#structuredlist", "StructuredList"),
 		),
 		carbon.SideNavGroup("Components",
 			carbon.SideNavGroupItem("#button", "Button"),
@@ -155,6 +157,7 @@ func router(nav mvc.View) mvc.View {
 		Page("#grid", carbon.Page(content.GridView()...), nav.(ItemSelector).Item("#grid")).
 		Page("#section", carbon.Page(content.SectionView()...), nav.(ItemSelector).Item("#section")).
 		Page("#page", carbon.Page(content.PageView()...), nav.(ItemSelector).Item("#page")).
+		Page("#list", carbon.Page(content.ListView()...), nav.(ItemSelector).Item("#list")).
 		Page("#button", carbon.Page(button.View()...), nav.(ItemSelector).Item("#button")).
 		Page("#closebutton", carbon.Page(button.CloseButtonView()...), nav.(ItemSelector).Item("#closebutton")).
 		Page("#buttongroup", carbon.Page(button.GroupView()...), nav.(ItemSelector).Item("#buttongroup")).
@@ -164,5 +167,6 @@ func router(nav mvc.View) mvc.View {
 		Page("#input", carbon.Page(form.InputView()...), nav.(ItemSelector).Item("#input")).
 		Page("#checkbox", carbon.Page(form.CheckboxView()...), nav.(ItemSelector).Item("#checkbox")).
 		Page("#dropdown", carbon.Page(form.DropdownView()...), nav.(ItemSelector).Item("#dropdown")).
+		Page("#structuredlist", carbon.Page(content.StructuredListView()...), nav.(ItemSelector).Item("#structuredlist")).
 		Page("#sidenav", carbon.Page(navigation.PanelView()...), nav.(ItemSelector).Item("#sidenav"))
 }

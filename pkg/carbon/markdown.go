@@ -176,12 +176,12 @@ func markdownNode(node ast.Node, cfg markdownConfig) any {
 	case *md.List:
 		children := markdownChildren(n, cfg)
 		if n.Ordered() {
-			return mvc.HTML("OL", children...)
+			return OrderedList(children...)
 		}
-		return mvc.HTML("UL", children...)
+		return List(children...)
 
 	case *md.ListItem:
-		return mvc.HTML("LI", markdownChildren(n, cfg)...)
+		return ListItem(markdownChildren(n, cfg)...)
 
 	case *md.Blockquote:
 		return Blockquote(markdownChildren(n, cfg)...)

@@ -29,6 +29,7 @@ import '@carbon/web-components/es/components/data-table/table-header-row.js';
 import '@carbon/web-components/es/components/data-table/table-header-cell.js';
 import '@carbon/web-components/es/components/data-table/table-row.js';
 import '@carbon/web-components/es/components/data-table/table-cell.js';
+import '@carbon/web-components/es/components/structured-list/index.js';
 import '@carbon/web-components/es/components/pagination/index.js';
 import '@carbon/web-components/es/components/tile/index.js';
 

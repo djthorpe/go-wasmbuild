@@ -81,10 +81,28 @@ const (
 	LinkInline Attr = "inline"
 )
 
+// Structured list appearance flags.
+const (
+	StructuredListCondensed Attr = "condensed"
+	StructuredListFlush     Attr = "flush"
+)
+
 // Code snippet appearance flags.
 const (
 	CodeWrapText       Attr = "wrap-text"
 	CodeHideCopyButton Attr = "hide-copy-button"
+)
+
+// List style types.
+const (
+	ListDisc       Attr = "disc"
+	ListCircle     Attr = "circle"
+	ListSquare     Attr = "square"
+	ListDecimal    Attr = "decimal"
+	ListLowerAlpha Attr = "lower-alpha"
+	ListUpperAlpha Attr = "upper-alpha"
+	ListLowerRoman Attr = "lower-roman"
+	ListUpperRoman Attr = "upper-roman"
 )
 
 // Carbon colour themes — applied as CSS class (.cds--white, .cds--g10, etc.).
@@ -115,16 +133,24 @@ var attrKey = func() map[Attr]string {
 	for _, k := range []Attr{LinkInline} {
 		m[k] = string(k)
 	}
+	for _, k := range []Attr{StructuredListCondensed, StructuredListFlush} {
+		m[k] = string(k)
+	}
 	for _, k := range []Attr{CodeWrapText, CodeHideCopyButton} {
 		m[k] = string(k)
+	}
+	for _, k := range []Attr{ListDisc, ListCircle, ListSquare, ListDecimal, ListLowerAlpha, ListUpperAlpha, ListLowerRoman, ListUpperRoman} {
+		m[k] = "data-carbon-list-style"
 	}
 	return m
 }()
 
 var booleanAttrs = map[Attr]struct{}{
-	LinkInline:         {},
-	CodeWrapText:       {},
-	CodeHideCopyButton: {},
+	LinkInline:              {},
+	StructuredListCondensed: {},
+	StructuredListFlush:     {},
+	CodeWrapText:            {},
+	CodeHideCopyButton:      {},
 }
 
 var themeAttrs = map[Attr]struct{}{
