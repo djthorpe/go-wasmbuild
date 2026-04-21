@@ -116,21 +116,25 @@ export class Auth {
         options: ExchangeOptions = {},
         signal?: AbortSignal,
     ): Promise<TokenResponse> {
+        const body = new URLSearchParams({
+            grant_type: "authorization_code",
+            provider,
+            code,
+            redirect_uri: redirectUri,
+            code_verifier: codeVerifier,
+        });
+        if (options.nonce) {
+            body.set("nonce", options.nonce);
+        }
+        if (options.meta) {
+            body.set("meta", JSON.stringify(options.meta));
+        }
         const response = await fetch(this.url("auth/code"), {
             method: "POST",
             headers: {
                 Accept: "application/json",
-                "Content-Type": "application/json",
             },
-            body: JSON.stringify({
-                grant_type: "authorization_code",
-                provider,
-                code,
-                redirect_uri: redirectUri,
-                code_verifier: codeVerifier,
-                nonce: options.nonce,
-                meta: options.meta,
-            }),
+            body,
             signal,
         });
         if (!response.ok) {
