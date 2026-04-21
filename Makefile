@@ -36,7 +36,7 @@ npm: npm/carbon npm/auth
 .PHONY: npm/carbon
 npm/carbon: npm/carbon/index.js npm/carbon/package.json
 	@echo 'Building npm/carbon bundle'
-	@cd npm/carbon && install -d "$(dir $(NPM_CARBON_OUTFILE))" && npm install && OUTFILE='$(NPM_CARBON_OUTFILE)' npm run build && if [ -n "$(NPM_CARBON_DIST_DIR)" ]; then rm -f bundle.js icons-generated.js assets/themes.css assets/grid.css; rm -rf assets/icons; fi
+	@cd npm/carbon && install -d "$(dir $(NPM_CARBON_OUTFILE))" && npm install && OUTFILE='$(NPM_CARBON_OUTFILE)' npm run build && if [ -n "$(NPM_CARBON_DIST_DIR)" ]; then rm -rf "$(abspath $(NPM_CARBON_DIST_DIR))/assets"; cp -R assets "$(abspath $(NPM_CARBON_DIST_DIR))/assets"; rm -f bundle.js icons-generated.js assets/themes.css assets/grid.css; rm -rf assets/icons; fi
 
 .PHONY: npm/auth
 npm/auth: npm/auth/auth.ts npm/auth/package.json
