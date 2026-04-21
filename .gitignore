@@ -12,3 +12,4 @@ vendor/
 build/
 
 npm/carbon/icons-generated.js
+npm/auth/auth.js

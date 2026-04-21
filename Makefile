@@ -15,6 +15,9 @@ LD_FLAGS = -X $(BUILD_MODULE)/pkg/version.GitSource=${BUILD_MODULE} -X $(BUILD_M
 # All targets
 all: wasmbuild npm generate $(WASM)
 
+NPM_CARBON_OUTFILE=$(if $(NPM_CARBON_DIST_DIR),$(abspath $(NPM_CARBON_DIST_DIR))/bundle.js,bundle.js)
+NPM_AUTH_OUTDIR=$(if $(NPM_AUTH_DIST_DIR),$(abspath $(NPM_AUTH_DIST_DIR)),.)
+
 # Generate icon names from the npm bundle.
 wasm/carbon-app/content/icon_names.go: $(NPM_CARBON_BUNDLE)
 	@echo 'Generating icon names'
