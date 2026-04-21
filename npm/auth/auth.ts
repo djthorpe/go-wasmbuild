@@ -33,6 +33,14 @@ export interface TokenResponse {
     expires_in?: number;
 }
 
+export interface UserInfo {
+    sub: string;
+    email?: string;
+    name?: string;
+    groups?: string[];
+    scopes?: string[];
+}
+
 export interface PublicClientConfiguration {
     issuer: string;
     client_id?: string;
@@ -141,6 +149,56 @@ export class Auth {
             throw new Error(`auth exchange request failed with status ${response.status}`);
         }
         return response.json() as Promise<TokenResponse>;
+    }
+
+    async refresh(refreshToken: string, signal?: AbortSignal): Promise<TokenResponse> {
+        const body = new URLSearchParams({
+            grant_type: "refresh_token",
+            refresh_token: refreshToken,
+        });
+        const response = await fetch(this.url("auth/code"), {
+            method: "POST",
+            headers: {
+                Accept: "application/json",
+            },
+            body,
+            signal,
+        });
+        if (!response.ok) {
+            throw new Error(`auth refresh request failed with status ${response.status}`);
+        }
+        return response.json() as Promise<TokenResponse>;
+    }
+
+    async userinfo(accessToken: string, signal?: AbortSignal): Promise<UserInfo> {
+        const response = await fetch(this.url("auth/userinfo"), {
+            headers: {
+                Accept: "application/json",
+                Authorization: `Bearer ${accessToken}`,
+            },
+            signal,
+        });
+        if (!response.ok) {
+            throw new Error(`auth userinfo request failed with status ${response.status}`);
+        }
+        return response.json() as Promise<UserInfo>;
+    }
+
+    async revoke(token: string, signal?: AbortSignal): Promise<void> {
+        const body = new URLSearchParams({
+            token,
+        });
+        const response = await fetch(this.url("auth/revoke"), {
+            method: "POST",
+            headers: {
+                Accept: "application/json",
+            },
+            body,
+            signal,
+        });
+        if (!response.ok) {
+            throw new Error(`auth revoke request failed with status ${response.status}`);
+        }
     }
 }
 

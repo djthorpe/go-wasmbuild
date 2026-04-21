@@ -14,7 +14,7 @@ LD_FLAGS = -X $(BUILD_MODULE)/pkg/version.GitSource=${BUILD_MODULE} -X $(BUILD_M
 all: wasmbuild npm generate $(WASM)
 
 NPM_CARBON_OUTFILE=$(if $(NPM_CARBON_DIST_DIR),$(abspath $(NPM_CARBON_DIST_DIR))/bundle.js,bundle.js)
-NPM_AUTH_OUTFILE=$(if $(NPM_AUTH_DIST_DIR),$(abspath $(NPM_AUTH_DIST_DIR))/auth.js,auth.js)
+NPM_AUTH_OUTDIR=$(if $(NPM_AUTH_DIST_DIR),$(abspath $(NPM_AUTH_DIST_DIR)),.)
 
 # Generate icon names from the npm bundle.
 wasm/carbon-app/content/icon_names.go: npm/carbon/bundle.js
@@ -41,7 +41,7 @@ npm/carbon: npm/carbon/index.js npm/carbon/package.json
 .PHONY: npm/auth
 npm/auth: npm/auth/auth.ts npm/auth/package.json
 	@echo 'Building npm/auth bundle'
-	@cd npm/auth && install -d "$(dir $(NPM_AUTH_OUTFILE))" && npm install && OUTFILE='$(NPM_AUTH_OUTFILE)' npm run build && if [ -n "$(NPM_AUTH_DIST_DIR)" ]; then rm -f auth.js; fi
+	@cd npm/auth && install -d "$(NPM_AUTH_OUTDIR)" && npm install && OUTDIR='$(NPM_AUTH_OUTDIR)' npm run build && if [ -n "$(NPM_AUTH_DIST_DIR)" ]; then rm -f auth.js token.js; fi
 
 npm/carbon/bundle.js: npm/carbon/index.js npm/carbon/package.json
 	@echo 'Building npm/carbon bundle'
@@ -87,5 +87,6 @@ clean: tidy
 	@rm -fr $(BUILDDIR)
 	@rm -f npm/carbon/bundle.js
 	@rm -f npm/auth/auth.js
+	@rm -f npm/auth/token.js
 	@rm -f wasm/carbon-app/content/icon_names.go
 	$(GO) clean
