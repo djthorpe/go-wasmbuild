@@ -1,5 +1,6 @@
 node_modules/
 bundle.js
+icons-generated.js
 assets/icons/
 assets/themes.css
 assets/grid.css

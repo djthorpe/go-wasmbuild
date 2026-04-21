@@ -9,6 +9,6 @@
     "esbuild": "^0.25.0"
   },
   "scripts": {
-    "build": "node gen-icons.mjs && esbuild index.js --bundle --format=esm --outfile=bundle.js --minify && cp -r node_modules/@carbon/icons/svg assets/icons && node -e \"const fs=require('fs'),l=fs.readFileSync('node_modules/@carbon/styles/css/styles.css','utf8').split('\\n');fs.writeFileSync('assets/themes.css','/* Carbon theme tokens (generated) */\\n'+l.slice(2786,4107).join('\\n'));fs.writeFileSync('assets/grid.css','/* Carbon CSS grid (generated) */\\n'+l.slice(1063,1862).join('\\n'));\""
+    "build": "node gen-icons.mjs && esbuild index.js --bundle --format=esm --outfile=${OUTFILE:-bundle.js} --minify && cp -r node_modules/@carbon/icons/svg assets/icons && node -e \"const fs=require('fs'),l=fs.readFileSync('node_modules/@carbon/styles/css/styles.css','utf8').split('\\n');fs.writeFileSync('assets/themes.css','/* Carbon theme tokens (generated) */\\n'+l.slice(2786,4107).join('\\n'));fs.writeFileSync('assets/grid.css','/* Carbon CSS grid (generated) */\\n'+l.slice(1063,1862).join('\\n'));\""
   }
 }

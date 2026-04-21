@@ -1,0 +1,10 @@
+{
+    "name": "go-wasmbuild-auth",
+    "private": true,
+    "devDependencies": {
+        "esbuild": "^0.25.0"
+    },
+    "scripts": {
+        "build": "esbuild auth.ts --bundle --format=esm --platform=browser --target=es2020 --outfile=${OUTFILE:-auth.js} --minify"
+    }
+}

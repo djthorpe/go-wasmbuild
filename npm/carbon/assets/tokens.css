@@ -143,6 +143,153 @@ p[data-mvc]:has(+ cds-code-snippet) {
     line-height: var(--cds-heading-01-line-height, 1.42857);
 }
 
+/* Fluid display utilities are not exported as standalone classes by Carbon CSS. */
+.cds--fluid-display-01,
+.cds--type-fluid-display-01 {
+    font-size: 2.625rem;
+    font-weight: 300;
+    line-height: 1.19;
+    letter-spacing: 0;
+}
+
+.cds--fluid-display-02,
+.cds--type-fluid-display-02 {
+    font-size: 2.625rem;
+    font-weight: 600;
+    line-height: 1.19;
+    letter-spacing: 0;
+}
+
+.cds--fluid-display-03,
+.cds--type-fluid-display-03 {
+    font-size: 2.625rem;
+    font-weight: 300;
+    line-height: 1.19;
+    letter-spacing: 0;
+    font-size: calc(2.625rem + 0.75 * (100vw - 20rem) / 22);
+}
+
+.cds--fluid-display-04,
+.cds--type-fluid-display-04 {
+    font-size: calc(2.625rem + 1.625 * (100vw - 20rem) / 22);
+    font-weight: 300;
+    line-height: 1.19;
+    letter-spacing: 0;
+}
+
+@media (min-width: 42rem) {
+
+    .cds--fluid-display-01,
+    .cds--type-fluid-display-01 {
+        font-size: calc(2.625rem + 0.75 * (100vw - 42rem) / 24);
+    }
+
+    .cds--fluid-display-02,
+    .cds--type-fluid-display-02 {
+        font-size: calc(2.625rem + 0.75 * (100vw - 42rem) / 24);
+    }
+
+    .cds--fluid-display-03,
+    .cds--type-fluid-display-03 {
+        font-size: 3.375rem;
+        line-height: 1.18;
+        font-size: calc(3.375rem + 0.375 * (100vw - 42rem) / 24);
+    }
+
+    .cds--fluid-display-04,
+    .cds--type-fluid-display-04 {
+        font-size: calc(4.25rem + 1.5 * (100vw - 42rem) / 24);
+        line-height: 1.15;
+    }
+}
+
+@media (min-width: 66rem) {
+
+    .cds--fluid-display-01,
+    .cds--type-fluid-display-01 {
+        font-size: calc(3.375rem + 0.375 * (100vw - 66rem) / 16);
+    }
+
+    .cds--fluid-display-02,
+    .cds--type-fluid-display-02 {
+        font-size: calc(3.375rem + 0.375 * (100vw - 66rem) / 16);
+    }
+
+    .cds--fluid-display-03,
+    .cds--type-fluid-display-03 {
+        font-size: 3.75rem;
+        line-height: 1.16;
+        letter-spacing: -0.64px;
+        font-size: calc(3.75rem + 1 * (100vw - 66rem) / 16);
+    }
+
+    .cds--fluid-display-04,
+    .cds--type-fluid-display-04 {
+        font-size: calc(5.75rem + 1.875 * (100vw - 66rem) / 16);
+        line-height: 1.11;
+        letter-spacing: -0.64px;
+    }
+}
+
+@media (min-width: 82rem) {
+
+    .cds--fluid-display-01,
+    .cds--type-fluid-display-01 {
+        font-size: calc(3.75rem + 1 * (100vw - 82rem) / 17);
+        line-height: 1.17;
+    }
+
+    .cds--fluid-display-02,
+    .cds--type-fluid-display-02 {
+        font-size: calc(3.75rem + 1 * (100vw - 82rem) / 17);
+        line-height: 1.16;
+    }
+
+    .cds--fluid-display-03,
+    .cds--type-fluid-display-03 {
+        font-size: 4.75rem;
+        line-height: 1.13;
+        letter-spacing: -0.64px;
+        font-size: calc(4.75rem + 0.5 * (100vw - 82rem) / 17);
+    }
+
+    .cds--fluid-display-04,
+    .cds--type-fluid-display-04 {
+        font-size: calc(7.625rem + 2.125 * (100vw - 82rem) / 17);
+        line-height: 1.07;
+        letter-spacing: -0.64px;
+    }
+}
+
+@media (min-width: 99rem) {
+
+    .cds--fluid-display-01,
+    .cds--type-fluid-display-01 {
+        font-size: 4.75rem;
+        line-height: 1.13;
+    }
+
+    .cds--fluid-display-02,
+    .cds--type-fluid-display-02 {
+        font-size: 4.75rem;
+        line-height: 1.13;
+    }
+
+    .cds--fluid-display-03,
+    .cds--type-fluid-display-03 {
+        font-size: 5.25rem;
+        line-height: 1.11;
+        letter-spacing: -0.96px;
+    }
+
+    .cds--fluid-display-04,
+    .cds--type-fluid-display-04 {
+        font-size: 9.75rem;
+        line-height: 1.05;
+        letter-spacing: -0.96px;
+    }
+}
+
 /* ── Code ───────────────────────────────────────────────────────────────────── */
 .cds--code-01 {
     font-family: 'IBM Plex Mono', monospace;
