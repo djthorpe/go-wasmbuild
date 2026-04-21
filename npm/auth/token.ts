@@ -76,7 +76,7 @@ export default class Token {
             }
         }
 
-        return true;
+        return false;
     }
 }
 
