@@ -32,12 +32,18 @@ $(WASM): wasmbuild generate
 	@echo 'Building $@ with ${GOCC}'
 	@$(BUILDDIR)/wasmbuild build --go=${GOCC} --go-flags='-ldflags "$(LD_FLAGS)"' -o ${BUILDDIR}/$(shell basename $@).wasm ./$@
 
-.PHONY: npm
-npm: $(NPM_CARBON_BUNDLE)
+.PHONY: npm npm/carbon npm/auth
+npm: npm/carbon npm/auth
+
+npm/carbon: $(NPM_CARBON_BUNDLE)
 
 $(NPM_CARBON_BUNDLE): npm/carbon/index.js npm/carbon/package.json npm/carbon/gen-icons.mjs
 	@echo 'Building npm/carbon bundle'
 	@cd npm/carbon && npm install && CARBON_DIST_DIR='$(abspath $(NPM_CARBON_DIST_DIR))' npm run build
+
+npm/auth: npm/auth/auth.ts npm/auth/token.ts npm/auth/package.json
+	@echo 'Building npm/auth bundle'
+	@cd npm/auth && install -d "$(NPM_AUTH_OUTDIR)" && npm install && OUTDIR='$(NPM_AUTH_OUTDIR)' npm run build
 
 .PHONY: wasmbuild
 wasmbuild: mkdir
