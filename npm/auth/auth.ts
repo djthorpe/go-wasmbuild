@@ -20,6 +20,19 @@ export interface AuthorizationRequest {
     codeChallengeMethod: "S256" | "plain";
 }
 
+export interface ExchangeOptions {
+    nonce?: string;
+    meta?: Record<string, unknown>;
+}
+
+export interface TokenResponse {
+    access_token: string;
+    refresh_token: string;
+    token_type: string;
+    expiry?: string;
+    expires_in?: number;
+}
+
 export interface PublicClientConfiguration {
     issuer: string;
     client_id?: string;
@@ -93,6 +106,37 @@ export class Auth {
             throw new Error(`auth config request failed with status ${response.status}`);
         }
         return response.json() as Promise<PublicClientConfigurations>;
+    }
+
+    async exchange(
+        provider: string,
+        code: string,
+        redirectUri: string,
+        codeVerifier: string,
+        options: ExchangeOptions = {},
+        signal?: AbortSignal,
+    ): Promise<TokenResponse> {
+        const response = await fetch(this.url("auth/code"), {
+            method: "POST",
+            headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                grant_type: "authorization_code",
+                provider,
+                code,
+                redirect_uri: redirectUri,
+                code_verifier: codeVerifier,
+                nonce: options.nonce,
+                meta: options.meta,
+            }),
+            signal,
+        });
+        if (!response.ok) {
+            throw new Error(`auth exchange request failed with status ${response.status}`);
+        }
+        return response.json() as Promise<TokenResponse>;
     }
 }
 
