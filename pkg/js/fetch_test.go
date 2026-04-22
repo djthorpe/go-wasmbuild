@@ -117,9 +117,52 @@ func TestFetch_NotFound(t *testing.T) {
 	}))
 	defer server.Close()
 
-	_, err := js.Get(server.URL).Wait()
-	if err == nil {
-		t.Error("expected error for 404 response")
+	resp, err := js.Get(server.URL).Wait()
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	response := js.ResponseFrom(resp)
+	if response.OK() {
+		t.Error("expected non-OK response")
+	}
+	if response.Status() != http.StatusNotFound {
+		t.Fatalf("expected 404 response, got %d", response.Status())
+	}
+}
+
+func TestFetch_JSONErrorBody(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(`{"message":"verify JWT: token signature is invalid"}`))
+	}))
+	defer server.Close()
+
+	resp, err := js.Get(server.URL).Then(func(value js.Value) (js.Value, error) {
+		response := js.ResponseFrom(value)
+		if response == nil {
+			t.Fatal("expected response value")
+		}
+		if response.OK() {
+			t.Fatal("expected non-OK response")
+		}
+		return value, nil
+	}).Wait()
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	response := js.ResponseFrom(resp)
+	if response.Status() != http.StatusBadRequest {
+		t.Fatalf("unexpected status: %d", response.Status())
+	}
+	text, err := response.Text().Wait()
+	if err != nil {
+		t.Fatalf("unexpected body error: %v", err)
+	}
+	if got := text.String(); got != `{"message":"verify JWT: token signature is invalid"}` {
+		t.Fatalf("unexpected body: %s", got)
 	}
 }
 

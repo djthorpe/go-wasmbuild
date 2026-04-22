@@ -3,6 +3,7 @@
 package js
 
 import (
+	"errors"
 	"sync"
 	"syscall/js"
 )
@@ -180,7 +181,7 @@ func (p *Promise) execute() {
 			result, err := p.thenfn(value)
 			if err != nil {
 				// Return a rejected promise to trigger catch
-				return promiseProto.Call("reject", err.Error())
+				return promiseProto.Call("reject", promiseErrorValue(err))
 			}
 			return result
 		})
@@ -191,14 +192,11 @@ func (p *Promise) execute() {
 	// Chain .catch() if we have a handler
 	if p.catchfn != nil {
 		catchFn := js.FuncOf(func(this js.Value, args []js.Value) any {
-			var err error
-			if len(args) > 0 {
-				err = js.Error{Value: args[0]}
-			}
+			err := promiseError(args)
 
 			if recoveredErr := p.catchfn(err); recoveredErr != nil {
 				// Propagate the error
-				return promiseProto.Call("reject", recoveredErr.Error())
+				return promiseProto.Call("reject", promiseErrorValue(recoveredErr))
 			}
 			// Error was recovered
 			return js.Undefined()
@@ -234,10 +232,7 @@ func (p *Promise) execute() {
 	errorFn := js.FuncOf(func(this js.Value, args []js.Value) any {
 		defer p.cleanup()
 		if p.donefn != nil {
-			var err error
-			if len(args) > 0 {
-				err = js.Error{Value: args[0]}
-			}
+			err := promiseError(args)
 			p.donefn(js.Undefined(), err)
 		}
 		return js.Undefined()
@@ -264,7 +259,7 @@ func (p *Promise) createJSPromise() Value {
 
 			value, err := p.tryfn()
 			if err != nil {
-				reject.Invoke(err.Error())
+				reject.Invoke(promiseErrorValue(err))
 			} else {
 				resolve.Invoke(value)
 			}
@@ -285,4 +280,35 @@ func (p *Promise) cleanup() {
 		fn.Release()
 	}
 	p.funcs = nil
+}
+
+func promiseError(args []js.Value) error {
+	if len(args) == 0 {
+		return errors.New("promise rejected")
+	}
+	return promiseErrorFromValue(args[0])
+}
+
+func promiseErrorFromValue(value js.Value) error {
+	if value.IsUndefined() || value.IsNull() {
+		return errors.New("promise rejected")
+	}
+	if value.Type() == js.TypeString {
+		return errors.New(value.String())
+	}
+	errorCtor := js.Global().Get("Error")
+	if !errorCtor.IsUndefined() && !errorCtor.IsNull() && value.InstanceOf(errorCtor) {
+		return js.Error{Value: value}
+	}
+	if value.Type() == js.TypeObject || value.Type() == js.TypeFunction {
+		message := value.Get("message")
+		if !message.IsUndefined() && !message.IsNull() && message.Type() == js.TypeString {
+			return errors.New(message.String())
+		}
+	}
+	return errors.New(value.String())
+}
+
+func promiseErrorValue(err error) js.Value {
+	return js.Global().Get("Error").New(err.Error())
 }

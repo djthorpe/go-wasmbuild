@@ -3,7 +3,6 @@
 package js
 
 import (
-	"fmt"
 	"net/url"
 	"syscall/js"
 )
@@ -58,18 +57,11 @@ func Fetch(url string, opts ...FetchOption) *Promise {
 		jsOpts.Set("body", req.body)
 	}
 
-	// Call fetch and wrap the JS promise
+	// Call fetch and wrap the JS promise. Like browser fetch, this promise only
+	// rejects on network or request failures, not on HTTP status.
 	jsPromise := js.Global().Call("fetch", req.url, jsOpts)
 
-	return FromJSPromise(jsPromise).Then(func(value Value) (Value, error) {
-		// Check response.ok - fetch only rejects on network errors
-		if !value.Get("ok").Bool() {
-			return Undefined(), fmt.Errorf("HTTP %d: %s",
-				value.Get("status").Int(),
-				value.Get("statusText").String())
-		}
-		return value, nil
-	})
+	return FromJSPromise(jsPromise)
 }
 
 // Get is a convenience method for Fetch with GET method.
