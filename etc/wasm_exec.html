@@ -7,8 +7,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="wasm_exec.js"></script>
     <script>
+        const WasmGo = globalThis.Go;
+
         document.addEventListener('DOMContentLoaded', function () {
-            const go = new Go();
+            const go = new WasmGo();
             WebAssembly.instantiateStreaming(fetch("{{WasmFile}}"), go.importObject).then((result) => {
                 go.run(result.instance);
             });
