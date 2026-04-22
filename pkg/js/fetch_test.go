@@ -166,6 +166,23 @@ func TestFetch_JSONErrorBody(t *testing.T) {
 	}
 }
 
+func TestFetch_JSONErrorBody(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(`{"message":"verify JWT: token signature is invalid"}`))
+	}))
+	defer server.Close()
+
+	_, err := js.Get(server.URL).Wait()
+	if err == nil {
+		t.Fatal("expected error for 400 response")
+	}
+	if got := err.Error(); got != "HTTP 400: 400 Bad Request: verify JWT: token signature is invalid" {
+		t.Fatalf("unexpected error: %s", got)
+	}
+}
+
 func TestFetch_WithOptions(t *testing.T) {
 	var receivedMethod string
 	var receivedHeader string
