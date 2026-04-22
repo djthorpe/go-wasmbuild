@@ -130,7 +130,10 @@ func applyTagIconSlot(icon *icon) {
 
 func tagBoolProperty(element dom.Element, name string) bool {
 	if value, ok := element.JSValue().(js.Value); ok && !value.IsUndefined() && !value.IsNull() {
-		return value.Get(name).Bool()
+		property := value.Get(name)
+		if !property.IsUndefined() && !property.IsNull() {
+			return property.Bool()
+		}
 	}
 	return element.HasAttribute(name)
 }

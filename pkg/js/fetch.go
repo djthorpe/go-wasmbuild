@@ -103,11 +103,6 @@ func Fetch(url string, opts ...FetchOption) *Promise {
 			bodyData:   bodyBytes,
 		}
 
-		// Check if response is OK (like JS fetch)
-		if !response.ok {
-			return Undefined(), fmt.Errorf("HTTP %d: %s", response.status, response.statusText)
-		}
-
 		return ValueOf(response), nil
 	})
 }
